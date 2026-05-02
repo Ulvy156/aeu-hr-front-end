@@ -1,0 +1,84 @@
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { ElMessage } from 'element-plus'
+import { assignUserRoles } from '../services/user.api'
+import type { UserListItem, Role } from '../types/user'
+
+const props = defineProps<{
+  visible: boolean
+  user: UserListItem | null
+  roles: Role[]
+}>()
+
+const emit = defineEmits<{
+  'update:visible': [value: boolean]
+  updated: []
+}>()
+
+const submitting = ref(false)
+const selectedRole = ref('')
+
+watch(() => props.user, (u) => {
+  selectedRole.value = u?.roles[0] ?? ''
+})
+
+watch(() => props.visible, (v) => {
+  if (!v) selectedRole.value = ''
+})
+
+async function handleSubmit() {
+  if (!props.user) return
+  submitting.value = true
+  try {
+    await assignUserRoles(props.user.id, { roles: selectedRole.value ? [selectedRole.value] : [] })
+    ElMessage.success('Roles updated successfully.')
+    emit('update:visible', false)
+    emit('updated')
+  } catch (err: unknown) {
+    const msg = (err as any)?.response?.data?.message ?? 'Failed to assign roles.'
+    ElMessage.error(msg)
+  } finally {
+    submitting.value = false
+  }
+}
+</script>
+
+<template>
+  <el-dialog
+    :model-value="visible"
+    :title="user ? `Assign Role — ${user.name}` : 'Assign Role'"
+    width="440px"
+    :close-on-click-modal="false"
+    @update:model-value="emit('update:visible', $event)"
+  >
+    <p class="text-sm text-slate-500 mb-4">
+      Select the role to assign. The existing role will be replaced.
+    </p>
+
+    <el-form label-position="top">
+      <el-form-item label="Role">
+        <el-select
+          v-model="selectedRole"
+          placeholder="Select a role"
+          class="w-full"
+        >
+          <el-option
+            v-for="role in roles"
+            :key="role.id"
+            :label="role.name"
+            :value="role.name"
+          />
+        </el-select>
+      </el-form-item>
+    </el-form>
+
+    <template #footer>
+      <div class="flex justify-end gap-2">
+        <el-button @click="emit('update:visible', false)">Cancel</el-button>
+        <el-button type="primary" :loading="submitting" @click="handleSubmit">
+          Save Roles
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
+</template>
