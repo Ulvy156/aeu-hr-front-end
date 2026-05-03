@@ -106,6 +106,13 @@ const router = createRouter({
           component: () => import('@/features/reports/views/ReportsView.vue'),
         },
 
+        // Profile
+        {
+          path: 'profile',
+          name: 'profile',
+          component: () => import('@/features/profile/views/ProfileView.vue'),
+        },
+
         // Admin
         {
           path: 'settings',

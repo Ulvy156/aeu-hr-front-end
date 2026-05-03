@@ -1,9 +1,11 @@
 import { ref, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { fetchDepartments } from '../services/department.api'
 import type { Department, PaginationMeta } from '../types/department'
 
 export function useDepartments() {
+  const notify = useNotify()
   const departments = ref<Department[]>([])
   const meta = ref<PaginationMeta>({
     current_page: 1,
@@ -33,8 +35,8 @@ export function useDepartments() {
       const res = await fetchDepartments(params)
       departments.value = res.data
       meta.value = res.meta
-    } catch {
-      ElMessage.error('Failed to load departments.')
+    } catch (err) {
+      notify.error(getApiErrorMessage(err))
     } finally {
       loading.value = false
     }

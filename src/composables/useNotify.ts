@@ -1,4 +1,3 @@
-
 import { ElMessage } from 'element-plus'
 
 type NotifyMessage = string
@@ -14,32 +13,13 @@ const defaultOptions: NotifyOptions = {
 }
 
 export function useNotify() {
-  const success = (message: NotifyMessage, options?: NotifyOptions) => {
-    ElMessage.success({
-      message,
-      ...defaultOptions,
-      ...options,
-    })
-  }
-
-  const error = (message: NotifyMessage, options?: NotifyOptions) => {
-    ElMessage.error({
-      message,
-      ...defaultOptions,
-      ...options,
-    })
-  }
-
-  const warning = (message: NotifyMessage, options?: NotifyOptions) => {
-    ElMessage.warning({
-      message,
-      ...defaultOptions,
-      ...options,
-    })
-  }
-
-  const info = (message: NotifyMessage, options?: NotifyOptions) => {
-    ElMessage.info({
+  const show = (
+    type: 'success' | 'error' | 'warning' | 'info',
+    message: NotifyMessage,
+    options?: NotifyOptions,
+  ) => {
+    ElMessage({
+      type,
       message,
       ...defaultOptions,
       ...options,
@@ -47,9 +27,16 @@ export function useNotify() {
   }
 
   return {
-    success,
-    error,
-    warning,
-    info,
+    success: (message: NotifyMessage, options?: NotifyOptions) =>
+      show('success', message, options),
+
+    error: (message: NotifyMessage, options?: NotifyOptions) =>
+      show('error', message, options),
+
+    warning: (message: NotifyMessage, options?: NotifyOptions) =>
+      show('warning', message, options),
+
+    info: (message: NotifyMessage, options?: NotifyOptions) =>
+      show('info', message, options),
   }
 }

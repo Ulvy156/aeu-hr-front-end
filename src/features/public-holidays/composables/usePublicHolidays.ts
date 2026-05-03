@@ -1,9 +1,11 @@
 import { ref, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { fetchPublicHolidays } from '../services/public-holiday.api'
 import type { PublicHoliday, PaginationMeta } from '../types/public-holiday'
 
 export function usePublicHolidays() {
+  const notify = useNotify()
   const holidays = ref<PublicHoliday[]>([])
   const meta = ref<PaginationMeta>({
     current_page: 1,
@@ -35,8 +37,8 @@ export function usePublicHolidays() {
       const res = await fetchPublicHolidays(params)
       holidays.value = res.data
       meta.value = res.meta
-    } catch {
-      ElMessage.error('Failed to load public holidays.')
+    } catch (err) {
+      notify.error(getApiErrorMessage(err))
     } finally {
       loading.value = false
     }

@@ -3,8 +3,8 @@ import { ref } from 'vue'
 import { Search } from '@lucide/vue'
 import type { AuditLogFilterState, AuditUserOption } from '../types/audit-log'
 import BaseInput from '@/components/common/BaseInput.vue';
-import BaseButton from '@/components/common/BaseButton.vue';
-
+import SearchButton from '@/components/resuable/SearchButton.vue';
+import ResetButton from '@/components/resuable/ResetButton.vue';
 const props = defineProps<{
   filters: AuditLogFilterState
   users: AuditUserOption[]
@@ -43,7 +43,7 @@ function handleReset() {
 <template>
   <div class="flex flex-col gap-3">
     <!-- Row 1 -->
-    <div class="flex flex-wrap items-center gap-3">
+    <div class="flex  items-center gap-3">
       <el-select
         v-model="localUserId"
         placeholder="All Users"
@@ -83,27 +83,30 @@ function handleReset() {
     </div>
 
     <!-- Row 2 -->
-    <div class="flex flex-wrap items-center gap-3">
-      <el-date-picker
-        v-model="localDateFrom"
-        type="date"
-        placeholder="Date from"
-        value-format="YYYY-MM-DD"
-        class="w-44"
-        clearable
-      />
-
-      <el-date-picker
-        v-model="localDateTo"
-        type="date"
-        placeholder="Date to"
-        value-format="YYYY-MM-DD"
-        class="w-44"
-        clearable
-      />
-
-      <BaseButton type="primary" @click="handleSearch">Search</BaseButton>
-      <BaseButton @click="handleReset">Reset</BaseButton>
+    <div class="flex justify-between items-center gap-3">
+      <div class="flex gap-x-5">
+        <el-date-picker
+          v-model="localDateFrom"
+          type="date"
+          placeholder="Date from"
+          value-format="YYYY-MM-DD"
+          class="w-44"
+          clearable
+        />
+  
+        <el-date-picker
+          v-model="localDateTo"
+          type="date"
+          placeholder="Date to"
+          value-format="YYYY-MM-DD"
+          class="w-44"
+          clearable
+        />
+      </div>
+      <div class="flex">
+        <SearchButton @click="handleSearch"/>
+        <ResetButton @click="handleReset"/>
+      </div>
     </div>
   </div>
 </template>

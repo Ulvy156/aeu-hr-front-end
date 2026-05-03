@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { ElMessageBox, ElMessage } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { Plus } from '@lucide/vue'
 import { PageHeader, AppCard } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
@@ -13,6 +15,7 @@ import PositionTable from './PositionTable.vue'
 import PositionFormDialog from './PositionFormDialog.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 const { can } = usePermission()
+const notify = useNotify()
 const {
   positions,
   meta,
@@ -66,11 +69,10 @@ async function handleDelete(position: Position) {
 
   try {
     await deletePosition(position.id)
-    ElMessage.success('Position deleted successfully.')
+    notify.success('Position deleted successfully.')
     await loadPositions()
-  } catch (err: unknown) {
-    const msg = (err as any)?.response?.data?.message ?? 'Failed to delete position.'
-    ElMessage.error(msg)
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   }
 }
 </script>

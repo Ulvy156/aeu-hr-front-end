@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { createPosition, updatePosition } from '../services/position.api'
 import { BaseInput } from '@/components/common'
 import type { Position, PositionPayload, DepartmentOption } from '../types/position'
@@ -18,6 +19,7 @@ const emit = defineEmits<{
   saved: []
 }>()
 
+const notify = useNotify()
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
 const isEdit = computed(() => props.position !== null)
@@ -63,16 +65,15 @@ async function handleSubmit() {
   try {
     if (isEdit.value && props.position) {
       await updatePosition(props.position.id, { ...form })
-      ElMessage.success('Position updated successfully.')
+      notify.success('Position updated successfully.')
     } else {
       await createPosition({ ...form })
-      ElMessage.success('Position created successfully.')
+      notify.success('Position created successfully.')
     }
     emit('update:visible', false)
     emit('saved')
-  } catch (err: unknown) {
-    const msg = (err as any)?.response?.data?.message ?? 'Failed to save position.'
-    ElMessage.error(msg)
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   } finally {
     submitting.value = false
   }

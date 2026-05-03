@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { createUser } from '../services/user.api'
 import type { Role, CreateUserPayload } from '../types/user'
 import BaseInput from '@/components/common/BaseInput.vue'
@@ -17,6 +18,7 @@ const emit = defineEmits<{
   created: []
 }>()
 
+const notify = useNotify()
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
 const selectedRole = ref('')
@@ -58,19 +60,18 @@ async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
   if (!selectedRole.value) {
-    ElMessage.error('Please select a role.')
+    notify.error('Please select a role.')
     return
   }
 
   submitting.value = true
   try {
     await createUser({ ...form, roles: [selectedRole.value] })
-    ElMessage.success('User created successfully.')
+    notify.success('User created successfully.')
     emit('update:visible', false)
     emit('created')
-  } catch (err: unknown) {
-    const msg = (err as any)?.response?.data?.message ?? 'Failed to create user.'
-    ElMessage.error(msg)
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   } finally {
     submitting.value = false
   }

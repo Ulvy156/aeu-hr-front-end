@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
 import { PageHeader } from '@/components/common'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { usePermission } from '@/composables/usePermissions'
 import { getCompanySettings, updateCompanySettings } from '../services/companySetting.service'
 import type { CompanySettingForm } from '../types/companySetting.types'
 import CompanySettingsForm from '../components/CompanySettingsForm.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 const { can } = usePermission()
+const notify = useNotify()
 const canUpdate = computed(() => can('company_settings.update'))
 
 const loading = ref(true)
@@ -61,8 +63,8 @@ async function loadSettings() {
     }
     Object.assign(form, loaded)
     savedForm.value = JSON.parse(JSON.stringify(loaded))
-  } catch {
-    ElMessage.error('Failed to load company settings.')
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   } finally {
     loading.value = false
   }
@@ -85,12 +87,9 @@ async function handleSave() {
     logoUrl.value = res.data.company_logo_url
     logoFile.value = null
     savedForm.value = JSON.parse(JSON.stringify(form))
-    ElMessage.success('Company settings saved successfully.')
-  } catch (err: unknown) {
-    const msg =
-      (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-      'Failed to save settings. Please try again.'
-    ElMessage.error(msg)
+    notify.success('Company settings saved successfully.')
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   } finally {
     submitting.value = false
   }

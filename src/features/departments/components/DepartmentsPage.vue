@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { ElMessageBox, ElMessage } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { Plus } from '@lucide/vue'
 import { PageHeader, AppCard } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
@@ -12,6 +14,7 @@ import DepartmentTable from './DepartmentTable.vue'
 import DepartmentFormDialog from './DepartmentFormDialog.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 const { can } = usePermission()
+const notify = useNotify()
 const {
   departments,
   meta,
@@ -56,11 +59,10 @@ async function handleDelete(dept: Department) {
 
   try {
     await deleteDepartment(dept.id)
-    ElMessage.success('Department deleted successfully.')
+    notify.success('Department deleted successfully.')
     await loadDepartments()
-  } catch (err: unknown) {
-    const msg = (err as any)?.response?.data?.message ?? 'Failed to delete department.'
-    ElMessage.error(msg)
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   }
 }
 </script>

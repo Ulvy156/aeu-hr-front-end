@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, defineAsyncComponent } from 'vue'
-import { ElMessageBox, ElMessage } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { UserPlus } from '@lucide/vue'
 import { PageHeader, AppCard } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
@@ -15,8 +17,10 @@ const UserCreateDialog = defineAsyncComponent(() => import('./UserCreateDialog.v
 const UserEditDialog = defineAsyncComponent(() => import('./UserEditDialog.vue'));
 const UserRolesDialog = defineAsyncComponent(() => import('./UserRolesDialog.vue'));
 const UserDetailDrawer = defineAsyncComponent(() => import('./UserDetailDrawer.vue'));
+const UserPermissionDialog = defineAsyncComponent(() => import('./UserPermissionDialog.vue'));
 
 const { can } = usePermission()
+const notify = useNotify()
 const {
   users,
   meta,
@@ -31,6 +35,7 @@ const {
 const createOpen = ref(false)
 const editOpen = ref(false)
 const rolesOpen = ref(false)
+const permissionsOpen = ref(false)
 const detailOpen = ref(false)
 
 const selectedUser = ref<UserListItem | null>(null)
@@ -63,6 +68,11 @@ function handleAssignRoles(user: UserListItem) {
   rolesOpen.value = true
 }
 
+function handleAssignPermissions(user: UserListItem) {
+  selectedUser.value = user
+  permissionsOpen.value = true
+}
+
 async function handleDisable(user: UserListItem) {
   try {
     await ElMessageBox.confirm(
@@ -81,11 +91,10 @@ async function handleDisable(user: UserListItem) {
 
   try {
     await deactivateUser(user.id)
-    ElMessage.success('User deactivated successfully.')
+    notify.success('User deactivated successfully.')
     await loadUsers()
-  } catch (err: unknown) {
-    const msg = (err as any)?.response?.data?.message ?? 'Failed to deactivate user.'
-    ElMessage.error(msg)
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   }
 }
 
@@ -136,6 +145,7 @@ async function reloadUser() {
         @view="handleView"
         @edit="handleEdit"
         @assign-roles="handleAssignRoles"
+        @assign-permissions="handleAssignPermissions"
         @disable="handleDisable"
         @page-change="onPageChange"
         @size-change="onPageSizeChange"
@@ -160,6 +170,12 @@ async function reloadUser() {
       :user="selectedUser"
       :roles="roles"
       @updated="reloadUser"
+    />
+
+    <UserPermissionDialog
+      v-model:visible="permissionsOpen"
+      :user="selectedUser"
+      @saved="loadUsers"
     />
 
     <UserDetailDrawer

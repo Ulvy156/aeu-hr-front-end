@@ -1,10 +1,10 @@
 <template>
-    <BaseButton type="primary" :icon="Search">
-        Search
+    <BaseButton :icon="RefreshCcw">
+        Reset
     </BaseButton>
 </template>
 
 <script lang="ts" setup>
 import BaseButton from '../common/BaseButton.vue';
-import { Search } from '@lucide/vue';
+import { RefreshCcw } from '@lucide/vue';
 </script>

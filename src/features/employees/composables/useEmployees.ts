@@ -1,9 +1,11 @@
 import { ref, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { fetchEmployees } from '../services/employee.api'
 import type { Employee, PaginationMeta } from '../types/employee'
 
 export function useEmployees() {
+  const notify = useNotify()
   const employees = ref<Employee[]>([])
   const meta = ref<PaginationMeta>({
     current_page: 1,
@@ -37,8 +39,8 @@ export function useEmployees() {
       const res = await fetchEmployees(params)
       employees.value = res.data
       meta.value = res.meta
-    } catch {
-      ElMessage.error('Failed to load employees.')
+    } catch (err) {
+      notify.error(getApiErrorMessage(err))
     } finally {
       loading.value = false
     }

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { createDepartment, updateDepartment } from '../services/department.api'
 import type { Department, DepartmentPayload } from '../types/department'
 import { BaseInput } from '@/components/common'
@@ -17,6 +18,7 @@ const emit = defineEmits<{
   saved: []
 }>()
 
+const notify = useNotify()
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
 const isEdit = computed(() => props.department !== null)
@@ -59,16 +61,15 @@ async function handleSubmit() {
   try {
     if (isEdit.value && props.department) {
       await updateDepartment(props.department.id, { ...form })
-      ElMessage.success('Department updated successfully.')
+      notify.success('Department updated successfully.')
     } else {
       await createDepartment({ ...form })
-      ElMessage.success('Department created successfully.')
+      notify.success('Department created successfully.')
     }
     emit('update:visible', false)
     emit('saved')
-  } catch (err: unknown) {
-    const msg = (err as any)?.response?.data?.message ?? 'Failed to save department.'
-    ElMessage.error(msg)
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   } finally {
     submitting.value = false
   }

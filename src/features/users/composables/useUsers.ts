@@ -1,9 +1,11 @@
 import { ref, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { fetchUsers } from '../services/user.api'
 import type { UserListItem, PaginationMeta } from '../types/user'
 
 export function useUsers() {
+  const notify = useNotify()
   const users = ref<UserListItem[]>([])
   const meta = ref<PaginationMeta>({
     current_page: 1,
@@ -33,8 +35,8 @@ export function useUsers() {
       const res = await fetchUsers(params)
       users.value = res.data
       meta.value = res.meta
-    } catch {
-      ElMessage.error('Failed to load users.')
+    } catch (err) {
+      notify.error(getApiErrorMessage(err))
     } finally {
       loading.value = false
     }

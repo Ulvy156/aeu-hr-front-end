@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
-import { ElMessageBox } from 'element-plus'
-import { usePermission } from '@/composables/usePermissions'
-import { useAuthStore } from '@/features/auth/stores/auth.store'
-
+import { computed, defineAsyncComponent, ref } from "vue";
+import { useRoute, useRouter, RouterLink } from "vue-router";
+import { usePermission } from "@/composables/usePermissions";
+import { useAuthStore } from "@/features/auth/stores/auth.store";
+import BaseButton from "../common/BaseButton.vue";
+const BaseModal = defineAsyncComponent(() => import("../common/BaseModal.vue"));
 import {
   LayoutDashboard,
   Building2,
@@ -24,104 +24,120 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-} from '@lucide/vue'
+  User,
+} from "@lucide/vue";
 
 defineProps<{
-  collapsed: boolean
-}>()
+  collapsed: boolean;
+}>();
 
 defineEmits<{
-  toggle: []
-}>()
+  toggle: [];
+}>();
 
-const route = useRoute()
-const router = useRouter()
-const authStore = useAuthStore()
-const { can } = usePermission()
+const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore();
+const { can } = usePermission();
+const isClickLogout = ref(false);
+const isLogginOut = ref(false);
 
 async function handleLogout() {
-  try {
-    await ElMessageBox.confirm('Are you sure you want to logout?', 'Logout', {
-      confirmButtonText: 'Logout',
-      cancelButtonText: 'Cancel',
-      type: 'warning',
-      confirmButtonClass: 'el-button--danger',
-    })
-  } catch {
-    return
-  }
-  await authStore.logout().catch(() => {})
-  router.push({ name: 'login' })
+  isLogginOut.value = true;
+  await authStore.logout().catch(() => {});
+  router.push({ name: "login" });
 }
 
 function isActive(path: string): boolean {
-  return route.path === path || route.path.startsWith(path + '/')
+  return route.path === path;
 }
 
 interface MenuItem {
-  label: string
-  path: string
-  icon: unknown
-  permission?: string
+  label: string;
+  path: string;
+  icon: unknown;
+  permission?: string;
 }
 
 interface MenuGroup {
-  label: string
-  items: MenuItem[]
+  label: string;
+  items: MenuItem[];
 }
 
 const menuGroups = computed<MenuGroup[]>(() => [
   {
-    label: 'Main',
+    label: "Main",
+    items: [{ label: "Dashboard", path: "/dashboard", icon: LayoutDashboard }],
+  },
+  {
+    label: "Organization",
     items: [
-      { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+      {
+        label: "Departments",
+        path: "/departments",
+        icon: Building2,
+        permission: "departments.view",
+      },
+      { label: "Positions", path: "/positions", icon: Briefcase, permission: "positions.view" },
+      { label: "Employees", path: "/employees", icon: Users, permission: "employees.view" },
     ],
   },
   {
-    label: 'Organization',
+    label: "Attendance",
     items: [
-      { label: 'Departments', path: '/departments', icon: Building2, permission: 'departments.view' },
-      { label: 'Positions', path: '/positions', icon: Briefcase, permission: 'positions.view' },
-      { label: 'Employees', path: '/employees', icon: Users, permission: 'employees.view' },
+      { label: "Attendance", path: "/attendance", icon: Clock, permission: "attendance.view_own" },
+      {
+        label: "Attendance Correction",
+        path: "/attendance/correction",
+        icon: ClipboardList,
+        permission: "attendance.view_correction ",
+      },
     ],
   },
   {
-    label: 'Attendance',
+    label: "Leave",
     items: [
-      { label: 'Attendance', path: '/attendance', icon: Clock },
-      { label: 'Attendance Correction', path: '/attendance/correction', icon: ClipboardList },
+      { label: "Leave Requests", path: "/leaves", icon: CalendarDays, permission: "attendance.view_correction " },
+      { label: "Leave Balance", path: "/leave-balances", icon: Calendar, permission: "attendance.view_correction " },
     ],
   },
   {
-    label: 'Leave',
+    label: "Payroll",
     items: [
-      { label: 'Leave Requests', path: '/leaves', icon: CalendarDays },
-      { label: 'Leave Balance', path: '/leave-balances', icon: Calendar },
+      { label: "Payroll", path: "/payrolls", icon: Banknote, permission: "attendance.view_correction " },
+      { label: "Payslips", path: "/payslips", icon: FileText, permission: "attendance.view_correction " },
     ],
   },
   {
-    label: 'Payroll',
-    items: [
-      { label: 'Payroll', path: '/payrolls', icon: Banknote },
-      { label: 'Payslips', path: '/payslips', icon: FileText },
-    ],
+    label: "Reports",
+    items: [{ label: "Reports", path: "/reports", icon: BarChart2 }],
   },
   {
-    label: 'Reports',
+    label: "Admin",
     items: [
-      { label: 'Reports', path: '/reports', icon: BarChart2 },
+      {
+        label: "Company Settings",
+        path: "/settings",
+        icon: Settings,
+        permission: "company_settings.view",
+      },
+      { label: "Public Holidays", path: "/public-holidays", icon: CalendarCheck },
+      { label: "User Management", path: "/users", icon: UserCog, permission: "users.view" },
+      { label: "Audit Logs", path: "/audit-logs", icon: ScrollText, permission: "audit_logs.view" },
     ],
   },
-  {
-    label: 'Admin',
+    {
+    label: "Profile",
     items: [
-      { label: 'Company Settings', path: '/settings', icon: Settings, permission: 'company_settings.view' },
-      { label: 'Public Holidays', path: '/public-holidays', icon: CalendarCheck },
-      { label: 'User Management', path: '/users', icon: UserCog, permission: 'users.view' },
-      { label: 'Audit Logs', path: '/audit-logs', icon: ScrollText, permission: 'audit_logs.view' },
+      {
+        label: "Profile",
+        path: "/profile",
+        icon: User,
+        permission: "company_settings.view",
+      }
     ],
   },
-])
+]);
 </script>
 
 <template>
@@ -140,12 +156,12 @@ const menuGroups = computed<MenuGroup[]>(() => [
         </div>
         <span class="text-sm font-semibold text-slate-900 truncate">HR System</span>
       </div>
-      <div v-else class="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center">
+      <!-- <div v-else class="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center">
         <Users class="w-4 h-4 text-white" />
-      </div>
+      </div> -->
 
       <button
-        class="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-gray-100 transition-colors"
+        class="p-1 cursor-pointer rounded-md text-slate-400 hover:text-slate-600 bg-gray-100"
         :class="collapsed ? 'mt-2' : ''"
         @click="$emit('toggle')"
       >
@@ -182,7 +198,11 @@ const menuGroups = computed<MenuGroup[]>(() => [
             <component
               :is="item.icon"
               class="w-4 h-4 shrink-0"
-              :class="isActive(item.path) ? 'text-emerald-600' : 'text-slate-400 group-hover:text-slate-600'"
+              :class="
+                isActive(item.path)
+                  ? 'text-emerald-600'
+                  : 'text-slate-400 group-hover:text-slate-600'
+              "
             />
             <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
           </RouterLink>
@@ -190,13 +210,14 @@ const menuGroups = computed<MenuGroup[]>(() => [
       </div>
     </nav>
 
+
     <!-- Logout (fixed bottom) -->
     <div class="shrink-0 border-t border-gray-100 px-2 py-3">
       <el-tooltip :content="'Logout'" :disabled="!collapsed" placement="right">
         <button
           class="flex items-center gap-3 w-full rounded-lg px-2 py-2 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors"
           :class="collapsed ? 'justify-center' : ''"
-          @click="handleLogout"
+          @click="isClickLogout = true"
         >
           <LogOut class="w-4 h-4 shrink-0" />
           <span v-if="!collapsed">Logout</span>
@@ -204,4 +225,12 @@ const menuGroups = computed<MenuGroup[]>(() => [
       </el-tooltip>
     </div>
   </aside>
+
+  <BaseModal :modelValue="isClickLogout">
+    <p>Are you sure want to logout ?</p>
+    <div class="flex justify-end">
+      <BaseButton :loading="isLogginOut" @click="handleLogout" type="primary">Logout</BaseButton>
+      <BaseButton @click="isClickLogout = false">Cancel</BaseButton>
+    </div>
+  </BaseModal>
 </template>

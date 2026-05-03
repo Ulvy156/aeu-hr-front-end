@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { assignUserRoles } from '../services/user.api'
 import type { UserListItem, Role } from '../types/user'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -16,6 +17,7 @@ const emit = defineEmits<{
   updated: []
 }>()
 
+const notify = useNotify()
 const submitting = ref(false)
 const selectedRole = ref('')
 
@@ -32,12 +34,11 @@ async function handleSubmit() {
   submitting.value = true
   try {
     await assignUserRoles(props.user.id, { roles: selectedRole.value ? [selectedRole.value] : [] })
-    ElMessage.success('Roles updated successfully.')
+    notify.success('Roles updated successfully.')
     emit('update:visible', false)
     emit('updated')
-  } catch (err: unknown) {
-    const msg = (err as any)?.response?.data?.message ?? 'Failed to assign roles.'
-    ElMessage.error(msg)
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   } finally {
     submitting.value = false
   }

@@ -1,97 +1,80 @@
-Implement the Attendance frontend using the completed backend Attendance API.
+Patch Assign Permission dialog behavior.
 
-Read the existing frontend instruction files first and follow the current project structure, reusable helpers, services, components, permission helper, API envelope pattern, and UI guidelines.
+Requirement:
+If a permission is inherited from the user's role, show its checkbox as checked but disabled.
 
-Backend API contract:
-D:\AEU\Thesis\HR\aeu-hr-back-end\.claude\api\ATTENDANCE_API.md
+Rules:
 
-Endpoints:
+- direct_permissions = permissions manually assigned to the user
+- role_permissions = permissions inherited from role
+- all_permissions = direct_permissions + role_permissions
 
-- POST /api/attendance/clock-in
-- POST /api/attendance/clock-out
-- GET /api/attendance
-- PUT /api/attendance/{attendance}/correction
-- POST /api/attendance/mark-absent
+Checkbox behavior:
 
-Important backend rules:
+1. If permission exists in role_permissions:
+   - checked = true
+   - disabled = true
+   - show small label/tag: "Inherited"
+   - user cannot uncheck it
 
-- Frontend only sends latitude and longitude for clock-in/out.
-- Backend calculates GPS validation, status, late status, and server time.
-- Do not calculate attendance status on frontend.
-- Do not calculate is_late on frontend.
-- Do not allow GPS correction on frontend.
-- Do not send is_late in correction payload.
-- Correction payload may only include:
-  - clock_in_time
-  - clock_out_time
-  - status
-  - correction_reason
-- correction_reason is required.
-- Mark absent supports:
-  - no payload = today
-  - attendance_date = selected date
-- If user has no linked employee profile, backend returns 403:
-  “No employee profile is linked to this user account.”
+2. If permission exists in direct_permissions:
+   - checked = true
+   - disabled = false
+   - user can uncheck it
 
-Required UI:
+3. If permission exists in neither:
+   - checked = false
+   - disabled = false
+   - user can check it
 
-- Attendance page
-- Clock In / Clock Out card
-- Attendance filters
-- Attendance table
-- Attendance correction dialog
-- Mark absent dialog
+Implementation logic:
 
-Clock In / Clock Out:
+const selectedPermissions = ref<string[]>([])
+const rolePermissions = ref<string[]>([])
 
-- Use browser geolocation.
-- Show loading while getting location and submitting.
-- Send only latitude and longitude.
-- Show readable error if location permission is denied/unavailable.
-- Show readable backend errors for outside radius, duplicate clock-in/out, or missing office GPS settings.
-- Do not send frontend time.
+After fetching GET /api/users/{user}/permissions:
 
-Attendance list:
+selectedPermissions.value = [...res.data.all_permissions]
+rolePermissions.value = [...res.data.role_permissions]
 
-- Use only filters documented in ATTENDANCE_API.md.
-- Show readable date/time.
-- Use status badges:
-  - present = success
-  - late = warning
-  - absent = danger
-  - missing_clock_out = info
-- Show correction action only with attendance.correct permission.
+Checkbox group:
 
-Correction dialog:
+<el-checkbox-group v-model="selectedPermissions">
+  <el-checkbox
+    v-for="permission in availablePermissions"
+    :key="permission"
+    :label="permission"
+    :disabled="rolePermissions.includes(permission)"
+  >
+    <span>{{ permission }}</span>
 
-- Fields:
-  - clock_in_time
-  - clock_out_time
-  - status
-  - correction_reason
-- No GPS fields.
-- No is_late field.
-- Show backend validation errors inline.
-- Refresh list after success.
+    <el-tag
+      v-if="rolePermissions.includes(permission)"
+      size="small"
+      type="info"
+      class="ml-2"
+    >
+      Inherited
+    </el-tag>
 
-Mark absent:
+  </el-checkbox>
+</el-checkbox-group>
 
-- Show only with attendance.mark_absent permission.
-- Optional date picker.
-- If date is empty, backend marks today.
-- Show created count if backend returns it.
-- Refresh list after success.
+Save payload:
+Do not send inherited role permissions as direct permissions.
 
-UX:
+const permissionsToSave = selectedPermissions.value.filter(
+(permission) => !rolePermissions.value.includes(permission),
+)
 
-- Keep consistent with current app UI.
-- Use visual accents/icons so page does not look plain.
-- Use loading, empty, and error states.
-- Do not expose raw backend errors.
+await syncUserPermissions(userId, {
+permissions: permissionsToSave,
+})
 
-After implementation:
+Important:
 
-- Run npx vue-tsc --noEmit
-- Run npm run build if available
-- Fix all errors
-- Summarize changed files
+- Do not use all_permissions directly as save payload.
+- Do not allow inherited permissions to be removed here.
+- Do not convert inherited role permissions into direct permissions.
+- Only direct permissions should be synced.
+- Do not rewrite working Users code, only patch Assign Permission dialog behavior.

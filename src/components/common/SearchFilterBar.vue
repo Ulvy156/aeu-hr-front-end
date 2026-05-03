@@ -31,7 +31,7 @@ function onClear() {
       :model-value="modelValue"
       :placeholder="placeholder ?? 'Search...'"
       clearable
-      class="!w-64"
+      class="w-64!"
       @update:model-value="onInput"
       @keyup.enter="$emit('search')"
       @clear="onClear"

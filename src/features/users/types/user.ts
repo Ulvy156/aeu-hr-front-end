@@ -76,6 +76,25 @@ export interface AssignRolesPayload {
   roles: string[]
 }
 
+export interface UserPermissionsResponse {
+  user_id: number
+  direct_permissions: string[]
+  role_permissions: string[]
+  all_permissions: string[]
+}
+
+export interface SyncUserPermissionsPayload {
+  permissions: string[]
+}
+
+export interface AddUserPermissionPayload {
+  permission: string
+}
+
+export interface RemoveUserPermissionPayload {
+  permission: string
+}
+
 export interface UserSummary {
   total_users: number,
   active_users: number,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { ElMessage } from 'element-plus'
 import type { UploadFile } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
 import BaseButton from '@/components/common/BaseButton.vue';
 const props = defineProps<{
   currentLogoUrl: string | null
@@ -12,6 +12,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   'file-selected': [file: File | null]
 }>()
+
+const notify = useNotify()
 
 const previewUrl = ref<string | null>(props.currentLogoUrl)
 
@@ -36,11 +38,11 @@ function handleChange(file: UploadFile) {
   if (!file.raw) return
   const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml']
   if (!allowed.includes(file.raw.type)) {
-    ElMessage.error('Only JPG, PNG, WebP, or SVG images are allowed.')
+    notify.error('Only JPG, PNG, WebP, or SVG images are allowed.')
     return
   }
   if (file.raw.size > 2 * 1024 * 1024) {
-    ElMessage.error('Logo image must be under 2 MB.')
+    notify.error('Logo image must be under 2 MB.')
     return
   }
   previewUrl.value = URL.createObjectURL(file.raw)

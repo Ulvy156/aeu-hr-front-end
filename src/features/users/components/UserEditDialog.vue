@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { updateUser } from '../services/user.api'
 import type { UserListItem, UpdateUserPayload, Role } from '../types/user'
 import BaseInput from '@/components/common/BaseInput.vue'
@@ -18,6 +19,7 @@ const emit = defineEmits<{
   updated: []
 }>()
 
+const notify = useNotify()
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
 const selectedRole = ref('')
@@ -55,19 +57,18 @@ async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
   if (!selectedRole.value) {
-    ElMessage.error('Please select a role.')
+    notify.error('Please select a role.')
     return
   }
 
   submitting.value = true
   try {
     await updateUser(props.user.id, { ...form, roles: [selectedRole.value] })
-    ElMessage.success('User updated successfully.')
+    notify.success('User updated successfully.')
     emit('update:visible', false)
     emit('updated')
-  } catch (err: unknown) {
-    const msg = (err as any)?.response?.data?.message ?? 'Failed to update user.'
-    ElMessage.error(msg)
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   } finally {
     submitting.value = false
   }

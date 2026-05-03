@@ -1,9 +1,11 @@
 import { ref, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { fetchAuditLogs } from '../services/audit-log.api'
 import type { AuditLog, AuditLogFilterState, PaginationMeta } from '../types/audit-log'
 
 export function useAuditLogs() {
+  const notify = useNotify()
   const logs = ref<AuditLog[]>([])
   const meta = ref<PaginationMeta>({
     current_page: 1,
@@ -39,8 +41,8 @@ export function useAuditLogs() {
       const res = await fetchAuditLogs(params)
       logs.value = res.data
       meta.value = res.meta
-    } catch {
-      ElMessage.error('Failed to load audit logs.')
+    } catch (err) {
+      notify.error(getApiErrorMessage(err))
     } finally {
       loading.value = false
     }

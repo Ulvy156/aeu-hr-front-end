@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { ElMessageBox, ElMessage } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { Plus, CalendarDays, CalendarCheck, Calendar } from '@lucide/vue'
 import { AppCard } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
@@ -12,6 +14,7 @@ import PublicHolidayTable from './PublicHolidayTable.vue'
 import PublicHolidayFormDialog from './PublicHolidayFormDialog.vue'
 
 const { can } = usePermission()
+const notify = useNotify()
 const {
   holidays,
   meta,
@@ -59,11 +62,10 @@ async function handleDisable(holiday: PublicHoliday) {
 
   try {
     await disablePublicHoliday(holiday.id)
-    ElMessage.success(`"${holiday.name}" has been disabled.`)
+    notify.success(`"${holiday.name}" has been disabled.`)
     await loadHolidays()
-  } catch (err: unknown) {
-    const msg = (err as any)?.response?.data?.message ?? 'Failed to disable public holiday.'
-    ElMessage.error(msg)
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   }
 }
 </script>

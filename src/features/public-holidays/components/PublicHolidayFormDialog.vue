@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { createPublicHoliday, updatePublicHoliday } from '../services/public-holiday.api'
 import type { PublicHoliday, PublicHolidayForm } from '../types/public-holiday'
 import BaseInput from '@/components/common/BaseInput.vue'
@@ -17,6 +18,7 @@ const emit = defineEmits<{
   saved: []
 }>()
 
+const notify = useNotify()
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
 const isEdit = computed(() => props.holiday !== null)
@@ -67,16 +69,15 @@ async function handleSubmit() {
   try {
     if (isEdit.value && props.holiday) {
       await updatePublicHoliday(props.holiday.id, { ...form })
-      ElMessage.success('Public holiday updated successfully.')
+      notify.success('Public holiday updated successfully.')
     } else {
       await createPublicHoliday({ ...form })
-      ElMessage.success('Public holiday created successfully.')
+      notify.success('Public holiday created successfully.')
     }
     emit('update:visible', false)
     emit('saved')
-  } catch (err: unknown) {
-    const msg = (err as any)?.response?.data?.message ?? 'Failed to save public holiday.'
-    ElMessage.error(msg)
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   } finally {
     submitting.value = false
   }

@@ -10,6 +10,10 @@ import type {
   UpdateUserPayload,
   AssignRolesPayload,
   UserSummary,
+  UserPermissionsResponse,
+  SyncUserPermissionsPayload,
+  AddUserPermissionPayload,
+  RemoveUserPermissionPayload,
 } from '../types/user'
 
 interface ApiResponse<T> {
@@ -62,6 +66,35 @@ export async function fetchRoles(): Promise<ApiResponse<Role[]>> {
 
 export async function fetchPermissions(): Promise<ApiResponse<Permission[]>> {
   const { data } = await api.get('/permissions')
+  return data
+}
+
+export async function getUserPermissions(userId: number): Promise<ApiResponse<UserPermissionsResponse>> {
+  const { data } = await api.get(`/users/${userId}/permissions`)
+  return data
+}
+
+export async function syncUserPermissions(
+  userId: number,
+  payload: SyncUserPermissionsPayload,
+): Promise<ApiResponse<UserPermissionsResponse>> {
+  const { data } = await api.put(`/users/${userId}/permissions`, payload)
+  return data
+}
+
+export async function addUserPermission(
+  userId: number,
+  payload: AddUserPermissionPayload,
+): Promise<ApiResponse<UserPermissionsResponse>> {
+  const { data } = await api.post(`/users/${userId}/permissions`, payload)
+  return data
+}
+
+export async function removeUserPermission(
+  userId: number,
+  payload: RemoveUserPermissionPayload,
+): Promise<ApiResponse<UserPermissionsResponse>> {
+  const { data } = await api.delete(`/users/${userId}/permissions`, { data: payload })
   return data
 }
 

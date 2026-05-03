@@ -1,12 +1,12 @@
 import { ref, reactive } from 'vue'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
-import { fetchPositions } from '../services/position.api'
-import type { Position, PaginationMeta } from '../types/position'
+import { fetchAttendance } from '../services/attendance.api'
+import type { Attendance, PaginationMeta } from '../types/attendance'
 
-export function usePositions() {
+export function useAttendance() {
   const notify = useNotify()
-  const positions = ref<Position[]>([])
+  const attendances = ref<Attendance[]>([])
   const meta = ref<PaginationMeta>({
     current_page: 1,
     last_page: 1,
@@ -16,26 +16,26 @@ export function usePositions() {
   const loading = ref(false)
 
   const filters = reactive({
-    search: '',
-    department_id: null as number | null,
+    date_from: '',
+    date_to: '',
     status: '',
     page: 1,
     per_page: 15,
   })
 
-  async function loadPositions() {
+  async function loadAttendance() {
     loading.value = true
     try {
       const params: Record<string, unknown> = {
         page: filters.page,
         per_page: filters.per_page,
       }
-      if (filters.search) params.search = filters.search
-      if (filters.department_id) params.department_id = filters.department_id
+      if (filters.date_from) params.date_from = filters.date_from
+      if (filters.date_to) params.date_to = filters.date_to
       if (filters.status) params.status = filters.status
 
-      const res = await fetchPositions(params)
-      positions.value = res.data
+      const res = await fetchAttendance(params)
+      attendances.value = res.data
       meta.value = res.meta
     } catch (err) {
       notify.error(getApiErrorMessage(err))
@@ -44,31 +44,31 @@ export function usePositions() {
     }
   }
 
-  function applyFilters(search: string, departmentId: number | null, status: string) {
-    filters.search = search
-    filters.department_id = departmentId
+  function applyFilters(dateFrom: string, dateTo: string, status: string) {
+    filters.date_from = dateFrom
+    filters.date_to = dateTo
     filters.status = status
     filters.page = 1
-    loadPositions()
+    loadAttendance()
   }
 
   function onPageChange(page: number) {
     filters.page = page
-    loadPositions()
+    loadAttendance()
   }
 
   function onPageSizeChange(size: number) {
     filters.per_page = size
     filters.page = 1
-    loadPositions()
+    loadAttendance()
   }
 
   return {
-    positions,
+    attendances,
     meta,
     loading,
     filters,
-    loadPositions,
+    loadAttendance,
     applyFilters,
     onPageChange,
     onPageSizeChange,

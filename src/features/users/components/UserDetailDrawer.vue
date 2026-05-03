@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { User, Shield, Link } from '@lucide/vue'
 import { fetchUser } from '../services/user.api'
 import type { UserDetail } from '../types/user'
@@ -15,6 +16,7 @@ const emit = defineEmits<{
   'update:visible': [value: boolean]
 }>()
 
+const notify = useNotify()
 const loading = ref(false)
 const user = ref<UserDetail | null>(null)
 
@@ -33,8 +35,8 @@ async function loadUser(id: number) {
   try {
     const res = await fetchUser(id)
     user.value = res.data
-  } catch {
-    ElMessage.error('Failed to load user detail.')
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
     emit('update:visible', false)
   } finally {
     loading.value = false

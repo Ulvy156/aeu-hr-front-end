@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
-import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { createEmployee, updateEmployee } from '../services/employee.api'
 import type { Employee, DeptOption, PositionOption } from '../types/employee'
 import { usePermission } from '@/composables/usePermissions'
@@ -20,6 +21,7 @@ const emit = defineEmits<{
 }>()
 
 const { can } = usePermission()
+const notify = useNotify()
 const formRef = ref<FormInstance>()
 const uploadRef = ref()
 const submitting = ref(false)
@@ -138,9 +140,9 @@ function buildFormData(): FormData {
 async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
-  if (!isEdit.value && !form.password) { ElMessage.error('Password is required.'); return }
+  if (!isEdit.value && !form.password) { notify.error('Password is required.'); return }
   if (['resigned', 'terminated'].includes(form.employment_status) && !form.last_working_date) {
-    ElMessage.error('Last working date is required for resigned or terminated employees.')
+    notify.error('Last working date is required for resigned or terminated employees.')
     return
   }
 
@@ -149,16 +151,15 @@ async function handleSubmit() {
     const fd = buildFormData()
     if (isEdit.value && props.employee) {
       await updateEmployee(props.employee.id, fd)
-      ElMessage.success('Employee updated successfully.')
+      notify.success('Employee updated successfully.')
     } else {
       await createEmployee(fd)
-      ElMessage.success('Employee created successfully.')
+      notify.success('Employee created successfully.')
     }
     emit('update:visible', false)
     emit('saved')
-  } catch (err: unknown) {
-    const msg = (err as any)?.response?.data?.message ?? 'Failed to save employee.'
-    ElMessage.error(msg)
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   } finally {
     submitting.value = false
   }

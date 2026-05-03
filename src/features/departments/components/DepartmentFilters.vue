@@ -2,7 +2,8 @@
 import { ref } from 'vue'
 import { Search } from '@lucide/vue'
 import { BaseInput } from '@/components/common'
-import BaseButton from '@/components/common/BaseButton.vue';
+import SearchButton from '@/components/resuable/SearchButton.vue';
+import ResetButton from '@/components/resuable/ResetButton.vue';
 const props = defineProps<{
   search: string
   status: string
@@ -27,31 +28,35 @@ function handleReset() {
 </script>
 
 <template>
-  <div class="flex flex-wrap items-center gap-3">
-    <BaseInput
-      v-model="localSearch"
-      placeholder="Search by department name..."
-      clearable
-      class="flex-1 min-w-[200px]"
-      @keyup.enter="handleSearch"
-      @clear="handleSearch"
-    >
-      <template #prefix>
-        <Search class="w-4 h-4 text-slate-400" />
-      </template>
-    </BaseInput>
+  <div class="flex justify-between items-center gap-3">
+    <div class="flex gap-x-3 w-1/2">
+      <BaseInput
+        v-model="localSearch"
+        placeholder="Search by department name..."
+        clearable
+        class="w-1/2"
+        @keyup.enter="handleSearch"
+        @clear="handleSearch"
+      >
+        <template #prefix>
+          <Search class="w-4 h-4 text-slate-400" />
+        </template>
+      </BaseInput>
+  
+      <el-select
+        v-model="localStatus"
+        placeholder="All Status"
+        clearable
+        class="w-1/2"
+      >
+        <el-option label="Active" value="active" />
+        <el-option label="Inactive" value="inactive" />
+      </el-select>
+    </div>
 
-    <el-select
-      v-model="localStatus"
-      placeholder="All Status"
-      class="w-48"
-      clearable
-    >
-      <el-option label="Active" value="active" />
-      <el-option label="Inactive" value="inactive" />
-    </el-select>
-
-    <BaseButton type="primary" @click="handleSearch">Search</BaseButton>
-    <BaseButton @click="handleReset">Reset</BaseButton>
+    <div class="w-1/2 flex justify-end">
+      <SearchButton  @click="handleSearch" />
+      <ResetButton @click="handleReset" />
+    </div>
   </div>
 </template>

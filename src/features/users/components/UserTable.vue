@@ -3,6 +3,7 @@ import { MoreHorizontal } from '@lucide/vue'
 import type { UserListItem } from '../types/user'
 import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
+import { useAuthStore } from '@/features/auth/stores/auth.store'
 
 defineProps<{
   users: UserListItem[]
@@ -16,12 +17,14 @@ const emit = defineEmits<{
   view: [user: UserListItem]
   edit: [user: UserListItem]
   'assign-roles': [user: UserListItem]
+  'assign-permissions': [user: UserListItem]
   disable: [user: UserListItem]
   'page-change': [page: number]
   'size-change': [size: number]
 }>()
 
 const { can } = usePermission()
+const authStore = useAuthStore()
 </script>
 
 <template>
@@ -108,9 +111,12 @@ const { can } = usePermission()
                   <el-dropdown-item v-if="can('users.update')" @click="emit('edit', row)">
                     Edit
                   </el-dropdown-item>
-                  <!-- <el-dropdown-item v-if="can('users.assign_roles')" @click="emit('assign-roles', row)">
-                    Assign Roles
-                  </el-dropdown-item> -->
+                  <el-dropdown-item
+                    v-if="can('users.assign_permissions') && row.id !== authStore.user?.id"
+                    @click="emit('assign-permissions', row)"
+                  >
+                    Assign Permissions
+                  </el-dropdown-item>
                   <el-dropdown-item
                     v-if="can('users.delete')"
                     style="color: #dc2626"

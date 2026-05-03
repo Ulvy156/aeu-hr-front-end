@@ -3,7 +3,8 @@ import { ref, computed } from 'vue'
 import { Search } from '@lucide/vue'
 import { BaseInput } from '@/components/common'
 import type { DeptOption, PositionOption } from '../types/employee'
-import BaseButton from '@/components/common/BaseButton.vue'
+import SearchButton from '@/components/resuable/SearchButton.vue'
+import ResetButton from '@/components/resuable/ResetButton.vue'
 const props = defineProps<{
   search: string
   departmentId: number | null
@@ -89,8 +90,8 @@ function handleReset() {
     </el-select>
 
     <div class="flex gap-2">
-      <BaseButton type="primary" class="flex-1" @click="handleSearch">Search</BaseButton>
-      <BaseButton class="flex-1" @click="handleReset">Reset</BaseButton>
+      <SearchButton  @click="handleSearch" />
+      <ResetButton @click="handleReset" />
     </div>
   </div>
 </template>

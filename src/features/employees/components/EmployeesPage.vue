@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { ElMessageBox, ElMessage } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { UserPlus } from '@lucide/vue'
 import { PageHeader } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
@@ -15,6 +17,7 @@ import EmployeeFormDrawer from './EmployeeFormDrawer.vue'
 import EmployeeDetailDrawer from './EmployeeDetailDrawer.vue'
 
 const { can } = usePermission()
+const notify = useNotify()
 const {
   employees,
   meta,
@@ -78,11 +81,10 @@ async function handleDelete(emp: Employee) {
 
   try {
     await deleteEmployee(emp.id)
-    ElMessage.success('Employee deleted successfully.')
+    notify.success('Employee deleted successfully.')
     await loadEmployees()
-  } catch (err: unknown) {
-    const msg = (err as any)?.response?.data?.message ?? 'Failed to delete employee.'
-    ElMessage.error(msg)
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
   }
 }
 </script>
