@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Search } from '@lucide/vue'
+import { BaseInput } from '@/components/common'
 import type { DeptOption, PositionOption } from '../types/employee'
-
+import BaseButton from '@/components/common/BaseButton.vue'
 const props = defineProps<{
   search: string
   departmentId: number | null
@@ -48,7 +49,7 @@ function handleReset() {
 
 <template>
   <div class="grid grid-cols-6 gap-3 items-center">
-    <el-input
+    <BaseInput
       v-model="localSearch"
       placeholder="Search employee ID, name, or email"
       clearable
@@ -59,7 +60,7 @@ function handleReset() {
       <template #prefix>
         <Search class="w-4 h-4 text-slate-400" />
       </template>
-    </el-input>
+    </BaseInput>
 
     <el-select
       v-model="localDeptId"
@@ -88,8 +89,8 @@ function handleReset() {
     </el-select>
 
     <div class="flex gap-2">
-      <el-button type="primary" class="flex-1" @click="handleSearch">Search</el-button>
-      <el-button class="flex-1" @click="handleReset">Reset</el-button>
+      <BaseButton type="primary" class="flex-1" @click="handleSearch">Search</BaseButton>
+      <BaseButton class="flex-1" @click="handleReset">Reset</BaseButton>
     </div>
   </div>
 </template>

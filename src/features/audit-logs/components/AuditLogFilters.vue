@@ -2,6 +2,8 @@
 import { ref } from 'vue'
 import { Search } from '@lucide/vue'
 import type { AuditLogFilterState, AuditUserOption } from '../types/audit-log'
+import BaseInput from '@/components/common/BaseInput.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 
 const props = defineProps<{
   filters: AuditLogFilterState
@@ -57,7 +59,7 @@ function handleReset() {
         />
       </el-select>
 
-      <el-input
+      <BaseInput
         v-model="localModule"
         placeholder="Module (e.g. users, departments...)"
         clearable
@@ -66,9 +68,9 @@ function handleReset() {
         <template #prefix>
           <Search class="w-4 h-4 text-slate-400" />
         </template>
-      </el-input>
+      </BaseInput>
 
-      <el-input
+      <BaseInput
         v-model="localAction"
         placeholder="Action (e.g. created, updated...)"
         clearable
@@ -77,7 +79,7 @@ function handleReset() {
         <template #prefix>
           <Search class="w-4 h-4 text-slate-400" />
         </template>
-      </el-input>
+      </BaseInput>
     </div>
 
     <!-- Row 2 -->
@@ -100,8 +102,8 @@ function handleReset() {
         clearable
       />
 
-      <el-button type="primary" @click="handleSearch">Search</el-button>
-      <el-button @click="handleReset">Reset</el-button>
+      <BaseButton type="primary" @click="handleSearch">Search</BaseButton>
+      <BaseButton @click="handleReset">Reset</BaseButton>
     </div>
   </div>
 </template>

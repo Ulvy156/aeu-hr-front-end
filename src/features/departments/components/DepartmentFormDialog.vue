@@ -4,7 +4,9 @@ import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { createDepartment, updateDepartment } from '../services/department.api'
 import type { Department, DepartmentPayload } from '../types/department'
-
+import { BaseInput } from '@/components/common'
+import BaseButton from '@/components/common/BaseButton.vue'
+import BaseModal from '@/components/common/BaseModal.vue'
 const props = defineProps<{
   visible: boolean
   department: Department | null
@@ -74,7 +76,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <el-dialog
+  <BaseModal
     :model-value="visible"
     :title="isEdit ? 'Edit Department' : 'Create Department'"
     width="440px"
@@ -83,7 +85,7 @@ async function handleSubmit() {
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
       <el-form-item label="Department Name" prop="name">
-        <el-input v-model="form.name" placeholder="e.g. Finance, Operations..." />
+        <BaseInput v-model="form.name" placeholder="e.g. Finance, Operations..." />
       </el-form-item>
 
       <el-form-item label="Status" prop="status">
@@ -96,11 +98,11 @@ async function handleSubmit() {
 
     <template #footer>
       <div class="flex justify-end gap-2">
-        <el-button @click="emit('update:visible', false)">Cancel</el-button>
-        <el-button type="primary" :loading="submitting" @click="handleSubmit">
+        <BaseButton @click="emit('update:visible', false)">Cancel</BaseButton>
+        <BaseButton type="primary" :loading="submitting" @click="handleSubmit">
           {{ isEdit ? 'Save Changes' : 'Create Department' }}
-        </el-button>
+        </BaseButton>
       </div>
     </template>
-  </el-dialog>
+  </BaseModal>
 </template>

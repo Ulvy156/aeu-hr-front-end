@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Component } from 'vue';
+
 defineProps<{
   type?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'default'
   size?: 'large' | 'default' | 'small'
@@ -7,6 +9,7 @@ defineProps<{
   plain?: boolean
   text?: boolean
   nativeType?: 'button' | 'submit' | 'reset'
+  icon?: Component
 }>()
 
 defineEmits<{
@@ -23,6 +26,7 @@ defineEmits<{
     :plain="plain"
     :text="text"
     :native-type="nativeType ?? 'button'"
+    :icon="icon"
     @click="$emit('click', $event)"
   >
     <template v-if="$slots.icon" #icon>

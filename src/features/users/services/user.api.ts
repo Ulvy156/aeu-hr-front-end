@@ -9,6 +9,7 @@ import type {
   CreateUserPayload,
   UpdateUserPayload,
   AssignRolesPayload,
+  UserSummary,
 } from '../types/user'
 
 interface ApiResponse<T> {
@@ -61,5 +62,10 @@ export async function fetchRoles(): Promise<ApiResponse<Role[]>> {
 
 export async function fetchPermissions(): Promise<ApiResponse<Permission[]>> {
   const { data } = await api.get('/permissions')
+  return data
+}
+
+export async function fetchUserSummary(): Promise<ApiResponse<UserSummary>> {
+  const { data } = await api.get('/dashboard/users-summary')
   return data
 }

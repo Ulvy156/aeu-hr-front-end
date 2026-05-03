@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Inbox } from '@lucide/vue'
+import BaseButton from './BaseButton.vue';
 
 defineProps<{
   title?: string
@@ -28,8 +29,8 @@ defineEmits<{
       {{ description }}
     </p>
 
-    <el-button v-if="actionLabel" type="primary" class="mt-5" @click="$emit('action')">
+    <BaseButton v-if="actionLabel" type="primary" class="mt-5" @click="$emit('action')">
       {{ actionLabel }}
-    </el-button>
+    </BaseButton>
   </div>
 </template>

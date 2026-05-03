@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import BaseButton from './BaseButton.vue';
+
 defineProps<{
   loading?: boolean
   submitText?: string
@@ -23,20 +25,20 @@ defineEmits<{
       'justify-between': align === 'between',
     }"
   >
-    <el-button
+    <BaseButton
       v-if="showCancel !== false"
       :disabled="loading"
       @click="$emit('cancel')"
     >
       {{ cancelText ?? 'Cancel' }}
-    </el-button>
+    </BaseButton>
 
-    <el-button
+    <BaseButton
       :type="submitType ?? 'primary'"
       :loading="loading"
       @click="$emit('submit')"
     >
       {{ submitText ?? 'Save' }}
-    </el-button>
+    </BaseButton>
   </div>
 </template>

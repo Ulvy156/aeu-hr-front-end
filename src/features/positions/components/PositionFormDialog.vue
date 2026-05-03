@@ -3,8 +3,10 @@ import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { createPosition, updatePosition } from '../services/position.api'
+import { BaseInput } from '@/components/common'
 import type { Position, PositionPayload, DepartmentOption } from '../types/position'
-
+import BaseButton from '@/components/common/BaseButton.vue'
+import BaseModal from '@/components/common/BaseModal.vue'
 const props = defineProps<{
   visible: boolean
   position: Position | null
@@ -78,7 +80,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <el-dialog
+  <BaseModal
     :model-value="visible"
     :title="isEdit ? 'Edit Position' : 'Create Position'"
     width="440px"
@@ -87,7 +89,7 @@ async function handleSubmit() {
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
       <el-form-item label="Position Name" prop="name">
-        <el-input v-model="form.name" placeholder="e.g. Accountant, HR Officer..." />
+        <BaseInput v-model="form.name" placeholder="e.g. Accountant, HR Officer..." />
       </el-form-item>
 
       <el-form-item label="Department">
@@ -116,11 +118,11 @@ async function handleSubmit() {
 
     <template #footer>
       <div class="flex justify-end gap-2">
-        <el-button @click="emit('update:visible', false)">Cancel</el-button>
-        <el-button type="primary" :loading="submitting" @click="handleSubmit">
+        <BaseButton @click="emit('update:visible', false)">Cancel</BaseButton>
+        <BaseButton type="primary" :loading="submitting" @click="handleSubmit">
           {{ isEdit ? 'Save Changes' : 'Create Position' }}
-        </el-button>
+        </BaseButton>
       </div>
     </template>
-  </el-dialog>
+  </BaseModal>
 </template>

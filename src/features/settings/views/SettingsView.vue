@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import SettingsPage from '../components/SettingsPage.vue'
+import CompanySettingsView from './CompanySettingsView.vue'
 </script>
 
 <template>
-  <SettingsPage />
+  <CompanySettingsView />
 </template>

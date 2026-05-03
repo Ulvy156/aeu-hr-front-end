@@ -75,3 +75,15 @@ export interface UpdateUserPayload {
 export interface AssignRolesPayload {
   roles: string[]
 }
+
+export interface UserSummary {
+  total_users: number,
+  active_users: number,
+  inactive_users: number,
+  users_by_role: {
+    admin: number,
+    hr: number,
+    ceo: number,
+    employee: number
+  }
+}

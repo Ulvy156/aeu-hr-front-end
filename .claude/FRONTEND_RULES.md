@@ -26,6 +26,50 @@ Recommended split pattern:
 
 Do not force unnecessary splitting if keeping the file as one file is clearer and easier to maintain.
 
+### Reusable code rule:
+
+Before creating any new component, composable, helper, utility, type, or service, first check if an existing reusable one already exists in the project.
+
+Reuse existing shared code when possible, especially from:
+- src/components/common
+- src/composables
+- src/utils
+- src/lib
+- src/types
+- existing feature folders
+
+Examples:
+- Reuse existing PageHeader, AppCard, DataTableWrapper, StatusBadge, EmptyState, LoadingState, ConfirmDialog, FormActions, or SearchFilterBar if they already exist.
+- Reuse existing useApiError, usePagination, usePermission, axios instance, date formatters, and constants if available.
+- Reuse existing API response/pagination types if already defined.
+
+If a reusable helper/component does not exist:
+- Create it only when it will likely be reused across multiple features.
+- Place shared reusable code in the correct shared folder:
+  - components used across modules → src/components/common
+  - composables used across modules → src/composables
+  - helpers/utils used across modules → src/utils
+  - global/shared types → src/types
+
+If it is only needed for attendance:
+- Keep it scoped inside:
+  - src/features/attendance/components
+  - src/features/attendance/composables
+  - src/features/attendance/services
+  - src/features/attendance/types
+
+For the geolocation helper:
+- First check if a location/geolocation helper already exists.
+- If it exists, reuse it.
+- If it does not exist and only attendance uses it for now, create it as:
+  src/features/attendance/utils/getCurrentLocation.ts
+- If another feature already needs browser location too, create it as:
+  src/utils/getCurrentLocation.ts
+
+Do not duplicate similar helpers/components with different names.
+Do not rewrite existing reusable logic unless it is broken.
+Keep naming consistent with the current project.
+
 ## Project Direction
 
 This frontend is for the HR Management System.

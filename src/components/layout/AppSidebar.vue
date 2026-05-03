@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute, RouterLink } from 'vue-router'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { ElMessageBox } from 'element-plus'
 import { usePermission } from '@/composables/usePermissions'
+import { useAuthStore } from '@/features/auth/stores/auth.store'
+
 import {
   LayoutDashboard,
   Building2,
@@ -20,6 +23,7 @@ import {
   ScrollText,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from '@lucide/vue'
 
 defineProps<{
@@ -31,7 +35,24 @@ defineEmits<{
 }>()
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 const { can } = usePermission()
+
+async function handleLogout() {
+  try {
+    await ElMessageBox.confirm('Are you sure you want to logout?', 'Logout', {
+      confirmButtonText: 'Logout',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
+      confirmButtonClass: 'el-button--danger',
+    })
+  } catch {
+    return
+  }
+  await authStore.logout().catch(() => {})
+  router.push({ name: 'login' })
+}
 
 function isActive(path: string): boolean {
   return route.path === path || route.path.startsWith(path + '/')
@@ -94,7 +115,7 @@ const menuGroups = computed<MenuGroup[]>(() => [
   {
     label: 'Admin',
     items: [
-      { label: 'Company Settings', path: '/settings', icon: Settings },
+      { label: 'Company Settings', path: '/settings', icon: Settings, permission: 'company_settings.view' },
       { label: 'Public Holidays', path: '/public-holidays', icon: CalendarCheck },
       { label: 'User Management', path: '/users', icon: UserCog, permission: 'users.view' },
       { label: 'Audit Logs', path: '/audit-logs', icon: ScrollText, permission: 'audit_logs.view' },
@@ -133,7 +154,7 @@ const menuGroups = computed<MenuGroup[]>(() => [
       </button>
     </div>
 
-    <!-- Menu -->
+    <!-- Menu (scrollable middle section) -->
     <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-4">
       <div v-for="group in menuGroups" :key="group.label">
         <!-- Group label -->
@@ -168,5 +189,19 @@ const menuGroups = computed<MenuGroup[]>(() => [
         </template>
       </div>
     </nav>
+
+    <!-- Logout (fixed bottom) -->
+    <div class="shrink-0 border-t border-gray-100 px-2 py-3">
+      <el-tooltip :content="'Logout'" :disabled="!collapsed" placement="right">
+        <button
+          class="flex items-center gap-3 w-full rounded-lg px-2 py-2 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors"
+          :class="collapsed ? 'justify-center' : ''"
+          @click="handleLogout"
+        >
+          <LogOut class="w-4 h-4 shrink-0" />
+          <span v-if="!collapsed">Logout</span>
+        </button>
+      </el-tooltip>
+    </div>
   </aside>
 </template>

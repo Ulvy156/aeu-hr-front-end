@@ -5,7 +5,8 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { createEmployee, updateEmployee } from '../services/employee.api'
 import type { Employee, DeptOption, PositionOption } from '../types/employee'
 import { usePermission } from '@/composables/usePermissions'
-
+import { BaseInput } from '@/components/common'
+import BaseButton from '@/components/common/BaseButton.vue'
 const props = defineProps<{
   visible: boolean
   employee: Employee | null
@@ -183,13 +184,13 @@ async function handleSubmit() {
 
       <div class="grid grid-cols-2 gap-x-4">
         <el-form-item label="Full Name" prop="full_name">
-          <el-input v-model="form.full_name" placeholder="Full name" />
+          <BaseInput v-model="form.full_name" placeholder="Full name" />
         </el-form-item>
         <el-form-item label="Email" prop="email">
-          <el-input v-model="form.email" type="email" placeholder="email@example.com" />
+          <BaseInput v-model="form.email" type="email" placeholder="email@example.com" />
         </el-form-item>
         <el-form-item v-if="!isEdit" label="Password" prop="password">
-          <el-input v-model="form.password" type="password" placeholder="Min. 8 characters" show-password />
+          <BaseInput v-model="form.password" type="password" placeholder="Min. 8 characters" show-password />
         </el-form-item>
         <el-form-item label="Gender">
           <el-select v-model="form.gender" placeholder="Select gender" class="w-full" clearable>
@@ -202,14 +203,14 @@ async function handleSubmit() {
           <el-date-picker v-model="form.date_of_birth" type="date" placeholder="Select date" value-format="YYYY-MM-DD" class="w-full" />
         </el-form-item>
         <el-form-item label="Phone Number">
-          <el-input v-model="form.phone_number" placeholder="Phone number" />
+          <BaseInput v-model="form.phone_number" placeholder="Phone number" />
         </el-form-item>
         <el-form-item label="Emergency Contact">
-          <el-input v-model="form.emergency_contact" placeholder="Name and phone" />
+          <BaseInput v-model="form.emergency_contact" placeholder="Name and phone" />
         </el-form-item>
       </div>
       <el-form-item label="Address">
-        <el-input v-model="form.address" type="textarea" :rows="2" placeholder="Full address" />
+        <BaseInput v-model="form.address" type="textarea" :rows="2" placeholder="Full address" />
       </el-form-item>
 
       <!-- Employment -->
@@ -249,9 +250,9 @@ async function handleSubmit() {
           />
         </el-form-item>
         <el-form-item v-if="!isEdit || can('employees.update_salary')" label="Base Salary" prop="base_salary">
-          <el-input v-model="form.base_salary" type="number" placeholder="0.00">
+          <BaseInput v-model="form.base_salary" type="number" placeholder="0.00">
             <template #prepend>$</template>
-          </el-input>
+          </BaseInput>
         </el-form-item>
       </div>
 
@@ -272,7 +273,7 @@ async function handleSubmit() {
           :limit="1"
           :on-change="onPhotoChange"
         >
-          <el-button size="small">{{ isEdit ? 'Replace Photo' : 'Select Photo' }}</el-button>
+          <BaseButton size="small">{{ isEdit ? 'Replace Photo' : 'Select Photo' }}</BaseButton>
           <template #tip>
             <p class="text-xs text-slate-400 mt-1">JPG, PNG or WebP — max 2 MB</p>
           </template>
@@ -282,10 +283,10 @@ async function handleSubmit() {
 
     <template #footer>
       <div class="flex justify-end gap-2">
-        <el-button @click="emit('update:visible', false)">Cancel</el-button>
-        <el-button type="primary" :loading="submitting" @click="handleSubmit">
+        <BaseButton @click="emit('update:visible', false)">Cancel</BaseButton>
+        <BaseButton type="primary" :loading="submitting" @click="handleSubmit">
           {{ isEdit ? 'Save Changes' : 'Create Employee' }}
-        </el-button>
+        </BaseButton>
       </div>
     </template>
   </el-drawer>

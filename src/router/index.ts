@@ -111,6 +111,7 @@ const router = createRouter({
           path: 'settings',
           name: 'settings',
           component: () => import('@/features/settings/views/SettingsView.vue'),
+          meta: { permission: 'company_settings.view' },
         },
         {
           path: 'public-holidays',

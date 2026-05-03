@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { AlertTriangle } from '@lucide/vue'
+import BaseButton from './BaseButton.vue';
 
 defineProps<{
   modelValue: boolean
@@ -39,7 +40,7 @@ function handleClose() {
   >
     <div class="flex items-start gap-3">
       <!-- warning icon for danger/warning -->
-      <div v-if="type === 'danger' || type === 'warning'" class="flex-shrink-0 mt-0.5">
+      <div v-if="type === 'danger' || type === 'warning'" class="shrink-0 mt-0.5">
         <div
           class="w-8 h-8 rounded-full flex items-center justify-center"
           :class="type === 'danger' ? 'bg-red-50' : 'bg-amber-50'"
@@ -57,16 +58,16 @@ function handleClose() {
 
     <template #footer>
       <div class="flex justify-end gap-3">
-        <el-button :disabled="loading" @click="handleClose">
+        <BaseButton :disabled="loading" @click="handleClose">
           {{ cancelText ?? 'Cancel' }}
-        </el-button>
-        <el-button
+        </BaseButton>
+        <BaseButton
           :type="type === 'danger' ? 'danger' : type === 'warning' ? 'warning' : 'primary'"
           :loading="loading"
           @click="handleConfirm"
         >
           {{ confirmText ?? 'Confirm' }}
-        </el-button>
+        </BaseButton>
       </div>
     </template>
   </el-dialog>

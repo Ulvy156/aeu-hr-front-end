@@ -11,7 +11,7 @@ import type { Position, DepartmentOption } from '../types/position'
 import PositionFilters from './PositionFilters.vue'
 import PositionTable from './PositionTable.vue'
 import PositionFormDialog from './PositionFormDialog.vue'
-
+import BaseButton from '@/components/common/BaseButton.vue'
 const { can } = usePermission()
 const {
   positions,
@@ -57,7 +57,7 @@ async function handleDelete(position: Position) {
         confirmButtonText: 'Delete',
         cancelButtonText: 'Cancel',
         type: 'warning',
-        confirmButtonClass: 'el-button--danger',
+        confirmButtonClass: 'BaseButton--danger',
       },
     )
   } catch {
@@ -82,14 +82,14 @@ async function handleDelete(position: Position) {
       subtitle="Manage job positions and titles within departments."
     >
       <template #action>
-        <el-button
+        <BaseButton
           v-if="can('positions.create')"
           type="primary"
           @click="handleCreate"
         >
           <Plus class="w-4 h-4 mr-1.5" />
           Add Position
-        </el-button>
+        </BaseButton>
       </template>
     </PageHeader>
 

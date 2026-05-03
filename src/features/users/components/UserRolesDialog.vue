@@ -3,7 +3,8 @@ import { ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { assignUserRoles } from '../services/user.api'
 import type { UserListItem, Role } from '../types/user'
-
+import BaseButton from '@/components/common/BaseButton.vue'
+import BaseModal from '@/components/common/BaseModal.vue'
 const props = defineProps<{
   visible: boolean
   user: UserListItem | null
@@ -44,7 +45,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <el-dialog
+  <BaseModal
     :model-value="visible"
     :title="user ? `Assign Role — ${user.name}` : 'Assign Role'"
     width="440px"
@@ -74,11 +75,11 @@ async function handleSubmit() {
 
     <template #footer>
       <div class="flex justify-end gap-2">
-        <el-button @click="emit('update:visible', false)">Cancel</el-button>
-        <el-button type="primary" :loading="submitting" @click="handleSubmit">
+        <BaseButton @click="emit('update:visible', false)">Cancel</BaseButton>
+        <BaseButton type="primary" :loading="submitting" @click="handleSubmit">
           Save Roles
-        </el-button>
+        </BaseButton>
       </div>
     </template>
-  </el-dialog>
+  </BaseModal>
 </template>

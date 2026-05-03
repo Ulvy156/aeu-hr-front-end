@@ -10,7 +10,7 @@ import type { Department } from '../types/department'
 import DepartmentFilters from './DepartmentFilters.vue'
 import DepartmentTable from './DepartmentTable.vue'
 import DepartmentFormDialog from './DepartmentFormDialog.vue'
-
+import BaseButton from '@/components/common/BaseButton.vue'
 const { can } = usePermission()
 const {
   departments,
@@ -72,14 +72,14 @@ async function handleDelete(dept: Department) {
       subtitle="Manage company departments and organizational structure."
     >
       <template #action>
-        <el-button
+        <BaseButton
           v-if="can('departments.create')"
           type="primary"
           @click="handleCreate"
         >
           <Plus class="w-4 h-4 mr-1.5" />
           Add Department
-        </el-button>
+        </BaseButton>
       </template>
     </PageHeader>
 

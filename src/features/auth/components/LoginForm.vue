@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { useLogin } from '../composables/useLogin'
-
+import { BaseInput } from '@/components/common'
+import BaseButton from '@/components/common/BaseButton.vue';
 const { formRef, loading, form, apiErrors, rules, handleSubmit } = useLogin()
 </script>
 
 <template>
   <el-form
+    @submit.prevent="handleSubmit"
     ref="formRef"
     :model="form"
     :rules="rules"
     label-position="top"
-    @submit.prevent="handleSubmit"
   >
     <el-form-item label="Email" prop="email">
-      <el-input
+      <BaseInput
         v-model="form.email"
         type="email"
         placeholder="you@example.com"
@@ -28,7 +29,7 @@ const { formRef, loading, form, apiErrors, rules, handleSubmit } = useLogin()
     </el-form-item>
 
     <el-form-item label="Password" prop="password">
-      <el-input
+      <BaseInput
         v-model="form.password"
         type="password"
         placeholder="Enter your password"
@@ -44,15 +45,14 @@ const { formRef, loading, form, apiErrors, rules, handleSubmit } = useLogin()
       </p>
     </el-form-item>
 
-    <el-button
+    <BaseButton
       type="primary"
       size="large"
       :loading="loading"
       native-type="submit"
       class="w-full mt-2"
-      @click="handleSubmit"
     >
       {{ loading ? 'Signing in...' : 'Sign in' }}
-    </el-button>
+    </BaseButton>
   </el-form>
 </template>

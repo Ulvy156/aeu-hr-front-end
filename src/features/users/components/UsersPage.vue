@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, defineAsyncComponent } from 'vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { UserPlus } from '@lucide/vue'
 import { PageHeader, AppCard } from '@/components/common'
@@ -9,10 +9,12 @@ import { fetchRoles, deactivateUser } from '../services/user.api'
 import type { UserListItem, Role } from '../types/user'
 import UserFilters from './UserFilters.vue'
 import UserTable from './UserTable.vue'
-import UserCreateDialog from './UserCreateDialog.vue'
-import UserEditDialog from './UserEditDialog.vue'
-import UserRolesDialog from './UserRolesDialog.vue'
-import UserDetailDrawer from './UserDetailDrawer.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
+import UserCard from './UserCard.vue'
+const UserCreateDialog = defineAsyncComponent(() => import('./UserCreateDialog.vue'));
+const UserEditDialog = defineAsyncComponent(() => import('./UserEditDialog.vue'));
+const UserRolesDialog = defineAsyncComponent(() => import('./UserRolesDialog.vue'));
+const UserDetailDrawer = defineAsyncComponent(() => import('./UserDetailDrawer.vue'));
 
 const { can } = usePermission()
 const {
@@ -34,6 +36,7 @@ const detailOpen = ref(false)
 const selectedUser = ref<UserListItem | null>(null)
 const detailUserId = ref<number | null>(null)
 const roles = ref<Role[]>([])
+const isLoadUser = ref(false);
 
 onMounted(async () => {
   await loadUsers()
@@ -69,7 +72,7 @@ async function handleDisable(user: UserListItem) {
         confirmButtonText: 'Disable',
         cancelButtonText: 'Cancel',
         type: 'warning',
-        confirmButtonClass: 'el-button--danger',
+        confirmButtonClass: 'BaseButton--danger',
       },
     )
   } catch {
@@ -85,25 +88,35 @@ async function handleDisable(user: UserListItem) {
     ElMessage.error(msg)
   }
 }
+
+async function reloadUser() {
+  isLoadUser.value = true;
+  await loadUsers();
+
+  // after fetch change load user to false
+  isLoadUser.value = false;
+}
 </script>
 
 <template>
-  <div>
+  <div class="grid grid-cols-1 gap-y-5">
     <PageHeader
       title="User Management"
       subtitle="Manage system users, roles, and access permissions."
     >
       <template #action>
-        <el-button
+        <BaseButton
           v-if="can('users.create')"
           type="primary"
           @click="createOpen = true"
         >
           <UserPlus class="w-4 h-4 mr-1.5" />
           Add User
-        </el-button>
+        </BaseButton>
       </template>
     </PageHeader>
+
+    <UserCard :isLoadUser/>
 
     <AppCard no-padding>
       <div class="px-5 py-4 border-b border-gray-100">
@@ -132,21 +145,21 @@ async function handleDisable(user: UserListItem) {
     <UserCreateDialog
       v-model:visible="createOpen"
       :roles="roles"
-      @created="loadUsers"
+      @created="reloadUser"
     />
 
     <UserEditDialog
       v-model:visible="editOpen"
       :user="selectedUser"
       :roles="roles"
-      @updated="loadUsers"
+      @updated="reloadUser"
     />
 
     <UserRolesDialog
       v-model:visible="rolesOpen"
       :user="selectedUser"
       :roles="roles"
-      @updated="loadUsers"
+      @updated="reloadUser"
     />
 
     <UserDetailDrawer

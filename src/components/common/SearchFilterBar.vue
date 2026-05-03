@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Search } from '@lucide/vue'
+import BaseInput from './BaseInput.vue'
+import BaseButton from './BaseButton.vue';
 
 defineProps<{
   modelValue?: string
@@ -25,7 +27,7 @@ function onClear() {
 
 <template>
   <div class="flex flex-wrap items-center gap-3">
-    <el-input
+    <BaseInput
       :model-value="modelValue"
       :placeholder="placeholder ?? 'Search...'"
       clearable
@@ -37,13 +39,13 @@ function onClear() {
       <template #prefix>
         <Search class="w-4 h-4 text-slate-400" />
       </template>
-    </el-input>
+    </BaseInput>
 
     <!-- Additional filter slots (selects, date pickers, etc.) -->
     <slot />
 
-    <el-button v-if="showReset" @click="$emit('reset')">
+    <BaseButton v-if="showReset" @click="$emit('reset')">
       Reset
-    </el-button>
+    </BaseButton>
   </div>
 </template>
