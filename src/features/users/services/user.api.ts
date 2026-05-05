@@ -14,6 +14,7 @@ import type {
   SyncUserPermissionsPayload,
   AddUserPermissionPayload,
   RemoveUserPermissionPayload,
+  ResetPasswordPayload,
 } from '../types/user'
 
 interface ApiResponse<T> {
@@ -107,5 +108,10 @@ export async function removeUserPermission(
 
 export async function fetchUserSummary(): Promise<ApiResponse<UserSummary>> {
   const { data } = await api.get('/dashboard/users-summary')
+  return data
+}
+
+export async function resetUserPassword(id: number, payload: ResetPasswordPayload): Promise<ApiResponse<null>> {
+  const { data } = await api.post(`/users/${id}/reset-password`, payload)
   return data
 }

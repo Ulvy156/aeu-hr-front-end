@@ -18,6 +18,7 @@ const UserEditDialog = defineAsyncComponent(() => import('./UserEditDialog.vue')
 const UserRolesDialog = defineAsyncComponent(() => import('./UserRolesDialog.vue'));
 const UserDetailDrawer = defineAsyncComponent(() => import('./UserDetailDrawer.vue'));
 const UserPermissionDialog = defineAsyncComponent(() => import('./UserPermissionDialog.vue'));
+const UserResetPasswordDialog = defineAsyncComponent(() => import('./UserResetPasswordDialog.vue'));
 
 const { can } = usePermission()
 const notify = useNotify()
@@ -37,6 +38,7 @@ const editOpen = ref(false)
 const rolesOpen = ref(false)
 const permissionsOpen = ref(false)
 const detailOpen = ref(false)
+const resetPasswordOpen = ref(false)
 
 const selectedUser = ref<UserListItem | null>(null)
 const detailUserId = ref<number | null>(null)
@@ -71,6 +73,11 @@ function handleAssignRoles(user: UserListItem) {
 function handleAssignPermissions(user: UserListItem) {
   selectedUser.value = user
   permissionsOpen.value = true
+}
+
+function handleResetPassword(user: UserListItem) {
+  selectedUser.value = user
+  resetPasswordOpen.value = true
 }
 
 async function handleDisable(user: UserListItem) {
@@ -146,6 +153,7 @@ async function reloadUser() {
         @edit="handleEdit"
         @assign-roles="handleAssignRoles"
         @assign-permissions="handleAssignPermissions"
+        @reset-password="handleResetPassword"
         @disable="handleDisable"
         @page-change="onPageChange"
         @size-change="onPageSizeChange"
@@ -181,6 +189,11 @@ async function reloadUser() {
     <UserDetailDrawer
       v-model:visible="detailOpen"
       :user-id="detailUserId"
+    />
+
+    <UserResetPasswordDialog
+      v-model:visible="resetPasswordOpen"
+      :user="selectedUser"
     />
   </div>
 </template>

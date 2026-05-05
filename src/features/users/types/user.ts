@@ -95,6 +95,11 @@ export interface RemoveUserPermissionPayload {
   permission: string
 }
 
+export interface ResetPasswordPayload {
+  password: string
+  password_confirmation: string
+}
+
 export interface UserSummary {
   total_users: number,
   active_users: number,

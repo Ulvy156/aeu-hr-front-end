@@ -18,6 +18,7 @@ const emit = defineEmits<{
   edit: [user: UserListItem]
   'assign-roles': [user: UserListItem]
   'assign-permissions': [user: UserListItem]
+  'reset-password': [user: UserListItem]
   disable: [user: UserListItem]
   'page-change': [page: number]
   'size-change': [size: number]
@@ -116,6 +117,13 @@ const authStore = useAuthStore()
                     @click="emit('assign-permissions', row)"
                   >
                     Assign Permissions
+                  </el-dropdown-item>
+                  <el-dropdown-item
+                    v-if="can('users.reset_password') && row.id !== authStore.user?.id"
+                    style="color: #d97706"
+                    @click="emit('reset-password', row)"
+                  >
+                    Reset Password
                   </el-dropdown-item>
                   <el-dropdown-item
                     v-if="can('users.delete')"
