@@ -8,6 +8,8 @@ import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
 import SearchButton from '@/components/resuable/SearchButton.vue'
 import ResetButton from '@/components/resuable/ResetButton.vue'
 import type { LeaveReportItem, LeaveBalanceReportItem } from '../types/report'
+import BaseInput from '@/components/common/BaseInput.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 
 const { can } = usePermission()
 const { items, summary, meta, loading, exportLoading, error, loadReport, handleExport } =
@@ -98,26 +100,26 @@ const headerCellStyle = { background: '#f9fafb', fontSize: '11px', fontWeight: '
       <div class="flex flex-wrap items-end gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium text-slate-500">Report Type</label>
-          <el-select v-model="filters.report_type" class="!w-[180px]">
+          <el-select v-model="filters.report_type" class="w-45!">
             <el-option v-for="o in reportTypeOptions" :key="o.value" :label="o.label" :value="o.value" />
           </el-select>
         </div>
-        <el-input v-model="filters.employee_id" placeholder="Employee ID" clearable class="!w-[140px]" />
-        <el-select v-if="!isBalanceReport" v-model="filters.status" placeholder="Status" clearable class="!w-[140px]">
+        <BaseInput v-model="filters.employee_id" placeholder="Employee ID" clearable class="w-35!" />
+        <el-select v-if="!isBalanceReport" v-model="filters.status" placeholder="Status" clearable class="w-35!">
           <el-option v-for="o in statusOptions" :key="o.value" :label="o.label" :value="o.value" />
         </el-select>
-        <el-select v-if="!isBalanceReport" v-model="filters.leave_type" placeholder="Leave Type" clearable class="!w-[140px]">
+        <el-select v-if="!isBalanceReport" v-model="filters.leave_type" placeholder="Leave Type" clearable class="w-35!">
           <el-option v-for="o in leaveTypeOptions" :key="o.value" :label="o.label" :value="o.value" />
         </el-select>
-        <el-date-picker v-if="!isBalanceReport" v-model="filters.date_from" type="date" placeholder="From" value-format="YYYY-MM-DD" clearable class="!w-[140px]" />
-        <el-date-picker v-if="!isBalanceReport" v-model="filters.date_to" type="date" placeholder="To" value-format="YYYY-MM-DD" clearable class="!w-[140px]" />
-        <el-select v-if="isBalanceReport" v-model="filters.year" placeholder="Year" clearable class="!w-[110px]">
+        <el-date-picker v-if="!isBalanceReport" v-model="filters.date_from" type="date" placeholder="From" value-format="YYYY-MM-DD" clearable class="w-35!" />
+        <el-date-picker v-if="!isBalanceReport" v-model="filters.date_to" type="date" placeholder="To" value-format="YYYY-MM-DD" clearable class="w-35!" />
+        <el-select v-if="isBalanceReport" v-model="filters.year" placeholder="Year" clearable class="w-27.5!">
           <el-option v-for="y in yearOptions" :key="y" :label="y" :value="y" />
         </el-select>
         <SearchButton @click="handleSearch" />
         <ResetButton @click="handleReset" />
         <div class="ml-auto">
-          <button
+          <BaseButton
             v-if="canExport"
             class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
             :disabled="exportLoading || loading"
@@ -125,7 +127,7 @@ const headerCellStyle = { background: '#f9fafb', fontSize: '11px', fontWeight: '
           >
             <Download class="w-4 h-4" />
             {{ exportLoading ? 'Exporting…' : 'Export Excel' }}
-          </button>
+          </BaseButton>
         </div>
       </div>
     </div>
@@ -182,16 +184,25 @@ const headerCellStyle = { background: '#f9fafb', fontSize: '11px', fontWeight: '
 
         <!-- leave_balance -->
         <el-table v-else :data="items as LeaveBalanceReportItem[]" :header-cell-style="headerCellStyle" class="w-full">
-          <el-table-column label="Employee" min-width="160">
+          <el-table-column label="Employee">
             <template #default="{ row }">
               <p class="text-xs font-medium text-slate-800">{{ row.employee?.full_name }}</p>
               <p class="text-[11px] text-slate-400">{{ row.employee?.employee_id }}</p>
             </template>
           </el-table-column>
-          <el-table-column label="Year" width="80" align="center">
+          <el-table-column label="Year"  align="center">
             <template #default="{ row }"><span class="text-xs text-slate-700">{{ row.year }}</span></template>
           </el-table-column>
-          <el-table-column v-for="lt in ['annual', 'sick', 'maternity', 'unpaid']" :key="lt" :label="formatLeaveType(lt)" min-width="130">
+          <el-table-column label="Annual Leave"  align="center">
+            <template #default="{ row }"><span class="text-xs text-slate-700">{{ row?.annual?.entitlement }}/{{ row?.annual?.remaining }}</span></template>
+          </el-table-column>
+          <el-table-column label="Sick Leave"  align="center">
+            <template #default="{ row }"><span class="text-xs text-slate-700">{{ row?.sick?.entitlement }}/{{ row?.sick?.remaining }}</span></template>
+          </el-table-column>
+          <el-table-column label="Maternity Leave"  align="center">
+            <template #default="{ row }"><span class="text-xs text-slate-700">{{ row?.maternity?.entitlement }}/{{ row?.maternity?.remaining }}</span></template>
+          </el-table-column>
+          <!-- <el-table-column v-for="lt in ['annual', 'sick', 'maternity', 'unpaid']" :key="lt" :label="formatLeaveType(lt)" min-width="130">
             <template #default="{ row }">
               <template v-if="row.balances">
                 <template v-for="b in row.balances" :key="b.leave_type">
@@ -201,7 +212,7 @@ const headerCellStyle = { background: '#f9fafb', fontSize: '11px', fontWeight: '
                 </template>
               </template>
             </template>
-          </el-table-column>
+          </el-table-column> -->
           <template #empty><EmptyState title="No leave balance data found." description="Adjust filters and run the report." /></template>
         </el-table>
       </div>
