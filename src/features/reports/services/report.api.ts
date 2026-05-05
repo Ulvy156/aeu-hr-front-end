@@ -6,7 +6,7 @@ import type {
   LeaveReportParams,
 } from '../types/report'
 
-function buildParams(params: Record<string, unknown>): Record<string, unknown> {
+function buildParams(params: object): Record<string, unknown> {
   return Object.fromEntries(Object.entries(params).filter(([, v]) => v !== '' && v !== null && v !== undefined))
 }
 

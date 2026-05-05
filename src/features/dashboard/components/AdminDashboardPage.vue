@@ -18,7 +18,7 @@ function formatRole(role: string): string {
 function formatTime(t: string): string {
   if (!t) return '—'
   const [h, m] = t.split(':')
-  const hour = parseInt(h)
+  const hour = parseInt(h ?? '0')
   const ampm = hour >= 12 ? 'PM' : 'AM'
   return `${((hour % 12) || 12).toString().padStart(2, '0')}:${m} ${ampm}`
 }

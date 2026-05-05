@@ -1,3 +1,5 @@
+# OpenAI Codex will review your output once you're done!
+
 # HR Management System - Frontend AI Agent
 
 ## Important Reference Files
