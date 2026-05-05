@@ -90,15 +90,15 @@ const menuGroups = computed<MenuGroup[]>(() => [
         label: "Attendance Correction",
         path: "/attendance/correction",
         icon: ClipboardList,
-        permission: "attendance.view_correction ",
-      },
+        permission: "attendance.view_correction",
+      },   
     ],
   },
   {
     label: "Leave",
     items: [
-      { label: "Leave Requests", path: "/leaves", icon: CalendarDays, permission: "attendance.view_correction " },
-      { label: "Leave Balance", path: "/leave-balances", icon: Calendar, permission: "attendance.view_correction " },
+      { label: "Leave Requests", path: "/leaves", icon: CalendarDays, permission: "leaves.view_own" },
+      { label: "Leave Balance", path: "/leave-balances", icon: Calendar, permission: "leave_balances.view_own" },
     ],
   },
   {
@@ -121,7 +121,7 @@ const menuGroups = computed<MenuGroup[]>(() => [
         icon: Settings,
         permission: "company_settings.view",
       },
-      { label: "Public Holidays", path: "/public-holidays", icon: CalendarCheck },
+      { label: "Public Holidays", path: "/public-holidays", icon: CalendarCheck, permission: 'public_holidays.view' },
       { label: "User Management", path: "/users", icon: UserCog, permission: "users.view" },
       { label: "Audit Logs", path: "/audit-logs", icon: ScrollText, permission: "audit_logs.view" },
     ],
@@ -132,12 +132,19 @@ const menuGroups = computed<MenuGroup[]>(() => [
       {
         label: "Profile",
         path: "/profile",
-        icon: User,
-        permission: "company_settings.view",
+        icon: User
       }
     ],
   },
 ]);
+const visibleMenuGroups = computed<MenuGroup[]>(() =>
+  menuGroups.value
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.permission || can(item.permission)),
+    }))
+    .filter((group) => group.items.length > 0),
+);
 </script>
 
 <template>
@@ -172,7 +179,7 @@ const menuGroups = computed<MenuGroup[]>(() => [
 
     <!-- Menu (scrollable middle section) -->
     <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-4">
-      <div v-for="group in menuGroups" :key="group.label">
+      <div v-for="group in visibleMenuGroups" :key="group.label">
         <!-- Group label -->
         <p
           v-if="!collapsed"

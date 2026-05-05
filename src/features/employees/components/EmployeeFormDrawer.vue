@@ -6,8 +6,11 @@ import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { createEmployee, updateEmployee } from '../services/employee.api'
 import type { Employee, DeptOption, PositionOption } from '../types/employee'
 import { usePermission } from '@/composables/usePermissions'
-import { BaseInput } from '@/components/common'
+import { BaseInput, StatusBadge } from '@/components/common'
 import BaseButton from '@/components/common/BaseButton.vue'
+import { fetchAvailableEmployeeUsers } from '@/features/users/services/user.api'
+import type { UserListItem } from '@/features/users/types/user'
+
 const props = defineProps<{
   visible: boolean
   employee: Employee | null
@@ -26,6 +29,8 @@ const formRef = ref<FormInstance>()
 const uploadRef = ref()
 const submitting = ref(false)
 const photoFile = ref<File | null>(null)
+const userOptions = ref<UserListItem[]>([])
+const usersLoading = ref(false)
 const isEdit = computed(() => props.employee !== null)
 
 const filteredPositions = computed(() => {
@@ -34,9 +39,9 @@ const filteredPositions = computed(() => {
 })
 
 const form = reactive({
+  user_id: null as number | null,
   full_name: '',
   email: '',
-  password: '',
   gender: '' as 'male' | 'female' | 'other' | '',
   date_of_birth: null as string | null,
   phone_number: '',
@@ -51,24 +56,36 @@ const form = reactive({
 })
 
 const rules: FormRules = {
+  user_id: [{ required: true, message: 'User account is required', trigger: 'change' }],
   full_name: [{ required: true, message: 'Full name is required', trigger: 'blur' }],
   email: [
     { required: true, message: 'Email is required', trigger: 'blur' },
     { type: 'email', message: 'Enter a valid email', trigger: 'blur' },
   ],
-  password: [{ min: 8, message: 'Password must be at least 8 characters', trigger: 'blur' }],
   join_date: [{ required: true, message: 'Join date is required', trigger: 'change' }],
   employment_status: [{ required: true, message: 'Employment status is required', trigger: 'change' }],
   base_salary: [{ required: true, message: 'Base salary is required', trigger: 'blur' }],
+}
+
+async function loadAvailableUsers() {
+  usersLoading.value = true
+  try {
+    const res = await fetchAvailableEmployeeUsers()
+    userOptions.value = res.data
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
+  } finally {
+    usersLoading.value = false
+  }
 }
 
 watch(() => props.employee, (emp) => {
   photoFile.value = null
   uploadRef.value?.clearFiles()
   if (emp) {
+    form.user_id = null
     form.full_name = emp.full_name
     form.email = emp.email
-    form.password = ''
     form.gender = emp.gender ?? ''
     form.date_of_birth = emp.date_of_birth
     form.phone_number = emp.phone_number ?? ''
@@ -86,6 +103,9 @@ watch(() => props.employee, (emp) => {
 })
 
 watch(() => props.visible, (v) => {
+  if (v && !isEdit.value) {
+    loadAvailableUsers()
+  }
   if (!v) {
     photoFile.value = null
     uploadRef.value?.clearFiles()
@@ -103,7 +123,8 @@ watch(() => form.employment_status, (s) => {
 })
 
 function resetForm() {
-  form.full_name = ''; form.email = ''; form.password = ''
+  form.user_id = null
+  form.full_name = ''; form.email = ''
   form.gender = ''; form.date_of_birth = null; form.phone_number = ''; form.address = ''
   form.department_id = null; form.position_id = null; form.join_date = null
   form.last_working_date = null; form.base_salary = ''; form.employment_status = 'active'
@@ -111,17 +132,14 @@ function resetForm() {
 }
 
 function onPhotoChange(file: { raw?: File }) {
-  const rawFile = file.raw
-  if (rawFile instanceof File) {
-    photoFile.value = rawFile
-  }
+  if (file.raw instanceof File) photoFile.value = file.raw
 }
 
 function buildFormData(): FormData {
   const fd = new FormData()
+  if (!isEdit.value && form.user_id) fd.append('user_id', String(form.user_id))
   fd.append('full_name', form.full_name)
   fd.append('email', form.email)
-  if (!isEdit.value && form.password) fd.append('password', form.password)
   if (form.gender) fd.append('gender', form.gender)
   if (form.date_of_birth) fd.append('date_of_birth', form.date_of_birth)
   if (form.phone_number) fd.append('phone_number', form.phone_number)
@@ -140,12 +158,10 @@ function buildFormData(): FormData {
 async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
-  if (!isEdit.value && !form.password) { notify.error('Password is required.'); return }
   if (['resigned', 'terminated'].includes(form.employment_status) && !form.last_working_date) {
     notify.error('Last working date is required for resigned or terminated employees.')
     return
   }
-
   submitting.value = true
   try {
     const fd = buildFormData()
@@ -178,10 +194,47 @@ async function handleSubmit() {
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
       <!-- Basic Info -->
       <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Basic Information</p>
-      <div v-if="isEdit && employee" class="flex items-center gap-2 mb-4 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+
+      <!-- Edit: Employee ID badge -->
+      <div v-if="isEdit && employee" class="flex items-center gap-2 mb-3 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
         <span class="text-xs text-slate-500">Employee ID</span>
         <span class="text-sm font-mono font-semibold text-slate-700">{{ employee.employee_id }}</span>
       </div>
+
+      <!-- Edit: Linked user read-only -->
+      <div v-if="isEdit && employee?.user" class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Linked User Account</p>
+        <div class="flex items-center gap-3">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-slate-800 truncate">{{ employee.user.name }}</p>
+            <p class="text-xs text-slate-500 truncate">{{ employee.user.email }}</p>
+          </div>
+          <StatusBadge :status="employee.user.status" />
+        </div>
+      </div>
+
+      <!-- Create: User Account selector -->
+      <el-form-item v-if="!isEdit" label="User Account" prop="user_id">
+        <el-select
+          v-model="form.user_id"
+          placeholder="Select user account"
+          class="w-full"
+          filterable
+          :loading="usersLoading"
+        >
+          <template #empty>
+            <div class="py-4 px-3 text-sm text-slate-500 text-center leading-relaxed">
+              No available user accounts.<br />Create a user account first.
+            </div>
+          </template>
+          <el-option
+            v-for="u in userOptions"
+            :key="u.id"
+            :label="`${u.name} (${u.email})`"
+            :value="u.id"
+          />
+        </el-select>
+      </el-form-item>
 
       <div class="grid grid-cols-2 gap-x-4">
         <el-form-item label="Full Name" prop="full_name">
@@ -189,9 +242,6 @@ async function handleSubmit() {
         </el-form-item>
         <el-form-item label="Email" prop="email">
           <BaseInput v-model="form.email" type="email" placeholder="email@example.com" />
-        </el-form-item>
-        <el-form-item v-if="!isEdit" label="Password" prop="password">
-          <BaseInput v-model="form.password" type="password" placeholder="Min. 8 characters" show-password />
         </el-form-item>
         <el-form-item label="Gender">
           <el-select v-model="form.gender" placeholder="Select gender" class="w-full" clearable>
@@ -260,11 +310,8 @@ async function handleSubmit() {
       <!-- Photo -->
       <el-form-item label="Profile Photo">
         <div v-if="isEdit && employee?.profile_photo_url && !photoFile" class="flex items-center gap-3 mb-2">
-          <img
-            :src="employee.profile_photo_url"
-            class="w-14 h-14 rounded-full object-cover border border-gray-200"
-          />
-          <p class="text-xs text-slate-400">Current photo. Select a new file below to replace it.</p>
+          <img :src="employee.profile_photo_url" class="w-14 h-14 rounded-full object-cover border border-gray-200" />
+          <p class="text-xs text-slate-400">Current photo. Select a new file to replace it.</p>
         </div>
         <el-upload
           ref="uploadRef"

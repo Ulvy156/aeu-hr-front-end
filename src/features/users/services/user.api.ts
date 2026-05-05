@@ -34,6 +34,13 @@ export async function fetchUsers(params: UserListParams = {}): Promise<Paginated
   return data
 }
 
+export async function fetchAvailableEmployeeUsers(): Promise<PaginatedApiResponse<UserListItem>> {
+  const { data } = await api.get('/users', {
+    params: { without_employee: 1, exclude_admin: 1, per_page: 100 },
+  })
+  return data
+}
+
 export async function createUser(payload: CreateUserPayload): Promise<ApiResponse<UserListItem>> {
   const { data } = await api.post('/users', payload)
   return data

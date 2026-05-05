@@ -1,3 +1,9 @@
+export interface AuthEmployee {
+  id: number
+  employee_id: string
+  full_name: string
+}
+
 export interface AuthUser {
   id: number
   name: string
@@ -5,6 +11,7 @@ export interface AuthUser {
   status: string
   roles: string[]
   permissions: string[]
+  employee: AuthEmployee | null
   created_at: string
   updated_at: string
 }
