@@ -27,6 +27,7 @@ const statusMap: Record<string, StatusConfig> = {
   paid: { type: 'success', label: 'Paid' },
   cancelled: { type: 'info', label: 'Cancelled' },
   draft: { type: 'info', label: 'Draft' },
+  pending_approval: { type: 'warning', label: 'Pending Approval' },
   on_leave: { type: 'warning', label: 'On Leave' },
 }
 

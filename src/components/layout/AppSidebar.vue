@@ -97,20 +97,20 @@ const menuGroups = computed<MenuGroup[]>(() => [
   {
     label: "Leave",
     items: [
-      { label: "Leave Requests", path: "/leaves", icon: CalendarDays, permission: "leaves.view_own" },
-      { label: "Leave Balance", path: "/leave-balances", icon: Calendar, permission: "leave_balances.view_own" },
+      { label: "Leave Requests", path: "/leaves", icon: CalendarDays },
+      { label: "Leave Balance", path: "/leave-balances", icon: Calendar },
     ],
   },
   {
     label: "Payroll",
     items: [
-      { label: "Payroll", path: "/payrolls", icon: Banknote, permission: "attendance.view_correction " },
-      { label: "Payslips", path: "/payslips", icon: FileText, permission: "attendance.view_correction " },
+      { label: "Payroll", path: "/payrolls", icon: Banknote, permission: "payrolls.view_any" },
+      { label: "Payslips", path: "/payslips", icon: FileText, permission: "payslips.view_own" },
     ],
   },
   {
     label: "Reports",
-    items: [{ label: "Reports", path: "/reports", icon: BarChart2 }],
+    items: [{ label: "Reports", path: "/reports", icon: BarChart2, permission: "reports.payroll_view" }],
   },
   {
     label: "Admin",

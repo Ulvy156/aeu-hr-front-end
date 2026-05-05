@@ -92,11 +92,19 @@ const router = createRouter({
           path: 'payrolls',
           name: 'payrolls',
           component: () => import('@/features/payroll/views/PayrollsView.vue'),
+          meta: { permission: 'payrolls.view_any' },
+        },
+        {
+          path: 'payrolls/:id',
+          name: 'payroll-detail',
+          component: () => import('@/features/payroll/views/PayrollDetailView.vue'),
+          meta: { permission: 'payrolls.view_any' },
         },
         {
           path: 'payslips',
           name: 'payslips',
           component: () => import('@/features/payslips/views/PayslipsView.vue'),
+          meta: { permission: 'payslips.view_own' },
         },
 
         // Reports
@@ -104,6 +112,7 @@ const router = createRouter({
           path: 'reports',
           name: 'reports',
           component: () => import('@/features/reports/views/ReportsView.vue'),
+          meta: { permission: 'reports.payroll_view' },
         },
 
         // Profile

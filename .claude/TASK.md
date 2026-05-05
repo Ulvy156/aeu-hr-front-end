@@ -1,293 +1,311 @@
-Build the frontend for Phase 5: Payroll and Payslip module for the HR Management System.
+Implement Phase 7 Reports and Exports frontend integration using the existing frontend project structure and all rules in FRONTEND_RULES.md.
 
-Context:
+Backend contract:
 
-- Backend is already implemented.
-- Do not change backend API structure.
-- Do not generate backend code.
-- Use the backend as the single source of truth for payroll calculations, deductions, tax, approval status, locking, and payslip visibility.
-- Read and follow this backend contract first:
-  D:\AEU\Thesis\HR\aeu-hr-back-end\.claude\api\PAYROLL_API.md
+- Read and follow:
+  D:\AEU\Thesis\HR\aeu-hr-back-end\.claude\api\REPORTS_API.md
+- Also align with existing related modules if needed:
+  - D:\AEU\Thesis\HR\aeu-hr-back-end\.claude\api\ATTENDANCE_API.md
+  - D:\AEU\Thesis\HR\aeu-hr-back-end\.claude\api\LEAVE_API.md
+  - D:\AEU\Thesis\HR\aeu-hr-back-end\.claude\api\PAYROLL_API.md
+- Use exact backend field names and exact backend status values.
+- Do not invent fields that are not in the backend contract.
 
-Important backend access control:
-This module uses backend permissions and policies.
+Permissions and access:
+This feature uses backend permissions.
+Relevant permissions:
 
-Payroll permissions:
+- reports.payroll_view
+- reports.payroll_export
+- reports.attendance_view
+- reports.attendance_export
+- reports.leave_view
+- reports.leave_export
 
-- payrolls.view_any
-- payrolls.view_own
-- payrolls.generate
-- payrolls.update
-- payrolls.submit
-- payrolls.approve
-- payrolls.reject
-
-Payslip permissions:
-
-- payslips.view_any
-- payslips.view_own
-- payslips.download_any
-- payslips.download_own
-
-Current role behavior from backend:
+Role behavior currently supported by backend:
 
 - admin: full access
-- hr: payroll list/view/generate/edit/submit, can view/download payslips broadly
-- ceo: payroll list/view/approve/reject, can view/download payslips broadly
-- employee: can only view/download own approved payslips
+- hr: can view and export payroll, attendance, and leave reports
+- ceo: can view payroll, attendance, and leave reports, but export may be restricted depending on permission assignment
+- employee: no report access
 
-Important:
+Frontend auth rules:
 
-- Frontend may use permission names if the existing app already exposes permissions in auth state.
-- If the frontend currently uses roles instead of permission names, follow existing frontend convention.
-- Backend remains the final authority. Always handle 403 gracefully.
+- If the frontend already uses permission names, use them.
+- If the frontend uses roles only, follow the existing project convention.
+- Backend remains the final authority.
+- Always handle 403 gracefully.
 
-Frontend goals:
+Goal:
+Build frontend integration for Report and Export features for:
 
-1. HR Payroll Management
+1. Payroll Reports
+2. Attendance Reports
+3. Leave Reports
 
-- Payroll batch list page
-- Generate payroll modal/form
-- Payroll batch detail page
-- Edit payroll items before approval
-- Submit payroll to CEO
-- Show locked/read-only state for approved payroll
+Do not build mock APIs.
+Do not change backend APIs.
+Do not create a new frontend architecture.
+Do not over-design this feature.
 
-2. CEO Payroll Approval
+API endpoints to integrate:
 
-- View submitted payroll batches
-- Approve payroll
-- Reject payroll with required rejection reason
-- Show approval/rejection status clearly
+- GET /api/reports/payroll
+- GET /api/reports/payroll/export
+- GET /api/reports/attendance
+- GET /api/reports/attendance/export
+- GET /api/reports/leave
+- GET /api/reports/leave/export
 
-3. Employee Payslips
+Report types to support:
 
-- Payslip list page
-- Payslip detail view
-- Download approved payslip PDF
-- Hide unapproved payslips from employees
+1. Payroll report_type
 
-4. Admin Access
+- employee_list
+- monthly_summary
+- status_summary
 
-- Admin can access payroll and payslip areas consistent with backend permissions
+2. Attendance report_type
 
-Required frontend behavior:
+- daily_list
+- monthly_summary
+- late_employees
+- absent_employees
+- correction_list
 
-- Never calculate payroll totals on the frontend as the source of truth
-- Frontend may display editable inputs, but backend response must always overwrite displayed totals
-- Recalculate UI from backend response after generate, edit, submit, approve, reject
-- Use backend validation and backend error messages
-- Support loading, empty, error, forbidden, and success states
-- Support paginated payroll and payslip lists
-- Preserve current design system and existing frontend architecture
-- Reuse existing API client, auth handling, table components, modal components, form components, and route guards
-- Do not introduce a conflicting state management pattern if one already exists
+3. Leave report_type
 
-Required pages/features:
+- request_list
+- pending_approval
+- approved
+- rejected
+- leave_balance
 
-1. Payroll list
+Required frontend structure:
 
-- Show payroll batches with:
-  - month
-  - year
-  - status
-  - item_count
-  - totals
-  - generated_at
-  - submitted_at
-  - approved_at
-  - rejected_at
-- Support pagination
-- Support filters if already natural in current app structure:
+- Follow the existing folder structure and naming conventions
+- Reuse existing shared components like:
+  - BaseCard
+  - BaseTable
+  - BaseModal if needed
+  - SearchButton
+  - ResetButton
+- Reuse existing filter form patterns if they already exist in the project
+
+Create service:
+
+- src/services/reportService.ts
+
+Service methods:
+
+- getPayrollReport(params)
+- exportPayrollReport(params)
+- getAttendanceReport(params)
+- exportAttendanceReport(params)
+- getLeaveReport(params)
+- exportLeaveReport(params)
+
+Service requirements:
+
+- Reuse the existing HTTP client/service layer
+- Do not create another API wrapper
+- Keep request params typed
+- Keep response types typed
+- Export methods should trigger file download using the existing app pattern
+
+Create composable:
+
+- src/composables/useReports.ts
+
+Composable requirements:
+
+- Handle:
+  - loading
+  - error
+  - fetch
+  - pagination state
+  - filter state if that matches existing composable style
+  - export action state
+- Avoid duplicate API calls
+- Do not add business rules into the composable
+
+Pages or views:
+Create or integrate report pages using the existing project route/module structure.
+Use the existing frontend organization pattern.
+If the project already groups reports under one section, keep that structure.
+
+Expected report screens:
+
+1. Payroll Reports page
+   Support:
+
+- report_type switcher:
+  - employee_list
+  - monthly_summary
+  - status_summary
+- filters:
   - month
   - year
   - status
   - employee_id
-- Show actions conditionally:
-  - Generate payroll if user has payrolls.generate
-  - View payroll if user has payrolls.view_any or payrolls.view_own
-  - Submit if user has payrolls.submit and batch is draft
-  - Approve if user has payrolls.approve and batch is pending_approval
-  - Reject if user has payrolls.reject and batch is pending_approval
+- show backend summary block
+- show table content based on selected report_type
+- export button for payroll export endpoint
 
-2. Payroll generation
+Display guidance:
 
-- Build form/modal for POST /api/payrolls
-- Inputs:
+- employee_list:
+  show employee, payroll batch, gross salary, tax amount, net salary, item status
+- monthly_summary:
+  show month, year, batch status, item count, gross salary, tax amount, net salary
+- status_summary:
+  show grouped status rows and totals from backend
+
+Use exact backend statuses:
+
+- draft
+- pending_approval
+- approved
+- rejected
+
+2. Attendance Reports page
+   Support:
+
+- report_type switcher:
+  - daily_list
+  - monthly_summary
+  - late_employees
+  - absent_employees
+  - correction_list
+- filters:
+  - employee_id
+  - attendance_date
+  - date_from
+  - date_to
   - month
   - year
-- On success:
-  - refresh payroll list
-  - open or link to payroll detail if appropriate
-- Show duplicate payroll backend error cleanly
-
-3. Payroll detail
-
-- Fetch from GET /api/payrolls/{payroll}
-- Display:
-  - payroll batch summary
-  - item_count
-  - totals
-  - rejection_reason if rejected
-  - items table
-- Each payroll item should show:
-  - employee
-  - base_salary
-  - daily_rate
-  - working_days
-  - present_days
-  - absent_days
-  - unpaid_leave_days
-  - gross_salary
-  - unpaid_deduction
-  - absence_deduction
-  - taxable_salary
-  - tax_rate
-  - tax_amount
-  - net_salary
   - status
+- show backend summary block
+- show table content based on selected report_type
+- export button for attendance export endpoint
 
-4. Payroll edit
+Display guidance:
 
-- Only allow edit if:
-  - user has payrolls.update
-  - payroll status is not approved
-- Use PUT /api/payrolls/{payroll}
-- Editable inputs only for fields allowed by backend contract
-- After save:
-  - replace displayed item totals with backend response
-- Never trust local calculation over backend response
-- If backend returns approved payroll locked error, switch UI to read-only state
+- daily_list:
+  show employee, attendance date, status, clock in, clock out, corrected_at
+- monthly_summary:
+  show employee-level aggregate rows
+- late_employees:
+  show only late rows from backend
+- absent_employees:
+  show only absent rows from backend
+- correction_list:
+  show corrected attendance rows
 
-5. Payroll submit
+Use exact backend statuses:
 
-- Use POST /api/payrolls/{payroll}/submit
-- Only available when:
-  - user has payrolls.submit
-  - payroll status is draft
-- On success:
-  - refresh payroll detail and list
-  - show pending approval state
+- present
+- late
+- absent
+- missing_clock_out
 
-6. Payroll approve/reject
+3. Leave Reports page
+   Support:
 
-- Approve:
-  - POST /api/payrolls/{payroll}/approve
-  - only if user has payrolls.approve
-  - only when batch is pending_approval
-- Reject:
-  - POST /api/payrolls/{payroll}/reject
-  - only if user has payrolls.reject
-  - require rejection_reason
-- On success:
-  - refresh payroll detail and list
-  - if approved, show locked/read-only state
-  - if rejected, show rejection reason and allow HR to revise if permitted
-
-7. Payslip list
-
-- Use GET /api/payslips
-- Employee sees only own approved payslips
-- HR/CEO/Admin can see broader results according to backend permission
-- Show:
-  - payroll batch month/year
-  - payroll batch status
-  - employee
-  - net salary
-  - tax amount
-  - created_at / updated_at if useful
-- Support pagination
-
-8. Payslip detail
-
-- Use GET /api/payslips/{payslip}
-- Display stored snapshot values:
-  - base_salary
-  - daily_rate
-  - working_days
-  - present_days
-  - absent_days
-  - unpaid_leave_days
-  - gross_salary
-  - unpaid_deduction
-  - absence_deduction
-  - taxable_salary
-  - tax_rate
-  - tax_amount
-  - net_salary
-  - employee
-  - payroll_batch info
-
-9. Payslip PDF download
-
-- Use GET /api/payslips/{payslip}/download
-- Trigger browser file download from backend PDF endpoint
-- Only show button when allowed by current auth state and hide/remove it after 403 if needed
-
-Permission-aware UI requirements:
-
-- If app already exposes permission names, use them directly for conditional rendering
-- If app exposes only roles, map UI based on current app convention while still relying on backend 403 as final protection
-- Do not expose actions the user clearly cannot perform
-- Still handle direct URL access and button clicks safely when backend denies access
-
-Forbidden/authorization handling:
-
-- 403 on payroll pages:
-  - show unauthorized state/page or redirect according to existing app pattern
-- 403 on specific actions:
-  - show toast/message
-  - refresh data
-  - disable or hide the denied action afterward if appropriate
-- Prevent salary data leakage:
-  - employees must never see other employees' payroll or payslip data
-  - unapproved payslips must remain inaccessible to employees
-
-Technical requirements:
-
-- First inspect the frontend codebase and follow existing conventions
-- Reuse existing routing, layout, auth, API service, table, modal, and form systems
-- Add typed request/response models from backend contract
-- Map backend validation errors to field-level UI
-- Keep payroll status visually distinct:
-  - draft
+- report_type switcher:
+  - request_list
   - pending_approval
   - approved
   - rejected
-- Keep approved payroll read-only in all edit views
+  - leave_balance
+- filters:
+  - employee_id
+  - status
+  - leave_type
+  - date_from
+  - date_to
+  - year
+- show backend summary block
+- show table content based on selected report_type
+- export button for leave export endpoint
 
-Important API flows:
+Display guidance:
 
-- POST /api/payrolls
-- GET /api/payrolls
-- GET /api/payrolls/{payroll}
-- PUT /api/payrolls/{payroll}
-- POST /api/payrolls/{payroll}/submit
-- POST /api/payrolls/{payroll}/approve
-- POST /api/payrolls/{payroll}/reject
-- GET /api/payslips
-- GET /api/payslips/{payslip}
-- GET /api/payslips/{payslip}/download
+- request_list / pending_approval / approved / rejected:
+  show employee, leave_type, dates, total_days, status, hr_approval_status, ceo_approval_status
+- leave_balance:
+  show employee and balance fields returned by backend
+  do not calculate balances on frontend
+
+Use exact backend values:
+
+- leave status:
+  - pending
+  - approved
+  - rejected
+  - cancelled
+- leave type:
+  - annual
+  - sick
+  - maternity
+  - unpaid
+
+UI requirements:
+
+- Keep filters lightweight and useful
+- Use cards for summary blocks
+- Use tables for result rows
+- Support loading state
+- Support empty state
+- Support error state
+- Support paginated responses
+- Support non-paginated responses like payroll status_summary cleanly
+- Keep export buttons visible only when user is allowed
+- Disable export button while exporting
+
+Download/export behavior:
+
+- Export endpoints return Excel files
+- Trigger browser download using the project’s existing file-download pattern
+- Preserve backend filename if possible
+- Handle export failures gracefully
+
+Authorization behavior:
+
+- Hide report pages or actions if existing frontend auth state clearly says user lacks access
+- Still handle direct navigation and 403 safely
+- If backend returns 403:
+  - show unauthorized state or redirect based on project pattern
+  - do not keep retry-looping
+
+Routing:
+
+- Add report routes using existing router conventions
+- Place them under the existing admin/hr/report area if such structure already exists
+- Do not create random top-level routes if the project already has a reports section
+
+Implementation notes:
+
+- Prefer one shared reports page with tabs/segments if that matches the current project style
+- Otherwise create separate PayrollReport, AttendanceReport, and LeaveReport views if that matches the current codebase better
+- Follow existing state management patterns already used in the project
+- Do not add charts unless the project already uses a chart solution and it clearly fits
 
 Deliverables:
 
-- Payroll list page
-- Payroll generation modal/form
-- Payroll detail page
-- Payroll edit flow
-- Payroll submit flow
-- Payroll approve/reject flow
-- Payslip list page
-- Payslip detail page
-- Payslip download action
-- Frontend integration notes listing:
-  - pages/components created
-  - routes added
-  - API methods added
-  - permission or role checks used
+- src/services/reportService.ts
+- src/composables/useReports.ts
+- report pages/views integrated into existing module structure
+- router updates
+- permission/role-aware navigation updates if needed
+- export button integration
+- short implementation summary including:
+  - files added/updated
+  - routes added/updated
+  - auth/permission approach used
   - any backend contract gaps found
 
-Do not build mock APIs.
-Do not invent fields not present in backend.
-Do not implement frontend-side payroll calculations as source of truth.
-Do not modify backend.
+Before coding:
+
+- Inspect the current frontend project structure and follow it closely.
+- Reuse existing patterns instead of introducing new ones.
