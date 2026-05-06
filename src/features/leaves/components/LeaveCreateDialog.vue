@@ -7,8 +7,10 @@ import { createLeave } from '../services/leave.api'
 import { BaseModal, BaseButton } from '@/components/common'
 import type { LeaveCreatePayload, LeaveType, DurationType } from '../types/leave'
 import { countWorkingDays } from '@/utils/countWorkingDays'
+import { usePublicHolidayDates } from '@/composables/usePublicHolidayDates'
 import { CalendarClock } from '@lucide/vue'
-defineProps<{ visible: boolean }>()
+
+const props = defineProps<{ visible: boolean }>()
 
 const emit = defineEmits<{
   'update:visible': [value: boolean]
@@ -16,6 +18,11 @@ const emit = defineEmits<{
 }>()
 
 const notify = useNotify()
+const { holidayDates, loadHolidays } = usePublicHolidayDates()
+
+watch(() => props.visible, (val) => {
+  if (val) loadHolidays()
+})
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
 const fieldErrors = ref<Record<string, string>>({})
@@ -35,23 +42,32 @@ const leaveTypeOptions = [
   { label: 'Unpaid Leave', value: 'unpaid' },
 ]
 
-const durationTypeOptions = [
-  { label: 'Full Day', value: 'full_day' },
-  { label: 'Half Day', value: 'half_day' },
-]
+const isMultiDay = computed(() =>
+  !!(form.start_date && form.end_date && form.start_date !== form.end_date)
+)
 
-// Disable Sundays (day === 0)
-function isSunday(date: Date): boolean {
-  return date.getDay() === 0
+const durationTypeOptions = computed(() => [
+  { label: 'Full Day', value: 'full_day', disabled: false },
+  { label: 'Half Day', value: 'half_day', disabled: isMultiDay.value },
+])
+
+function toLocalDateString(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+function isNonWorkingDay(date: Date): boolean {
+  return date.getDay() === 0 || holidayDates.value.has(toLocalDateString(date))
 }
 
 function disableStartDate(date: Date): boolean {
-  return isSunday(date)
+  return isNonWorkingDay(date)
 }
 
 function disableEndDate(date: Date): boolean {
-  if (isSunday(date)) return true
-  // end date must be >= start date
+  if (isNonWorkingDay(date)) return true
   if (form.start_date) {
     const start = new Date(form.start_date)
     start.setHours(0, 0, 0, 0)
@@ -67,6 +83,9 @@ function handleStartDateChange(val: string) {
   clearFieldError('start_date')
   if (form.end_date && val && new Date(form.end_date) < new Date(val)) {
     form.end_date = ''
+  }
+  if (form.duration_type === 'half_day' && form.end_date && val !== form.end_date) {
+    form.duration_type = ''
   }
 }
 
@@ -148,7 +167,7 @@ function handleClose() {
 
 const endDateDisabled = computed(() => !form.start_date);
 const totalDays = computed(() =>
-  countWorkingDays(form.start_date, form.end_date, form.duration_type === 'half_day')
+  countWorkingDays(form.start_date, form.end_date, form.duration_type === 'half_day', holidayDates.value)
 )
 // clear if end date change
 watch(() => form.end_date, () => {
@@ -234,6 +253,7 @@ watch(() => form.end_date, () => {
             :key="opt.value"
             :label="opt.label"
             :value="opt.value"
+            :disabled="opt.disabled"
           />
         </el-select>
         <p v-if="fieldErrors.duration_type" class="mt-1 text-xs text-red-500">
