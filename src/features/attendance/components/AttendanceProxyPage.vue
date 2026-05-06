@@ -7,10 +7,19 @@ import { AppCard } from '@/components/common'
 import type { Attendance, PaginationMeta } from '../types/attendance'
 import ProxyClockForm from './ProxyClockForm.vue'
 import AttendanceTable from './AttendanceTable.vue'
+import AttendanceCorrectionDialog from './AttendanceCorrectionDialog.vue'
 
 const { can } = usePermission()
 const canProxy = computed(() => can('attendance.proxy_clock'))
 const canViewAny = computed(() => can('attendance.view_any'))
+
+const correctionOpen = ref(false)
+const selectedAttendance = ref<Attendance | null>(null)
+
+function handleCorrect(attendance: Attendance) {
+  selectedAttendance.value = attendance
+  correctionOpen.value = true
+}
 
 const attendances = ref<Attendance[]>([])
 const meta = ref<PaginationMeta>({ current_page: 1, last_page: 1, per_page: 10, total: 0 })
@@ -110,10 +119,17 @@ onMounted(loadTable)
           :current-page="meta.current_page"
           :page-size="meta.per_page"
           :total="meta.total"
+          @correct="handleCorrect"
           @page-change="onPageChange"
           @size-change="onPageSizeChange"
         />
       </AppCard>
+
+      <AttendanceCorrectionDialog
+        v-model:visible="correctionOpen"
+        :attendance="selectedAttendance"
+        @saved="loadTable"
+      />
     </template>
   </div>
 </template>
