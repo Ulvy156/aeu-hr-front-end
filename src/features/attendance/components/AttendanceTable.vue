@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Pencil } from '@lucide/vue'
+import { Pencil, UserCheck } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
 import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
 import type { Attendance } from '../types/attendance'
@@ -75,15 +75,33 @@ const statusLabelMap: Record<string, string> = {
           </template>
         </el-table-column>
 
-        <el-table-column label="Clock In" >
+        <el-table-column label="Clock In">
           <template #default="{ row }">
-            <span class="text-sm text-slate-700">{{ fmtTime(row.clock_in_time) }}</span>
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm text-slate-700">{{ fmtTime(row.clock_in_time) }}</span>
+              <el-tooltip
+                v-if="row.proxied_clock_in_by_user"
+                :content="`Clocked in by ${row.proxied_clock_in_by_user.name}`"
+                placement="top"
+              >
+                <UserCheck class="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
 
-        <el-table-column label="Clock Out" >
+        <el-table-column label="Clock Out">
           <template #default="{ row }">
-            <span class="text-sm text-slate-700">{{ fmtTime(row.clock_out_time) }}</span>
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm text-slate-700">{{ fmtTime(row.clock_out_time) }}</span>
+              <el-tooltip
+                v-if="row.proxied_clock_out_by_user"
+                :content="`Clocked out by ${row.proxied_clock_out_by_user.name}`"
+                placement="top"
+              >
+                <UserCheck class="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
 

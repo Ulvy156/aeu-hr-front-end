@@ -25,6 +25,7 @@ import {
   ChevronRight,
   LogOut,
   User,
+  UserCheck,
 } from "@lucide/vue";
 
 defineProps<{
@@ -91,7 +92,13 @@ const menuGroups = computed<MenuGroup[]>(() => [
         path: "/attendance/correction",
         icon: ClipboardList,
         permission: "attendance.view_correction",
-      },   
+      },
+      {
+        label: "Proxy Clock",
+        path: "/attendance/proxy",
+        icon: UserCheck,
+        permission: "attendance.proxy_clock",
+      },
     ],
   },
   {

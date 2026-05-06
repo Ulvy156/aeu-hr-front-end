@@ -74,6 +74,12 @@ const router = createRouter({
           name: 'attendance-correction',
           component: () => import('@/features/attendance/views/AttendanceCorrectionView.vue'),
         },
+        {
+          path: 'attendance/proxy',
+          name: 'attendance-proxy',
+          component: () => import('@/features/attendance/views/AttendanceProxyView.vue'),
+          meta: { permission: 'attendance.proxy_clock' },
+        },
 
         // Leave
         {

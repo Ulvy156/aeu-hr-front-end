@@ -6,6 +6,7 @@ import { usePermission } from '@/composables/usePermissions'
 import { useAttendance } from '../composables/useAttendance'
 import type { Attendance } from '../types/attendance'
 import ClockInOutCard from './ClockInOutCard.vue'
+import AttendanceSummaryCards from './AttendanceSummaryCards.vue'
 import AttendanceFilters from './AttendanceFilters.vue'
 import AttendanceTable from './AttendanceTable.vue'
 import AttendanceCorrectionDialog from './AttendanceCorrectionDialog.vue'
@@ -54,6 +55,9 @@ function handleCorrect(attendance: Attendance) {
 
     <!-- Clock In/Out card -->
     <ClockInOutCard v-if="showClockCard" @clocked="loadAttendance" />
+
+    <!-- Monthly summary cards -->
+    <AttendanceSummaryCards />
 
     <!-- Filters -->
     <AttendanceFilters @apply="applyFilters" />
