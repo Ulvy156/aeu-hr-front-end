@@ -78,7 +78,7 @@ onMounted(loadTable)
       <div>
         <h1 class="text-2xl font-semibold text-slate-900">Proxy Clock-In / Clock-Out</h1>
         <p class="mt-0.5 text-sm text-slate-500">
-          Record clock-in or clock-out on behalf of an employee.
+          Record clock-in or clock-out for employee who working remotely.
         </p>
       </div>
     </div>

@@ -198,10 +198,11 @@ const rules: FormRules = {
         </a>
 
         <el-form-item label="Allowed Radius (meters)" prop="allowed_radius_meters">
-          <BaseInput-number
+          <el-input-number
             v-model="localForm.allowed_radius_meters"
             :min="1"
             :max="100000"
+            :disabled="readonly"
             controls-position="right"
             class="w-full!"
           />
@@ -233,7 +234,7 @@ const rules: FormRules = {
               value-format="HH:mm"
               placeholder="Select start time"
               :disabled="readonly"
-              class="!w-full"
+              class="w-full!"
             />
           </el-form-item>
           <el-form-item label="End Time" prop="working_end_time">
@@ -294,10 +295,11 @@ const rules: FormRules = {
         </el-form-item>
 
         <el-form-item label="Payroll Day Rate" prop="payroll_day_rate">
-          <BaseInput-number
+          <el-input-number
             v-model="localForm.payroll_day_rate"
             :min="1"
             :max="31"
+            :disabled="readonly"
             controls-position="right"
             class="w-full!"
           />
