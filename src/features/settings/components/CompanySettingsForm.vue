@@ -202,9 +202,8 @@ const rules: FormRules = {
             v-model="localForm.allowed_radius_meters"
             :min="1"
             :max="100000"
-            :disabled="readonly"
             controls-position="right"
-            class="!w-full"
+            class="w-full!"
           />
           <p class="mt-1 text-xs text-slate-400">Employees must be within this radius to check in.</p>
         </el-form-item>
@@ -244,7 +243,7 @@ const rules: FormRules = {
               value-format="HH:mm"
               placeholder="Select end time"
               :disabled="readonly"
-              class="!w-full"
+              class="w-full!"
             />
           </el-form-item>
         </div>
@@ -288,7 +287,7 @@ const rules: FormRules = {
 
       <div class="grid grid-cols-2 gap-4">
         <el-form-item label="Salary Currency" prop="salary_currency">
-          <el-select v-model="localForm.salary_currency" :disabled="readonly" class="!w-full">
+          <el-select v-model="localForm.salary_currency" :disabled="readonly" class="w-full!">
             <el-option value="USD" label="USD — US Dollar" />
             <el-option value="KHR" label="KHR — Cambodian Riel" />
           </el-select>
@@ -299,9 +298,8 @@ const rules: FormRules = {
             v-model="localForm.payroll_day_rate"
             :min="1"
             :max="31"
-            :disabled="readonly"
             controls-position="right"
-            class="!w-full"
+            class="w-full!"
           />
           <p class="mt-1 text-xs text-slate-400">
             Payroll day rate affects daily salary calculation.
