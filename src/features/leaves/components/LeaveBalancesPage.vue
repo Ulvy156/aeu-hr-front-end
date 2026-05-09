@@ -3,15 +3,48 @@ import { ref, onMounted } from 'vue'
 import { Calendar, Loader2 } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
 import { useLeaveBalances } from '../composables/useLeaveBalances'
+import { searchEmployees } from '@/features/employees/services/employee.api'
+import type { EmployeeSearchOption } from '@/features/employees/services/employee.api'
 import type { LeaveBalance } from '../types/leave'
+import SearchButton from '@/components/resuable/SearchButton.vue'
+import ResetButton from '@/components/resuable/ResetButton.vue'
 
 const { can } = usePermission()
 const { balanceData, loading, loadBalances } = useLeaveBalances()
 
 const filterYear = ref(new Date().getFullYear().toString())
-const filterEmployeeId = ref('')
+const filterEmployeeId = ref<string | null>(null)
 
-onMounted(() => loadBalances({ year: filterYear.value }))
+const employeeOptions = ref<EmployeeSearchOption[]>([])
+const loadingEmployees = ref(false)
+
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+function onEmployeeSearch(query: string) {
+  if (debounceTimer) clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => fetchEmployeeOptions(query), 300)
+}
+
+async function fetchEmployeeOptions(query: string) {
+  if (!query || query.length < 2) {
+    employeeOptions.value = []
+    return
+  }
+  loadingEmployees.value = true
+  try {
+    employeeOptions.value = await searchEmployees(query)
+  } catch {
+    employeeOptions.value = []
+  } finally {
+    loadingEmployees.value = false
+  }
+}
+
+onMounted(() => {
+  if (!can('leave_balances.view_any')) {
+    loadBalances({ year: filterYear.value })
+  }
+})
 
 function applyFilters() {
   const params: Record<string, unknown> = { year: filterYear.value }
@@ -23,8 +56,11 @@ function applyFilters() {
 
 function resetFilters() {
   filterYear.value = new Date().getFullYear().toString()
-  filterEmployeeId.value = ''
-  loadBalances({ year: filterYear.value })
+  filterEmployeeId.value = null
+  employeeOptions.value = []
+  if (!can('leave_balances.view_any')) {
+    loadBalances({ year: filterYear.value })
+  }
 }
 
 function getBalanceColor(leaveType: string): string {
@@ -91,22 +127,33 @@ function getUsedPercent(balance: LeaveBalance): number {
           class="!w-[120px]"
           clearable
         />
-        <el-input
+        <el-select
           v-if="can('leave_balances.view_any')"
           v-model="filterEmployeeId"
-          placeholder="Employee ID (optional)"
+          placeholder="Search employee..."
+          filterable
+          remote
+          :remote-method="onEmployeeSearch"
+          :loading="loadingEmployees"
           clearable
-          class="!w-[200px]"
-        />
-        <el-button
-          type="primary"
-          class="!bg-emerald-600 !border-emerald-600 hover:!bg-emerald-700"
-          @click="applyFilters"
+          class="!w-[260px]"
         >
-          Apply
-        </el-button>
-        <el-button @click="resetFilters">Reset</el-button>
+          <el-option
+            v-for="emp in employeeOptions"
+            :key="emp.employee_id"
+            :value="emp.employee_id"
+            :label="emp.display"
+          />
+        </el-select>
+        <SearchButton
+          :disabled="can('leave_balances.view_any') && !filterEmployeeId"
+          @click="applyFilters"
+        />
+        <ResetButton @click="resetFilters" />
       </div>
+      <p v-if="can('leave_balances.view_any')" class="mt-2 text-xs text-slate-400">
+        Select an employee to view their leave balance.
+      </p>
     </div>
 
     <!-- Loading -->
@@ -187,11 +234,15 @@ function getUsedPercent(balance: LeaveBalance): number {
       </div>
     </template>
 
-    <!-- Empty -->
+    <!-- Empty / prompt to select -->
     <div v-else class="bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col items-center justify-center py-20 text-center">
       <Calendar class="w-14 h-14 text-slate-200 mb-4" />
-      <p class="text-base font-medium text-slate-700">No balance data available.</p>
-      <p class="text-sm text-slate-400 mt-1">Try adjusting the filters and try again.</p>
+      <p class="text-base font-medium text-slate-700">
+        {{ can('leave_balances.view_any') ? 'Select an employee and click Apply.' : 'No balance data available.' }}
+      </p>
+      <p class="text-sm text-slate-400 mt-1">
+        {{ can('leave_balances.view_any') ? 'Use the filter above to look up an employee\'s leave balance.' : 'Try adjusting the filters and try again.' }}
+      </p>
     </div>
   </div>
 </template>

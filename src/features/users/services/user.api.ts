@@ -115,3 +115,15 @@ export async function resetUserPassword(id: number, payload: ResetPasswordPayloa
   const { data } = await api.post(`/users/${id}/reset-password`, payload)
   return data
 }
+
+export interface UserSearchOption {
+  user_id: number
+  name: string
+  email: string
+  display: string
+}
+
+export async function searchUsers(q: string): Promise<UserSearchOption[]> {
+  const { data } = await api.get('/users/search', { params: { q } })
+  return data
+}

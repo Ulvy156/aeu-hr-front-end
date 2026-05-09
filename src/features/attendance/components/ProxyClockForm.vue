@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { Clock, CheckCircle2 } from '@lucide/vue'
-import { fetchEmployees } from '@/features/employees/services/employee.api'
-import type { Employee } from '@/features/employees/types/employee'
+import { searchEmployees } from '@/features/employees/services/employee.api'
+import type { EmployeeSearchOption } from '@/features/employees/services/employee.api'
 import { proxyClockIn, proxyClockOut } from '../services/attendance.api'
 import type { Attendance } from '../types/attendance'
 import { BaseButton } from '@/components/common'
@@ -15,9 +15,9 @@ const emit = defineEmits<{
   success: [attendance: Attendance]
 }>()
 
-const employeeId = ref<number | null>(null)
+const employeeId = ref<string | null>(null)
 const date = ref(new Date().toISOString().split('T')[0])
-const employees = ref<Employee[]>([])
+const employees = ref<EmployeeSearchOption[]>([])
 const loadingEmployees = ref(false)
 const submitting = ref(false)
 const result = ref<Attendance | null>(null)
@@ -35,11 +35,21 @@ function disableFutureDates(d: Date): boolean {
   return d > new Date()
 }
 
-async function searchEmployees(query: string) {
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+function onEmployeeSearch(query: string) {
+  if (debounceTimer) clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => fetchEmployeeOptions(query), 300)
+}
+
+async function fetchEmployeeOptions(query: string) {
+  if (!query || query.length < 2) {
+    employees.value = []
+    return
+  }
   loadingEmployees.value = true
   try {
-    const res = await fetchEmployees({ search: query, per_page: 20, employment_status: 'active' })
-    employees.value = res.data
+    employees.value = await searchEmployees(query)
   } catch {
     employees.value = []
   } finally {
@@ -57,6 +67,7 @@ function clearResult() {
   error.value = null
   fieldErrors.value = {}
 }
+
 
 async function handleSubmit() {
   if (!employeeId.value || !date.value) return
@@ -81,7 +92,6 @@ async function handleSubmit() {
   }
 }
 
-onMounted(() => searchEmployees(''))
 </script>
 
 <template>
@@ -114,7 +124,7 @@ onMounted(() => searchEmployees(''))
         v-model="employeeId"
         filterable
         remote
-        :remote-method="searchEmployees"
+        :remote-method="onEmployeeSearch"
         :loading="loadingEmployees"
         placeholder="Search employee..."
         clearable
@@ -123,9 +133,9 @@ onMounted(() => searchEmployees(''))
       >
         <el-option
           v-for="emp in employees"
-          :key="emp.id"
-          :value="emp.id"
-          :label="`${emp.full_name} (${emp.employee_id})`"
+          :key="emp.employee_id"
+          :value="emp.employee_id"
+          :label="emp.display"
         />
       </el-select>
       <p v-if="fieldErrors.employee_id" class="mt-1 text-xs text-red-500">

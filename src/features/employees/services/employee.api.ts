@@ -45,3 +45,14 @@ export async function deleteEmployee(id: number): Promise<ApiResponse<null>> {
   const { data } = await api.delete(`/employees/${id}`)
   return data
 }
+
+export interface EmployeeSearchOption {
+  employee_id: string
+  full_name: string
+  display: string
+}
+
+export async function searchEmployees(q: string): Promise<EmployeeSearchOption[]> {
+  const { data } = await api.get('/employees/search', { params: { q } })
+  return data
+}

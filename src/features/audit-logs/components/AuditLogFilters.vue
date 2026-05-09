@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Search } from '@lucide/vue'
-import type { AuditLogFilterState, AuditUserOption } from '../types/audit-log'
+import type { AuditLogFilterState } from '../types/audit-log'
+import { searchUsers } from '@/features/users/services/user.api'
+import type { UserSearchOption } from '@/features/users/services/user.api'
 import BaseInput from '@/components/common/BaseInput.vue';
 import SearchButton from '@/components/resuable/SearchButton.vue';
 import ResetButton from '@/components/resuable/ResetButton.vue';
+
 const props = defineProps<{
   filters: AuditLogFilterState
-  users: AuditUserOption[]
 }>()
 
 const emit = defineEmits<{
@@ -19,6 +21,31 @@ const localModule = ref(props.filters.module)
 const localAction = ref(props.filters.action)
 const localDateFrom = ref<string | null>(props.filters.dateFrom || null)
 const localDateTo = ref<string | null>(props.filters.dateTo || null)
+
+const userOptions = ref<UserSearchOption[]>([])
+const loadingUsers = ref(false)
+
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+function onUserSearch(query: string) {
+  if (debounceTimer) clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => fetchUserOptions(query), 300)
+}
+
+async function fetchUserOptions(query: string) {
+  if (!query || query.length < 2) {
+    userOptions.value = []
+    return
+  }
+  loadingUsers.value = true
+  try {
+    userOptions.value = await searchUsers(query)
+  } catch {
+    userOptions.value = []
+  } finally {
+    loadingUsers.value = false
+  }
+}
 
 function handleSearch() {
   emit('apply', {
@@ -36,6 +63,7 @@ function handleReset() {
   localAction.value = ''
   localDateFrom.value = null
   localDateTo.value = null
+  userOptions.value = []
   emit('apply', { userId: null, module: '', action: '', dateFrom: '', dateTo: '' })
 }
 </script>
@@ -46,16 +74,19 @@ function handleReset() {
     <div class="flex  items-center gap-3">
       <el-select
         v-model="localUserId"
-        placeholder="All Users"
+        placeholder="Search user..."
         class="w-48"
         clearable
         filterable
+        remote
+        :remote-method="onUserSearch"
+        :loading="loadingUsers"
       >
         <el-option
-          v-for="u in users"
-          :key="u.id"
-          :label="u.name"
-          :value="u.id"
+          v-for="u in userOptions"
+          :key="u.user_id"
+          :label="u.display"
+          :value="u.user_id"
         />
       </el-select>
 

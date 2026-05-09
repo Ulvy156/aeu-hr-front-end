@@ -13,7 +13,7 @@ export interface ProxiedByUser {
 }
 
 export interface ProxyClockPayload {
-  employee_id: number
+  employee_id: string
   attendance_date: string
 }
 
