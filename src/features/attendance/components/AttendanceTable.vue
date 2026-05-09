@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Pencil, UserCheck } from '@lucide/vue'
+import { Pencil, UserCheck, ClockCheck } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
 import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
 import type { Attendance } from '../types/attendance'
@@ -86,6 +86,14 @@ const statusLabelMap: Record<string, string> = {
               >
                 <UserCheck class="w-3.5 h-3.5 text-blue-400 shrink-0" />
               </el-tooltip>
+              <!-- proxy clock -->
+              <el-tooltip
+                v-if="row.corrected_by_user"
+                :content="`Proxy clock in by ${row.corrected_by_user.name}`"
+                placement="top"
+              >
+                <ClockCheck class="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              </el-tooltip>
             </div>
           </template>
         </el-table-column>
@@ -100,6 +108,14 @@ const statusLabelMap: Record<string, string> = {
                 placement="top"
               >
                 <UserCheck class="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              </el-tooltip>
+              <!-- proxy clock -->
+              <el-tooltip
+                v-if="row.corrected_by_user"
+                :content="`Proxy clock out by ${row.corrected_by_user.name}`"
+                placement="top"
+              >
+                <ClockCheck class="w-3.5 h-3.5 text-blue-400 shrink-0" />
               </el-tooltip>
             </div>
           </template>
