@@ -26,6 +26,8 @@ import {
   LogOut,
   User,
   UserCheck,
+  Megaphone,
+  Tags,
 } from "@lucide/vue";
 
 defineProps<{
@@ -120,6 +122,10 @@ const menuGroups = computed<MenuGroup[]>(() => [
     items: [{ label: "Reports", path: "/reports", icon: BarChart2, permission: "reports.payroll_view" }],
   },
   {
+    label: "Communication",
+    items: [{ label: "Announcements", path: "/announcements", icon: Megaphone }],
+  },
+  {
     label: "Admin",
     items: [
       {
@@ -130,6 +136,12 @@ const menuGroups = computed<MenuGroup[]>(() => [
       },
       { label: "Public Holidays", path: "/public-holidays", icon: CalendarCheck, permission: 'public_holidays.view' },
       { label: "User Management", path: "/users", icon: UserCog, permission: "users.view" },
+      {
+        label: "Announcement Categories",
+        path: "/announcements/categories",
+        icon: Tags,
+        permission: "announcement_categories.view",
+      },
       { label: "Audit Logs", path: "/audit-logs", icon: ScrollText, permission: "audit_logs.view" },
     ],
   },

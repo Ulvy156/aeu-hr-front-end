@@ -1,5 +1,3 @@
-# OpenAI Codex will review your output once you're done!
-
 # HR Management System - Frontend AI Agent
 
 ## Important Reference Files
@@ -9,9 +7,22 @@ Before making changes, read these files first:
 1. `.claude/FRONTEND_RULES.md`
 2. `.claude/UI_GUIDELINES.md`
 3. `.claude/PHASE_BREAKDOWN.md`
-4. `D:\AEU\Thesis\HR\aeu-hr-back-end\.claude\API_CONTRACT.md`
+4. `/home/romyulvy/Documents/Personal/AEU/aeu-hr-back-end/.claude/API_CONTRACT.md`
 If any file does not exist, stop and tell me which file is missing instead of guessing.
 Follow these files when generating or editing frontend code.
+
+## Commands
+
+Package manager: `pnpm`.
+
+- `pnpm dev` - start the Vite dev server
+- `pnpm build` - type-check (`vue-tsc --build`) then production build
+- `pnpm type-check` - run `vue-tsc --build` only
+- `pnpm preview` - preview the production build
+- `pnpm lint` - run `oxlint --fix` then `eslint --fix --cache`
+- `pnpm format` - run `oxfmt` on `src/`
+
+There is no test runner configured in this project.
 
 ## Purpose
 
@@ -132,6 +143,61 @@ For every frontend feature, follow this order:
 - Remove debug logs before final demo
 
 ---
+
+## Architecture
+
+### Feature module layout
+
+Each module under `src/features/<name>/` follows the same shape:
+
+```
+features/<name>/
+├── components/   # <Name>Page.vue, <Name>Table.vue, <Name>Filters.vue, <Name>FormDialog.vue
+├── composables/  # use<Name>.ts - holds state, filters, pagination, load/save calls
+├── services/     # <name>.api.ts - thin axios wrappers, one function per endpoint
+├── types/        # <name>.ts - request/response interfaces incl. PaginationMeta
+├── stores/       # only when module-level shared state is needed (e.g. auth)
+└── views/        # <Name>View.vue - thin wrapper that renders the Page component
+```
+
+A typical CRUD module (see `src/features/departments/` as the reference example):
+- `<Name>View.vue` just renders `<Name>Page.vue`.
+- `<Name>Page.vue` owns the `use<Name>()` composable, opens dialogs, and wires up
+  delete confirmations via `ElMessageBox.confirm` (never the browser `confirm()`).
+- `use<Name>.ts` holds `reactive` filters (`search`, `status`, `page`, `per_page`),
+  a `meta: PaginationMeta` ref, a `loading` ref, and exposes `loadX`, `applyFilters`,
+  `onPageChange`, `onPageSizeChange`.
+- `<name>.api.ts` returns the raw `{ success, message, data }` /
+  `{ success, message, data, meta }` envelope from the backend - components/composables
+  read `.data` / `.meta` from the result.
+- Errors are surfaced with `useNotify().error(getApiErrorMessage(err))`
+  (`src/utils/getApiErrorMessage.ts`); success actions use `useNotify().success(...)`.
+
+### Cross-cutting pieces
+
+- `src/lib/axios.ts` - shared axios instance. Reads the `access_token` cookie
+  (`src/utils/cookie.ts`) and sets `Authorization: Bearer`. On `401` it clears the
+  cookie and hard-redirects to `/login`.
+- `src/router/index.ts` - all routes are declared here (no per-feature route files).
+  Routes use `meta.requiresAuth` and `meta.permission`; `router.beforeEach` restores
+  the user via `authStore.loadUser()` on first navigation, enforces auth, and checks
+  `authStore.permissions` against `meta.permission`.
+- `src/features/auth/stores/auth.store.ts` - the only Pinia store referenced app-wide;
+  holds `user`, `token`, `permissions`, `roles`.
+- `src/composables/usePermissions.ts` - `usePermission()` exposes `can`, `canAny`,
+  `canAll`, `hasRole`, `hasAnyRole` for conditionally rendering actions/menu items.
+- `src/composables/useNotify.ts` - wraps `ElMessage` for success/error/warning/info toasts.
+- `src/components/common/` - shared building blocks: `PageHeader`, `AppCard`,
+  `BaseButton`, `BaseInput`, `BaseModal`, `BasePagination`, `StatusBadge`, `EmptyState`,
+  `LoadingState`, `ConfirmDialog`, `FormActions`, `DataTableWrapper`, `SearchFilterBar`
+  - all re-exported from `src/components/common/index.ts`.
+- `src/components/resuable/` - `SearchButton.vue`, `ResetButton.vue` used in filter bars.
+- `src/layouts/` - `AuthLayout.vue` (login) and `DashboardLayout.vue` (sidebar + topbar
+  shell, see `src/components/layout/AppSidebar.vue`).
+- Path alias `@` -> `src/` (configured in `vite.config.ts` and the tsconfig files).
+- Element Plus components are auto-imported via `unplugin-vue-components` /
+  `unplugin-auto-import` - no need to manually import `el-*` components.
+- `VITE_API_BASE_URL` (in `.env`) is the backend API base URL.
 
 ## Output Style
 

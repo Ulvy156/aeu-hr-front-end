@@ -29,6 +29,11 @@ const statusMap: Record<string, StatusConfig> = {
   draft: { type: 'info', label: 'Draft' },
   pending_approval: { type: 'warning', label: 'Pending Approval' },
   on_leave: { type: 'warning', label: 'On Leave' },
+  published: { type: 'success', label: 'Published' },
+  archived: { type: 'info', label: 'Archived' },
+  normal: { type: 'info', label: 'Normal' },
+  important: { type: 'warning', label: 'Important' },
+  urgent: { type: 'danger', label: 'Urgent' },
 }
 
 const config = computed<StatusConfig>(() => {

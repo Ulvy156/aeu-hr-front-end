@@ -113,6 +113,31 @@ const router = createRouter({
           meta: { permission: 'payslips.view_own' },
         },
 
+        // Communication
+        {
+          path: 'announcements',
+          name: 'announcements',
+          component: () => import('@/features/announcements/views/AnnouncementsView.vue'),
+        },
+        {
+          path: 'announcements/categories',
+          name: 'announcement-categories',
+          component: () => import('@/features/announcements/views/AnnouncementCategoriesView.vue'),
+          meta: { permission: 'announcement_categories.view' },
+        },
+        {
+          path: 'announcements/create',
+          name: 'announcement-create',
+          component: () => import('@/features/announcements/views/AnnouncementFormView.vue'),
+          meta: { permission: 'announcements.create' },
+        },
+        {
+          path: 'announcements/:id/edit',
+          name: 'announcement-edit',
+          component: () => import('@/features/announcements/views/AnnouncementFormView.vue'),
+          meta: { permission: 'announcements.update' },
+        },
+
         // Reports
         {
           path: 'reports',

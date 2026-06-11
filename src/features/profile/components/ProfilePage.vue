@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { User } from '@lucide/vue'
 import { AppCard, StatusBadge, EmptyState } from '@/components/common'
 import { useProfile } from '../composables/useProfile'
+import ChangePasswordForm from './ChangePasswordForm.vue'
 
 const { profile, loading, fetchProfile } = useProfile()
 
@@ -170,6 +171,16 @@ function val(v: string | null | undefined): string {
             </div>
           </div>
         </template>
+      </AppCard>
+
+      <!-- C. Security -->
+      <AppCard>
+        <template #header>
+          <h2 class="text-base font-semibold text-slate-900">Security</h2>
+          <p class="text-sm text-slate-500 mt-0.5">Change your password to keep your account secure.</p>
+        </template>
+
+        <ChangePasswordForm />
       </AppCard>
     </template>
   </div>

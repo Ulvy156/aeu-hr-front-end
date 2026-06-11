@@ -47,6 +47,7 @@ declare module 'vue' {
     LoadingState: typeof import('./src/components/common/LoadingState.vue')['default']
     PageHeader: typeof import('./src/components/common/PageHeader.vue')['default']
     ResetButton: typeof import('./src/components/resuable/ResetButton.vue')['default']
+    RichTextEditor: typeof import('./src/components/common/RichTextEditor.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SearchButton: typeof import('./src/components/resuable/SearchButton.vue')['default']

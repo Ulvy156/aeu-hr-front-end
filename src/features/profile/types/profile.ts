@@ -34,3 +34,9 @@ export interface ProfileUser {
   permissions: string[]
   employee: ProfileEmployee | null
 }
+
+export interface ChangePasswordPayload {
+  current_password: string
+  password: string
+  password_confirmation: string
+}

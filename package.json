@@ -17,7 +17,9 @@
   "dependencies": {
     "@lucide/vue": "^1.14.0",
     "@tailwindcss/vite": "^4.2.4",
+    "@vueup/vue-quill": "^1.5.3",
     "axios": "^1.15.2",
+    "dompurify": "^3.4.8",
     "element-plus": "^2.13.7",
     "pinia": "^3.0.4",
     "tailwindcss": "^4.2.4",
