@@ -7,8 +7,12 @@ import {
   createAnnouncementCategory,
   updateAnnouncementCategory,
 } from '../services/announcement-category.api'
-import type { AnnouncementCategory, AnnouncementCategoryPayload } from '../types/announcement-category'
-import { BaseInput } from '@/components/common'
+import type {
+  AnnouncementCategory,
+  AnnouncementCategoryPayload,
+  AnnouncementCategoryStatus,
+} from '../types/announcement-category'
+import { BaseInput, BaseSelect } from '@/components/common'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 
@@ -33,6 +37,11 @@ const form = reactive<AnnouncementCategoryPayload>({
   description: null,
   status: 'active',
 })
+
+const statusOptions: { label: string; value: AnnouncementCategoryStatus }[] = [
+  { label: 'Active', value: 'active' },
+  { label: 'Inactive', value: 'inactive' },
+]
 
 const rules: FormRules = {
   name: [{ required: true, message: 'Category name is required', trigger: 'blur' }],
@@ -126,10 +135,7 @@ async function handleSubmit() {
       </el-form-item>
 
       <el-form-item label="Status" prop="status">
-        <el-select v-model="form.status" class="w-full">
-          <el-option label="Active" value="active" />
-          <el-option label="Inactive" value="inactive" />
-        </el-select>
+        <BaseSelect v-model="form.status" :options="statusOptions" />
       </el-form-item>
     </el-form>
 

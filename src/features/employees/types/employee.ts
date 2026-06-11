@@ -25,7 +25,6 @@ export interface Employee {
   gender: 'male' | 'female' | 'other' | null
   date_of_birth: string | null
   phone_number: string | null
-  email: string
   address: string | null
   join_date: string
   last_working_date: string | null

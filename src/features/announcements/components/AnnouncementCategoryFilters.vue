@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Search } from '@lucide/vue'
-import { BaseInput } from '@/components/common'
+import { BaseInput, BaseSelect } from '@/components/common'
 import SearchButton from '@/components/resuable/SearchButton.vue'
 import ResetButton from '@/components/resuable/ResetButton.vue'
 
@@ -16,6 +16,11 @@ const emit = defineEmits<{
 
 const localSearch = ref(props.search)
 const localStatus = ref(props.status)
+
+const statusOptions = [
+  { label: 'Active', value: 'active' },
+  { label: 'Inactive', value: 'inactive' },
+]
 
 function handleSearch() {
   emit('apply', localSearch.value, localStatus.value ?? '')
@@ -44,15 +49,7 @@ function handleReset() {
         </template>
       </BaseInput>
 
-      <el-select
-        v-model="localStatus"
-        placeholder="All Status"
-        clearable
-        class="w-1/2"
-      >
-        <el-option label="Active" value="active" />
-        <el-option label="Inactive" value="inactive" />
-      </el-select>
+      <BaseSelect v-model="localStatus" :options="statusOptions" placeholder="All Status" clearable class="w-1/2" />
     </div>
 
     <div class="w-1/2 flex justify-end">

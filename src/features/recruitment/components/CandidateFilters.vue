@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Search } from '@lucide/vue'
-import { BaseInput } from '@/components/common'
+import { BaseInput, BaseSelect } from '@/components/common'
 import SearchButton from '@/components/resuable/SearchButton.vue'
 import ResetButton from '@/components/resuable/ResetButton.vue'
 import { fetchVacancies } from '../services/vacancy.api'
@@ -98,17 +98,18 @@ function handleReset() {
         </template>
       </BaseInput>
 
-      <el-select v-model="localVacancy" placeholder="All Vacancies" clearable filterable class="w-48">
-        <el-option v-for="opt in vacancyOptions" :key="opt.id" :label="opt.title" :value="opt.id" />
-      </el-select>
+      <BaseSelect
+        v-model="localVacancy"
+        :options="vacancyOptions.map((opt) => ({ label: opt.title, value: opt.id }))"
+        placeholder="All Vacancies"
+        clearable
+        filterable
+        class="w-48"
+      />
 
-      <el-select v-model="localSource" placeholder="All Sources" clearable class="w-40">
-        <el-option v-for="opt in sourceOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
-      </el-select>
+      <BaseSelect v-model="localSource" :options="sourceOptions" placeholder="All Sources" clearable class="w-40" />
 
-      <el-select v-model="localStatus" placeholder="All Status" clearable class="w-48">
-        <el-option v-for="opt in statusOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
-      </el-select>
+      <BaseSelect v-model="localStatus" :options="statusOptions" placeholder="All Status" clearable class="w-48" />
 
       <el-date-picker
         v-model="localInterviewDate"

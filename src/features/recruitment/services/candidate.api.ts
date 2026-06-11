@@ -31,7 +31,7 @@ function toFormData(payload: CandidateFormPayload, includeVacancyId: boolean): F
   fd.append('source', payload.source)
   if (payload.cv instanceof File) fd.append('cv', payload.cv)
   if (payload.interview_date) fd.append('interview_date', payload.interview_date)
-  if (payload.interviewer) fd.append('interviewer', payload.interviewer)
+  if (payload.interviewer_id !== null) fd.append('interviewer_id', String(payload.interviewer_id))
   if (payload.notes) fd.append('notes', payload.notes)
   return fd
 }
@@ -77,7 +77,7 @@ export async function updateCandidate(
     email: payload.email,
     source: payload.source,
     interview_date: payload.interview_date,
-    interviewer: payload.interviewer,
+    interviewer_id: payload.interviewer_id,
     notes: payload.notes,
   }
   const { data } = await api.put(`/recruitment/candidates/${id}`, body)

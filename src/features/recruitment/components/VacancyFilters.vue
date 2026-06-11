@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Search } from '@lucide/vue'
-import { BaseInput } from '@/components/common'
+import { BaseInput, BaseSelect } from '@/components/common'
 import SearchButton from '@/components/resuable/SearchButton.vue'
 import ResetButton from '@/components/resuable/ResetButton.vue'
 import { fetchDepartments } from '@/features/departments/services/department.api'
 import type { VacancyStatus } from '../types/vacancy'
+
+const statusOptions: { label: string; value: VacancyStatus }[] = [
+  { label: 'Open', value: 'open' },
+  { label: 'Closed', value: 'closed' },
+]
 
 const props = defineProps<{
   search: string
@@ -59,14 +64,15 @@ function handleReset() {
         </template>
       </BaseInput>
 
-      <el-select v-model="localDepartment" placeholder="All Departments" clearable class="w-48">
-        <el-option v-for="opt in departmentOptions" :key="opt.id" :label="opt.name" :value="opt.id" />
-      </el-select>
+      <BaseSelect
+        v-model="localDepartment"
+        :options="departmentOptions.map((opt) => ({ label: opt.name, value: opt.id }))"
+        placeholder="All Departments"
+        clearable
+        class="w-48"
+      />
 
-      <el-select v-model="localStatus" placeholder="All Status" clearable class="w-36">
-        <el-option label="Open" value="open" />
-        <el-option label="Closed" value="closed" />
-      </el-select>
+      <BaseSelect v-model="localStatus" :options="statusOptions" placeholder="All Status" clearable class="w-36" />
 
       <el-date-picker
         v-model="localTargetHiringDate"

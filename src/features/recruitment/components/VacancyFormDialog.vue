@@ -7,7 +7,7 @@ import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { fetchDepartments } from '@/features/departments/services/department.api'
 import { createVacancy, updateVacancy } from '../services/vacancy.api'
 import type { Vacancy, VacancyPayload } from '../types/vacancy'
-import { BaseInput, BaseButton, BaseModal, StatusBadge, RichTextEditor } from '@/components/common'
+import { BaseInput, BaseButton, BaseModal, BaseSelect, StatusBadge, RichTextEditor } from '@/components/common'
 
 const props = defineProps<{
   visible: boolean
@@ -130,9 +130,11 @@ async function handleSubmit() {
       </el-form-item>
 
       <el-form-item label="Department" prop="department_id">
-        <el-select v-model="form.department_id" placeholder="Select department" class="w-full">
-          <el-option v-for="opt in departmentOptions" :key="opt.id" :label="opt.name" :value="opt.id" />
-        </el-select>
+        <BaseSelect
+          v-model="form.department_id"
+          :options="departmentOptions.map((opt) => ({ label: opt.name, value: opt.id }))"
+          placeholder="Select department"
+        />
         <p v-if="getFieldError(fieldErrors, 'department_id')" class="mt-1 text-xs text-red-500">
           {{ getFieldError(fieldErrors, 'department_id') }}
         </p>

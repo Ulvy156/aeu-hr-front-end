@@ -6,10 +6,19 @@ import { FileText, X } from '@lucide/vue'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { parseApiError, getFieldError, type ApiValidationErrors } from '@/utils/api-error'
-import { AppCard, BaseInput, BaseButton, FormActions, PageHeader, StatusBadge } from '@/components/common'
+import {
+  AppCard,
+  BaseInput,
+  BaseButton,
+  BaseSelect,
+  FormActions,
+  PageHeader,
+  StatusBadge,
+  EmployeeSearchSelect,
+} from '@/components/common'
 import { fetchVacancies } from '../services/vacancy.api'
 import { fetchCandidate, createCandidate, updateCandidate } from '../services/candidate.api'
-import type { CandidateSource, CandidateCv } from '../types/candidate'
+import type { CandidateSource, CandidateCv, CandidateInterviewer } from '../types/candidate'
 
 const route = useRoute()
 const router = useRouter()
@@ -31,6 +40,7 @@ const vacancyTitle = ref('')
 const candidateStatus = ref('new')
 const existingCv = ref<CandidateCv | null>(null)
 const cvFile = ref<File | null>(null)
+const interviewer = ref<CandidateInterviewer | null>(null)
 
 const isHired = computed(() => isEdit.value && candidateStatus.value === 'hired')
 
@@ -41,7 +51,7 @@ const form = reactive({
   email: '',
   source: '' as CandidateSource | '',
   interview_date: null as string | null,
-  interviewer: '',
+  interviewer_id: null as number | null,
   notes: '',
 })
 
@@ -84,8 +94,9 @@ onMounted(async () => {
       form.email = candidate.email ?? ''
       form.source = candidate.source
       form.interview_date = candidate.interview_date
-      form.interviewer = candidate.interviewer ?? ''
+      form.interviewer_id = candidate.interviewer?.id ?? null
       form.notes = candidate.notes ?? ''
+      interviewer.value = candidate.interviewer
       vacancyTitle.value = candidate.vacancy?.title ?? ''
       candidateStatus.value = candidate.status
       existingCv.value = candidate.cv
@@ -148,7 +159,7 @@ async function handleSubmit() {
       source: form.source as CandidateSource,
       cv: cvFile.value,
       interview_date: form.interview_date || null,
-      interviewer: form.interviewer || null,
+      interviewer_id: form.interviewer_id,
       notes: form.notes || null,
     }
 
@@ -195,15 +206,13 @@ async function handleSubmit() {
 
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="space-y-1" :disabled="isHired">
         <el-form-item label="Vacancy" prop="vacancy_id">
-          <el-select
+          <BaseSelect
             v-if="!isEdit"
             v-model="form.vacancy_id"
+            :options="vacancyOptions.map((opt) => ({ label: opt.title, value: opt.id }))"
             placeholder="Select an open vacancy"
             filterable
-            class="w-full"
-          >
-            <el-option v-for="opt in vacancyOptions" :key="opt.id" :label="opt.title" :value="opt.id" />
-          </el-select>
+          />
           <BaseInput v-else :model-value="vacancyTitle" disabled />
           <p v-if="getFieldError(fieldErrors, 'vacancy_id')" class="mt-1 text-xs text-red-500">
             {{ getFieldError(fieldErrors, 'vacancy_id') }}
@@ -235,16 +244,14 @@ async function handleSubmit() {
           </el-form-item>
 
           <el-form-item label="Source" prop="source">
-            <el-select v-model="form.source" placeholder="Select source" class="w-full">
-              <el-option v-for="opt in sourceOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
-            </el-select>
+            <BaseSelect v-model="form.source" :options="sourceOptions" placeholder="Select source" />
             <p v-if="getFieldError(fieldErrors, 'source')" class="mt-1 text-xs text-red-500">
               {{ getFieldError(fieldErrors, 'source') }}
             </p>
           </el-form-item>
         </div>
 
-        <el-form-item label="CV">
+        <el-form-item label="CV" :required="!isEdit">
           <div class="space-y-2 w-full">
             <div
               v-if="existingCv"
@@ -309,9 +316,13 @@ async function handleSubmit() {
           </el-form-item>
 
           <el-form-item label="Interviewer">
-            <BaseInput v-model="form.interviewer" placeholder="Interviewer name (optional)" maxlength="255" />
-            <p v-if="getFieldError(fieldErrors, 'interviewer')" class="mt-1 text-xs text-red-500">
-              {{ getFieldError(fieldErrors, 'interviewer') }}
+            <EmployeeSearchSelect
+              v-model="form.interviewer_id"
+              :initial-option="interviewer"
+              placeholder="Search employee (optional)"
+            />
+            <p v-if="getFieldError(fieldErrors, 'interviewer_id')" class="mt-1 text-xs text-red-500">
+              {{ getFieldError(fieldErrors, 'interviewer_id') }}
             </p>
           </el-form-item>
         </div>

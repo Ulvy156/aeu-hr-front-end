@@ -6,7 +6,7 @@ import { Paperclip, X } from '@lucide/vue'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { parseApiError, getFieldError, type ApiValidationErrors } from '@/utils/api-error'
-import { AppCard, BaseInput, BaseButton, FormActions, PageHeader, RichTextEditor } from '@/components/common'
+import { AppCard, BaseInput, BaseButton, BaseSelect, FormActions, PageHeader, RichTextEditor } from '@/components/common'
 import { fetchAnnouncementCategories } from '../services/announcement-category.api'
 import { fetchAnnouncement, createAnnouncement, updateAnnouncement } from '../services/announcement.api'
 import AnnouncementTargetsEditor from './AnnouncementTargetsEditor.vue'
@@ -42,6 +42,12 @@ const form = reactive({
 })
 
 const targets = ref<AnnouncementTarget[]>([{ target_type: 'all', target_id: null }])
+
+const priorityOptions: { label: string; value: 'normal' | 'important' | 'urgent' }[] = [
+  { label: 'Normal', value: 'normal' },
+  { label: 'Important', value: 'important' },
+  { label: 'Urgent', value: 'urgent' },
+]
 
 const rules: FormRules = {
   category_id: [{ required: true, message: 'Category is required', trigger: 'change' }],
@@ -177,14 +183,11 @@ async function handleSubmit() {
 
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="space-y-1">
         <el-form-item label="Category" prop="category_id">
-          <el-select v-model="form.category_id" placeholder="Select category" class="w-full">
-            <el-option
-              v-for="opt in categoryOptions"
-              :key="opt.id"
-              :label="opt.name"
-              :value="opt.id"
-            />
-          </el-select>
+          <BaseSelect
+            v-model="form.category_id"
+            :options="categoryOptions.map((opt) => ({ label: opt.name, value: opt.id }))"
+            placeholder="Select category"
+          />
           <p v-if="categoryInactive" class="mt-1 text-xs text-amber-600">
             This category is currently inactive. It is shown because it is the announcement's current category.
           </p>
@@ -208,11 +211,7 @@ async function handleSubmit() {
         </el-form-item>
 
         <el-form-item label="Priority" prop="priority">
-          <el-select v-model="form.priority" class="!w-[200px]">
-            <el-option label="Normal" value="normal" />
-            <el-option label="Important" value="important" />
-            <el-option label="Urgent" value="urgent" />
-          </el-select>
+          <BaseSelect v-model="form.priority" :options="priorityOptions" class="!w-[200px]" />
         </el-form-item>
 
         <el-form-item label="Attachment">

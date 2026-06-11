@@ -38,6 +38,12 @@ export interface CandidateCv {
   url: string
 }
 
+export interface CandidateInterviewer {
+  id: number
+  employee_id: string
+  full_name: string
+}
+
 export interface Candidate {
   id: number
   vacancy: CandidateVacancyRef
@@ -48,7 +54,7 @@ export interface Candidate {
   cv: CandidateCv | null
   status: CandidateStatus
   interview_date: string | null
-  interviewer: string | null
+  interviewer: CandidateInterviewer | null
   notes: string | null
   outcome_reason: string | null
   creator: CandidateUserRef
@@ -74,7 +80,7 @@ export interface CandidateFormPayload {
   source: CandidateSource | ''
   cv: File | null
   interview_date: string | null
-  interviewer: string | null
+  interviewer_id: number | null
   notes: string | null
 }
 

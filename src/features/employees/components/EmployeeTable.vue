@@ -77,7 +77,7 @@ function formatDate(val: string | null): string {
 
         <el-table-column label="Email" min-width="180">
           <template #default="{ row }">
-            <span class="text-sm text-slate-600">{{ row.email }}</span>
+            <span class="text-sm text-slate-600">{{ row.user?.email ?? '—' }}</span>
           </template>
         </el-table-column>
 

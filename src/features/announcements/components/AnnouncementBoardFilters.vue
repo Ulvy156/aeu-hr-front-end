@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { Filter, Search } from '@lucide/vue'
-import { BaseInput } from '@/components/common'
+import { BaseInput, BaseSelect } from '@/components/common'
 import SearchButton from '@/components/resuable/SearchButton.vue'
 import ResetButton from '@/components/resuable/ResetButton.vue'
 import { fetchAnnouncementCategories } from '../services/announcement-category.api'
@@ -22,6 +22,11 @@ const localCategory = ref<number | ''>('')
 const localReadStatus = ref('')
 
 const categoryOptions = ref<AnnouncementCategory[]>([])
+
+const readStatusOptions = [
+  { label: 'Unread', value: 'unread' },
+  { label: 'Read', value: 'read' },
+]
 
 onMounted(async () => {
   try {
@@ -74,19 +79,21 @@ function handleReset() {
         </template>
       </BaseInput>
 
-      <el-select v-model="localCategory" placeholder="Category" clearable class="!w-[180px]">
-        <el-option
-          v-for="opt in categoryOptions"
-          :key="opt.id"
-          :label="opt.name"
-          :value="opt.id"
-        />
-      </el-select>
+      <BaseSelect
+        v-model="localCategory"
+        :options="categoryOptions.map((opt) => ({ label: opt.name, value: opt.id }))"
+        placeholder="Category"
+        clearable
+        class="!w-[180px]"
+      />
 
-      <el-select v-model="localReadStatus" placeholder="Read Status" clearable class="!w-[160px]">
-        <el-option label="Unread" value="unread" />
-        <el-option label="Read" value="read" />
-      </el-select>
+      <BaseSelect
+        v-model="localReadStatus"
+        :options="readStatusOptions"
+        placeholder="Read Status"
+        clearable
+        class="!w-[160px]"
+      />
 
       <SearchButton @click="handleSearch" />
       <ResetButton @click="handleReset" />

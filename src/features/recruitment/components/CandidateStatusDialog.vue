@@ -2,7 +2,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { usePermission } from '@/composables/usePermissions'
-import { BaseModal, BaseButton } from '@/components/common'
+import { BaseModal, BaseButton, BaseSelect } from '@/components/common'
 import type { Candidate, CandidateStatus } from '../types/candidate'
 
 const props = defineProps<{
@@ -88,9 +88,7 @@ function handleClose() {
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
       <el-form-item label="Status" prop="status">
-        <el-select v-model="form.status" placeholder="Select status" class="w-full">
-          <el-option v-for="opt in statusOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
-        </el-select>
+        <BaseSelect v-model="form.status" :options="statusOptions" placeholder="Select status" />
       </el-form-item>
 
       <el-form-item v-if="requiresOutcomeReason" label="Outcome Reason" prop="outcome_reason">

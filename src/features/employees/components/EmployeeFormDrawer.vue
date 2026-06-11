@@ -6,7 +6,7 @@ import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { createEmployee, updateEmployee } from '../services/employee.api'
 import type { Employee, DeptOption, PositionOption } from '../types/employee'
 import { usePermission } from '@/composables/usePermissions'
-import { BaseInput, StatusBadge } from '@/components/common'
+import { BaseInput, BaseSelect, StatusBadge } from '@/components/common'
 import BaseButton from '@/components/common/BaseButton.vue'
 import { fetchAvailableEmployeeUsers } from '@/features/users/services/user.api'
 import type { UserListItem } from '@/features/users/types/user'
@@ -41,7 +41,6 @@ const filteredPositions = computed(() => {
 const form = reactive({
   user_id: null as number | null,
   full_name: '',
-  email: '',
   gender: '' as 'male' | 'female' | 'other' | '',
   date_of_birth: null as string | null,
   phone_number: '',
@@ -55,13 +54,21 @@ const form = reactive({
   emergency_contact: '',
 })
 
+const genderOptions: { label: string; value: 'male' | 'female' | 'other' }[] = [
+  { label: 'Male', value: 'male' },
+  { label: 'Female', value: 'female' },
+  { label: 'Other', value: 'other' },
+]
+
+const employmentStatusOptions: { label: string; value: 'active' | 'resigned' | 'terminated' }[] = [
+  { label: 'Active', value: 'active' },
+  { label: 'Resigned', value: 'resigned' },
+  { label: 'Terminated', value: 'terminated' },
+]
+
 const rules: FormRules = {
   user_id: [{ required: true, message: 'User account is required', trigger: 'change' }],
   full_name: [{ required: true, message: 'Full name is required', trigger: 'blur' }],
-  email: [
-    { required: true, message: 'Email is required', trigger: 'blur' },
-    { type: 'email', message: 'Enter a valid email', trigger: 'blur' },
-  ],
   join_date: [{ required: true, message: 'Join date is required', trigger: 'change' }],
   employment_status: [{ required: true, message: 'Employment status is required', trigger: 'change' }],
   base_salary: [{ required: true, message: 'Base salary is required', trigger: 'blur' }],
@@ -85,7 +92,6 @@ watch(() => props.employee, (emp) => {
   if (emp) {
     form.user_id = null
     form.full_name = emp.full_name
-    form.email = emp.email
     form.gender = emp.gender ?? ''
     form.date_of_birth = emp.date_of_birth
     form.phone_number = emp.phone_number ?? ''
@@ -124,7 +130,7 @@ watch(() => form.employment_status, (s) => {
 
 function resetForm() {
   form.user_id = null
-  form.full_name = ''; form.email = ''
+  form.full_name = ''
   form.gender = ''; form.date_of_birth = null; form.phone_number = ''; form.address = ''
   form.department_id = null; form.position_id = null; form.join_date = null
   form.last_working_date = null; form.base_salary = ''; form.employment_status = 'active'
@@ -139,7 +145,6 @@ function buildFormData(): FormData {
   const fd = new FormData()
   if (!isEdit.value && form.user_id) fd.append('user_id', String(form.user_id))
   fd.append('full_name', form.full_name)
-  fd.append('email', form.email)
   if (form.gender) fd.append('gender', form.gender)
   if (form.date_of_birth) fd.append('date_of_birth', form.date_of_birth)
   if (form.phone_number) fd.append('phone_number', form.phone_number)
@@ -240,15 +245,8 @@ async function handleSubmit() {
         <el-form-item label="Full Name" prop="full_name">
           <BaseInput v-model="form.full_name" placeholder="Full name" />
         </el-form-item>
-        <el-form-item label="Email" prop="email">
-          <BaseInput v-model="form.email" type="email" placeholder="email@example.com" />
-        </el-form-item>
         <el-form-item label="Gender">
-          <el-select v-model="form.gender" placeholder="Select gender" class="w-full" clearable>
-            <el-option label="Male" value="male" />
-            <el-option label="Female" value="female" />
-            <el-option label="Other" value="other" />
-          </el-select>
+          <BaseSelect v-model="form.gender" :options="genderOptions" placeholder="Select gender" clearable />
         </el-form-item>
         <el-form-item label="Date of Birth">
           <el-date-picker v-model="form.date_of_birth" type="date" placeholder="Select date" value-format="YYYY-MM-DD" class="w-full" />
@@ -268,21 +266,24 @@ async function handleSubmit() {
       <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 mt-2">Employment</p>
       <div class="grid grid-cols-2 gap-x-4">
         <el-form-item label="Department">
-          <el-select v-model="form.department_id" placeholder="No department" class="w-full" clearable>
-            <el-option v-for="d in departments" :key="d.id" :label="d.name" :value="d.id" />
-          </el-select>
+          <BaseSelect
+            v-model="form.department_id"
+            :options="departments.map((d) => ({ label: d.name, value: d.id }))"
+            placeholder="No department"
+            clearable
+          />
         </el-form-item>
         <el-form-item label="Position">
-          <el-select v-model="form.position_id" placeholder="No position" class="w-full" clearable filterable>
-            <el-option v-for="p in filteredPositions" :key="p.id" :label="p.name" :value="p.id" />
-          </el-select>
+          <BaseSelect
+            v-model="form.position_id"
+            :options="filteredPositions.map((p) => ({ label: p.name, value: p.id }))"
+            placeholder="No position"
+            clearable
+            filterable
+          />
         </el-form-item>
         <el-form-item label="Employment Status" prop="employment_status">
-          <el-select v-model="form.employment_status" class="w-full">
-            <el-option label="Active" value="active" />
-            <el-option label="Resigned" value="resigned" />
-            <el-option label="Terminated" value="terminated" />
-          </el-select>
+          <BaseSelect v-model="form.employment_status" :options="employmentStatusOptions" />
         </el-form-item>
         <el-form-item label="Join Date" prop="join_date">
           <el-date-picker v-model="form.join_date" type="date" placeholder="Select date" value-format="YYYY-MM-DD" class="w-full" />

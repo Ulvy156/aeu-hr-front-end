@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { Filter, Search } from '@lucide/vue'
-import { BaseInput } from '@/components/common'
+import { BaseInput, BaseSelect } from '@/components/common'
 import SearchButton from '@/components/resuable/SearchButton.vue'
 import ResetButton from '@/components/resuable/ResetButton.vue'
 import { usePermission } from '@/composables/usePermissions'
@@ -122,48 +122,39 @@ function handleReset() {
         </template>
       </BaseInput>
 
-      <el-select v-model="localCategory" placeholder="Category" clearable class="!w-[160px]">
-        <el-option
-          v-for="opt in categoryOptions"
-          :key="opt.id"
-          :label="opt.name"
-          :value="opt.id"
-        />
-      </el-select>
+      <BaseSelect
+        v-model="localCategory"
+        :options="categoryOptions.map((opt) => ({ label: opt.name, value: opt.id }))"
+        placeholder="Category"
+        clearable
+        class="!w-[160px]"
+      />
 
-      <el-select v-model="localPriority" placeholder="Priority" clearable class="!w-[150px]">
-        <el-option
-          v-for="opt in priorityOptions"
-          :key="opt.value"
-          :label="opt.label"
-          :value="opt.value"
-        />
-      </el-select>
+      <BaseSelect
+        v-model="localPriority"
+        :options="priorityOptions"
+        placeholder="Priority"
+        clearable
+        class="!w-[150px]"
+      />
 
-      <el-select v-model="localStatus" placeholder="Status" clearable class="!w-[170px]">
-        <el-option
-          v-for="opt in statusOptions"
-          :key="opt.value"
-          :label="opt.label"
-          :value="opt.value"
-        />
-      </el-select>
+      <BaseSelect
+        v-model="localStatus"
+        :options="statusOptions"
+        placeholder="Status"
+        clearable
+        class="!w-[170px]"
+      />
 
-      <el-select
+      <BaseSelect
         v-if="userOptions.length"
         v-model="localCreatedBy"
+        :options="userOptions.map((opt) => ({ label: opt.name, value: opt.id }))"
         placeholder="Created By"
         clearable
         filterable
         class="!w-[180px]"
-      >
-        <el-option
-          v-for="opt in userOptions"
-          :key="opt.id"
-          :label="opt.name"
-          :value="opt.id"
-        />
-      </el-select>
+      />
 
       <SearchButton @click="handleSearch" />
       <ResetButton @click="handleReset" />

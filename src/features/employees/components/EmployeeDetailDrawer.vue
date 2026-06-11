@@ -63,7 +63,7 @@ function empStatusType(status: string): 'success' | 'warning' | 'danger' | 'info
       <!-- Basic Info -->
       <div class="p-4 bg-gray-50 rounded-xl space-y-2.5">
         <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Basic Info</p>
-        <div class="flex justify-between"><span class="text-slate-500">Email</span><span class="text-slate-800">{{ employee.email }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Email</span><span class="text-slate-800">{{ employee.user?.email ?? '—' }}</span></div>
         <div class="flex justify-between"><span class="text-slate-500">Phone</span><span class="text-slate-800">{{ employee.phone_number ?? '—' }}</span></div>
         <div class="flex justify-between"><span class="text-slate-500">Gender</span><span class="text-slate-800 capitalize">{{ employee.gender ?? '—' }}</span></div>
         <div class="flex justify-between"><span class="text-slate-500">Date of Birth</span><span class="text-slate-800">{{ formatDate(employee.date_of_birth) }}</span></div>

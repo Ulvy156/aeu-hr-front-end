@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { Search } from '@lucide/vue'
-import { BaseInput } from '@/components/common'
+import { BaseInput, BaseSelect } from '@/components/common'
 import type { DeptOption, PositionOption } from '../types/employee'
 import SearchButton from '@/components/resuable/SearchButton.vue'
 import ResetButton from '@/components/resuable/ResetButton.vue'
@@ -28,6 +28,12 @@ const filteredPositions = computed(() => {
   return props.positions.filter((p) => p.department_id === localDeptId.value)
 })
 
+const employmentStatusOptions = [
+  { label: 'Active', value: 'active' },
+  { label: 'Resigned', value: 'resigned' },
+  { label: 'Terminated', value: 'terminated' },
+]
+
 function onDeptChange() {
   if (localPosId.value) {
     const stillValid = filteredPositions.value.some((p) => p.id === localPosId.value)
@@ -49,7 +55,7 @@ function handleReset() {
 </script>
 
 <template>
-  <div class="grid grid-cols-6 gap-3 items-center">
+  <div class="grid md:grid-cols-4 grid-cols-6 gap-3 items-center">
     <BaseInput
       v-model="localSearch"
       placeholder="Search employee ID, name, or email"
@@ -63,31 +69,23 @@ function handleReset() {
       </template>
     </BaseInput>
 
-    <el-select
+    <BaseSelect
       v-model="localDeptId"
+      :options="departments.map((d) => ({ label: d.name, value: d.id }))"
       placeholder="All Departments"
       clearable
-      class="w-full"
       @change="onDeptChange"
-    >
-      <el-option v-for="d in departments" :key="d.id" :label="d.name" :value="d.id" />
-    </el-select>
+    />
 
-    <el-select
+    <BaseSelect
       v-model="localPosId"
+      :options="filteredPositions.map((p) => ({ label: p.name, value: p.id }))"
       placeholder="All Positions"
       clearable
       filterable
-      class="w-full"
-    >
-      <el-option v-for="p in filteredPositions" :key="p.id" :label="p.name" :value="p.id" />
-    </el-select>
+    />
 
-    <el-select v-model="localStatus" placeholder="All Status" clearable class="w-full">
-      <el-option label="Active" value="active" />
-      <el-option label="Resigned" value="resigned" />
-      <el-option label="Terminated" value="terminated" />
-    </el-select>
+    <BaseSelect v-model="localStatus" :options="employmentStatusOptions" placeholder="All Status" clearable />
 
     <div class="flex gap-2">
       <SearchButton  @click="handleSearch" />
