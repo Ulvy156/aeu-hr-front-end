@@ -34,6 +34,18 @@ const statusMap: Record<string, StatusConfig> = {
   normal: { type: 'info', label: 'Normal' },
   important: { type: 'warning', label: 'Important' },
   urgent: { type: 'danger', label: 'Urgent' },
+  open: { type: 'success', label: 'Open' },
+  closed: { type: 'info', label: 'Closed' },
+  new: { type: 'info', label: 'New' },
+  shortlisted: { type: 'primary', label: 'Shortlisted' },
+  contacting_candidate: { type: 'warning', label: 'Contacting Candidate' },
+  interview: { type: 'warning', label: 'Interview' },
+  offer_extended: { type: 'primary', label: 'Offer Extended' },
+  offer_accepted: { type: 'success', label: 'Offer Accepted' },
+  hired: { type: 'success', label: 'Hired' },
+  company_rejected: { type: 'danger', label: 'Company Rejected' },
+  candidate_declined: { type: 'danger', label: 'Candidate Declined' },
+  no_show: { type: 'danger', label: 'No Show' },
 }
 
 const config = computed<StatusConfig>(() => {

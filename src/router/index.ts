@@ -138,6 +138,38 @@ const router = createRouter({
           meta: { permission: 'announcements.update' },
         },
 
+        // Recruitment
+        {
+          path: 'recruitment/vacancies',
+          name: 'vacancies',
+          component: () => import('@/features/recruitment/views/VacanciesView.vue'),
+          meta: { permission: 'recruitment.vacancies.view' },
+        },
+        {
+          path: 'recruitment/vacancies/:id',
+          name: 'vacancy-detail',
+          component: () => import('@/features/recruitment/views/VacancyDetailView.vue'),
+          meta: { permission: 'recruitment.vacancies.view' },
+        },
+        {
+          path: 'recruitment/candidates',
+          name: 'candidates',
+          component: () => import('@/features/recruitment/views/CandidatesView.vue'),
+          meta: { permission: 'recruitment.candidates.view' },
+        },
+        {
+          path: 'recruitment/candidates/create',
+          name: 'candidate-create',
+          component: () => import('@/features/recruitment/views/CandidateFormView.vue'),
+          meta: { permission: 'recruitment.candidates.create' },
+        },
+        {
+          path: 'recruitment/candidates/:id/edit',
+          name: 'candidate-edit',
+          component: () => import('@/features/recruitment/views/CandidateFormView.vue'),
+          meta: { permission: 'recruitment.candidates.update' },
+        },
+
         // Reports
         {
           path: 'reports',

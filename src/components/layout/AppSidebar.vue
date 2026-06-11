@@ -28,6 +28,8 @@ import {
   UserCheck,
   Megaphone,
   Tags,
+  BriefcaseBusiness,
+  UserPlus,
 } from "@lucide/vue";
 
 defineProps<{
@@ -115,6 +117,23 @@ const menuGroups = computed<MenuGroup[]>(() => [
     items: [
       { label: "Payroll", path: "/payrolls", icon: Banknote, permission: "payrolls.view_any" },
       { label: "Payslips", path: "/payslips", icon: FileText, permission: "payslips.view_own" },
+    ],
+  },
+  {
+    label: "Recruitment",
+    items: [
+      {
+        label: "Vacancies",
+        path: "/recruitment/vacancies",
+        icon: BriefcaseBusiness,
+        permission: "recruitment.vacancies.view",
+      },
+      {
+        label: "Candidates",
+        path: "/recruitment/candidates",
+        icon: UserPlus,
+        permission: "recruitment.candidates.view",
+      },
     ],
   },
   {

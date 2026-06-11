@@ -28,7 +28,7 @@ const {
 
 const targetTypeOptions: { label: string; value: AnnouncementTargetType }[] = [
   { label: 'All Employees', value: 'all' },
-  { label: 'Role', value: 'role' },
+  // { label: 'Role', value: 'role' },
   { label: 'Department', value: 'department' },
   { label: 'Employee', value: 'employee' },
 ]
