@@ -76,6 +76,7 @@ function getBalanceColor(leaveType: string): string {
   const map: Record<string, string> = {
     annual: "emerald",
     sick: "blue",
+    special: "amber",
     maternity: "purple",
     unpaid: "slate",
   };
@@ -86,6 +87,7 @@ function getBalanceBg(leaveType: string): string {
   const map: Record<string, string> = {
     annual: "bg-emerald-50 border-emerald-100",
     sick: "bg-blue-50 border-blue-100",
+    special: "bg-amber-50 border-amber-100",
     maternity: "bg-purple-50 border-purple-100",
     unpaid: "bg-slate-50 border-slate-100",
   };
@@ -96,6 +98,7 @@ function getIconColor(leaveType: string): string {
   const map: Record<string, string> = {
     annual: "text-emerald-600",
     sick: "text-blue-600",
+    special: "text-amber-600",
     maternity: "text-purple-600",
     unpaid: "text-slate-500",
   };
@@ -244,7 +247,7 @@ function getUsedPercent(balance: LeaveBalance): number {
 
       <!-- Info note -->
       <div class="rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-700">
-        Only approved leave requests reduce annual and sick balances. Balances are calculated
+        Only approved leave requests reduce annual, sick, and special balances. Balances are calculated
         dynamically by the backend.
       </div>
     </template>

@@ -3,11 +3,14 @@ import { ref, reactive, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
+import { parseApiError } from '@/utils/api-error'
 import { createUser } from '../services/user.api'
 import type { Role, CreateUserPayload } from '../types/user'
 import BaseInput from '@/components/common/BaseInput.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
+import PasswordStrengthMeter from '@/components/common/PasswordStrengthMeter.vue'
+import { strongPasswordRule } from '@/utils/passwordStrength'
 const props = defineProps<{
   visible: boolean
   roles: Role[]
@@ -30,6 +33,10 @@ const form = reactive<Omit<CreateUserPayload, 'roles'>>({
   status: 'active',
 })
 
+const apiErrors = reactive<Record<string, string>>({
+  password: '',
+})
+
 const rules: FormRules = {
   name: [{ required: true, message: 'Name is required', trigger: 'blur' }],
   email: [
@@ -39,6 +46,7 @@ const rules: FormRules = {
   password: [
     { required: true, message: 'Password is required', trigger: 'blur' },
     { min: 8, message: 'Password must be at least 8 characters', trigger: 'blur' },
+    strongPasswordRule,
   ],
   status: [{ required: true, message: 'Status is required', trigger: 'change' }],
 }
@@ -53,6 +61,7 @@ function resetForm() {
   form.password = ''
   form.status = 'active'
   selectedRole.value = ''
+  apiErrors.password = ''
   formRef.value?.clearValidate()
 }
 
@@ -65,13 +74,19 @@ async function handleSubmit() {
   }
 
   submitting.value = true
+  apiErrors.password = ''
   try {
     await createUser({ ...form, roles: [selectedRole.value] })
     notify.success('User created successfully.')
     emit('update:visible', false)
     emit('created')
   } catch (err) {
-    notify.error(getApiErrorMessage(err))
+    const { errors } = parseApiError(err)
+    if (errors.password?.[0]) {
+      apiErrors.password = errors.password[0]
+    } else {
+      notify.error(getApiErrorMessage(err))
+    }
   } finally {
     submitting.value = false
   }
@@ -101,7 +116,12 @@ async function handleSubmit() {
           type="password"
           placeholder="Minimum 8 characters"
           show-password
+          @input="apiErrors.password = ''"
         />
+        <p v-if="apiErrors.password" class="mt-1 text-xs text-red-600">
+          {{ apiErrors.password }}
+        </p>
+        <PasswordStrengthMeter :password="form.password" />
       </el-form-item>
 
       <el-form-item label="Status" prop="status">

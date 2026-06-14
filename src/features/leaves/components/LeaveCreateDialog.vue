@@ -38,6 +38,7 @@ const form = reactive<LeaveCreatePayload>({
 const leaveTypeOptions = [
   { label: 'Annual Leave', value: 'annual' },
   { label: 'Sick Leave', value: 'sick' },
+  { label: 'Special Leave', value: 'special' },
   { label: 'Maternity Leave', value: 'maternity' },
   { label: 'Unpaid Leave', value: 'unpaid' },
 ]
@@ -200,6 +201,9 @@ watch(() => form.end_date, () => {
         </el-select>
         <p v-if="fieldErrors.leave_type" class="mt-1 text-xs text-red-500">
           {{ fieldErrors.leave_type }}
+        </p>
+        <p v-if="form.leave_type === 'special'" class="mt-1 text-xs text-slate-400">
+          For situations like marriage, childbirth of spouse, or death of an immediate family member.
         </p>
       </el-form-item>
 

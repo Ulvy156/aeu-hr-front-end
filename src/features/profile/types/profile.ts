@@ -22,6 +22,7 @@ export interface ProfileEmployee {
   join_date: string | null
   last_working_date: string | null
   employment_status: string | null
+  probation_end_date: string | null
   profile_photo_url: string | null
 }
 

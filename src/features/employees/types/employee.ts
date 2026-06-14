@@ -29,7 +29,8 @@ export interface Employee {
   join_date: string
   last_working_date: string | null
   base_salary: string
-  employment_status: 'active' | 'resigned' | 'terminated'
+  employment_status: 'active' | 'probation' | 'resigned' | 'terminated'
+  probation_end_date: string | null
   emergency_contact: string | null
   profile_photo: string | null
   profile_photo_url: string | null

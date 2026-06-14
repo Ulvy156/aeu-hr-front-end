@@ -21,6 +21,7 @@ function formatDate(val: string | null): string {
 
 function empStatusType(status: string): 'success' | 'warning' | 'danger' | 'info' {
   if (status === 'active') return 'success'
+  if (status === 'probation') return 'warning'
   if (status === 'resigned') return 'warning'
   if (status === 'terminated') return 'danger'
   return 'info'
@@ -77,6 +78,7 @@ function empStatusType(status: string): 'success' | 'warning' | 'danger' | 'info
         <div class="flex justify-between"><span class="text-slate-500">Department</span><span class="text-slate-800">{{ employee.department?.name ?? '—' }}</span></div>
         <div class="flex justify-between"><span class="text-slate-500">Position</span><span class="text-slate-800">{{ employee.position?.name ?? '—' }}</span></div>
         <div class="flex justify-between"><span class="text-slate-500">Join Date</span><span class="text-slate-800">{{ formatDate(employee.join_date) }}</span></div>
+        <div v-if="employee.employment_status === 'probation'" class="flex justify-between"><span class="text-slate-500">Probation End Date</span><span class="text-slate-800">{{ formatDate(employee.probation_end_date) }}</span></div>
         <div class="flex justify-between"><span class="text-slate-500">Last Working Date</span><span class="text-slate-800">{{ formatDate(employee.last_working_date) }}</span></div>
         <div v-if="can('employees.update_salary')" class="flex justify-between">
           <span class="text-slate-500">Base Salary</span>

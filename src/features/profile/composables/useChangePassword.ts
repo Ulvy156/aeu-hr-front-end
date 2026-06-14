@@ -3,6 +3,7 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { changePassword } from '../services/profile.api'
 import { parseApiError } from '@/utils/api-error'
 import { useNotify } from '@/composables/useNotify'
+import { strongPasswordRule } from '@/utils/passwordStrength'
 
 export function useChangePassword() {
   const notify = useNotify()
@@ -36,6 +37,7 @@ export function useChangePassword() {
     password: [
       { required: true, message: 'New password is required', trigger: 'blur' },
       { min: 8, message: 'Password must be at least 8 characters', trigger: 'blur' },
+      strongPasswordRule,
     ],
     password_confirmation: [
       { required: true, message: 'Please confirm your new password', trigger: 'blur' },

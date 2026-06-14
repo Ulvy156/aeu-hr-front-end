@@ -24,6 +24,7 @@ const { can } = usePermission()
 
 function empStatusType(status: string): 'success' | 'warning' | 'danger' | 'info' {
   if (status === 'active') return 'success'
+  if (status === 'probation') return 'warning'
   if (status === 'resigned') return 'warning'
   if (status === 'terminated') return 'danger'
   return 'info'

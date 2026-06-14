@@ -50,7 +50,8 @@ const form = reactive({
   join_date: null as string | null,
   last_working_date: null as string | null,
   base_salary: '',
-  employment_status: 'active' as 'active' | 'resigned' | 'terminated',
+  employment_status: 'active' as 'active' | 'probation' | 'resigned' | 'terminated',
+  probation_end_date: null as string | null,
   emergency_contact: '',
 })
 
@@ -60,8 +61,9 @@ const genderOptions: { label: string; value: 'male' | 'female' | 'other' }[] = [
   { label: 'Other', value: 'other' },
 ]
 
-const employmentStatusOptions: { label: string; value: 'active' | 'resigned' | 'terminated' }[] = [
+const employmentStatusOptions: { label: string; value: 'active' | 'probation' | 'resigned' | 'terminated' }[] = [
   { label: 'Active', value: 'active' },
+  { label: 'Probation', value: 'probation' },
   { label: 'Resigned', value: 'resigned' },
   { label: 'Terminated', value: 'terminated' },
 ]
@@ -72,6 +74,18 @@ const rules: FormRules = {
   join_date: [{ required: true, message: 'Join date is required', trigger: 'change' }],
   employment_status: [{ required: true, message: 'Employment status is required', trigger: 'change' }],
   base_salary: [{ required: true, message: 'Base salary is required', trigger: 'blur' }],
+  probation_end_date: [
+    {
+      validator: (_rule, value: string | null, callback: (error?: Error) => void) => {
+        if (value && form.join_date && value < form.join_date) {
+          callback(new Error('Probation end date must be on or after the join date'))
+          return
+        }
+        callback()
+      },
+      trigger: 'change',
+    },
+  ],
 }
 
 async function loadAvailableUsers() {
@@ -102,6 +116,7 @@ watch(() => props.employee, (emp) => {
     form.last_working_date = emp.last_working_date
     form.base_salary = emp.base_salary
     form.employment_status = emp.employment_status
+    form.probation_end_date = emp.probation_end_date
     form.emergency_contact = emp.emergency_contact ?? ''
   } else {
     resetForm()
@@ -125,7 +140,8 @@ watch(() => form.department_id, () => {
 })
 
 watch(() => form.employment_status, (s) => {
-  if (s === 'active') form.last_working_date = null
+  if (s === 'active' || s === 'probation') form.last_working_date = null
+  if (s !== 'probation') form.probation_end_date = null
 })
 
 function resetForm() {
@@ -134,6 +150,7 @@ function resetForm() {
   form.gender = ''; form.date_of_birth = null; form.phone_number = ''; form.address = ''
   form.department_id = null; form.position_id = null; form.join_date = null
   form.last_working_date = null; form.base_salary = ''; form.employment_status = 'active'
+  form.probation_end_date = null
   form.emergency_contact = ''
 }
 
@@ -154,6 +171,9 @@ function buildFormData(): FormData {
   if (form.join_date) fd.append('join_date', form.join_date)
   if (form.last_working_date) fd.append('last_working_date', form.last_working_date)
   fd.append('employment_status', form.employment_status)
+  if (form.employment_status === 'probation' && form.probation_end_date) {
+    fd.append('probation_end_date', form.probation_end_date)
+  }
   if (can('employees.update_salary') || !isEdit.value) fd.append('base_salary', form.base_salary)
   if (form.emergency_contact) fd.append('emergency_contact', form.emergency_contact)
   if (photoFile.value instanceof File) fd.append('profile_photo', photoFile.value)
@@ -298,8 +318,24 @@ async function handleSubmit() {
             placeholder="Select date"
             value-format="YYYY-MM-DD"
             class="w-full"
-            :disabled="form.employment_status === 'active'"
+            :disabled="['active', 'probation'].includes(form.employment_status)"
           />
+        </el-form-item>
+        <el-form-item
+          v-if="form.employment_status === 'probation'"
+          label="Probation End Date"
+          prop="probation_end_date"
+        >
+          <el-date-picker
+            v-model="form.probation_end_date"
+            type="date"
+            placeholder="Optional"
+            value-format="YYYY-MM-DD"
+            class="w-full"
+          />
+          <p class="mt-1 text-xs text-slate-400">
+            Defaults to 3 months after join date if left blank.
+          </p>
         </el-form-item>
         <el-form-item v-if="!isEdit || can('employees.update_salary')" label="Base Salary" prop="base_salary">
           <BaseInput v-model="form.base_salary" type="number" placeholder="0.00">

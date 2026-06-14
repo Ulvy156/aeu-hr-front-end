@@ -30,6 +30,7 @@ const filteredPositions = computed(() => {
 
 const employmentStatusOptions = [
   { label: 'Active', value: 'active' },
+  { label: 'Probation', value: 'probation' },
   { label: 'Resigned', value: 'resigned' },
   { label: 'Terminated', value: 'terminated' },
 ]

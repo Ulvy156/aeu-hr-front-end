@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useChangePassword } from '../composables/useChangePassword'
-import { BaseInput } from '@/components/common'
+import { BaseInput, PasswordStrengthMeter } from '@/components/common'
 import BaseButton from '@/components/common/BaseButton.vue'
 
 const { formRef, loading, form, apiErrors, rules, handleSubmit } = useChangePassword()
@@ -43,6 +43,7 @@ const { formRef, loading, form, apiErrors, rules, handleSubmit } = useChangePass
       <p v-if="apiErrors.password" class="mt-1 text-xs text-red-600">
         {{ apiErrors.password }}
       </p>
+      <PasswordStrengthMeter :password="form.password" />
     </el-form-item>
 
     <el-form-item label="Confirm New Password" prop="password_confirmation">

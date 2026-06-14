@@ -27,6 +27,7 @@ const statusOptions = [
 const leaveTypeOptions = [
   { label: 'Annual', value: 'annual' },
   { label: 'Sick', value: 'sick' },
+  { label: 'Special', value: 'special' },
   { label: 'Maternity', value: 'maternity' },
   { label: 'Unpaid', value: 'unpaid' },
 ]

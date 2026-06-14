@@ -47,6 +47,7 @@ function getLeaveColor(type: string): string {
   const map: Record<string, string> = {
     annual: 'bg-emerald-50 border-emerald-100 text-emerald-600',
     sick: 'bg-blue-50 border-blue-100 text-blue-600',
+    special: 'bg-amber-50 border-amber-100 text-amber-600',
     maternity: 'bg-purple-50 border-purple-100 text-purple-600',
     unpaid: 'bg-slate-50 border-slate-100 text-slate-500',
   }

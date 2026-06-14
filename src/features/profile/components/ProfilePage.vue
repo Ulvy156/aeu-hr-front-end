@@ -157,6 +157,10 @@ function val(v: string | null | undefined): string {
               <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Join Date</p>
               <p class="text-sm text-slate-800">{{ fmtDate(profile.employee.join_date) }}</p>
             </div>
+            <div v-if="profile.employee.employment_status === 'probation'">
+              <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Probation End Date</p>
+              <p class="text-sm text-slate-800">{{ fmtDate(profile.employee.probation_end_date) }}</p>
+            </div>
             <div>
               <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Last Working Date</p>
               <p class="text-sm text-slate-800">{{ fmtDate(profile.employee.last_working_date) }}</p>

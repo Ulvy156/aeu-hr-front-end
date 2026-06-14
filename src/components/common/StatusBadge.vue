@@ -15,6 +15,7 @@ interface StatusConfig {
 
 const statusMap: Record<string, StatusConfig> = {
   active: { type: 'success', label: 'Active' },
+  probation: { type: 'warning', label: 'Probation' },
   inactive: { type: 'info', label: 'Inactive' },
   pending: { type: 'warning', label: 'Pending' },
   approved: { type: 'success', label: 'Approved' },

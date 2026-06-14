@@ -38,6 +38,7 @@ const statusOptions = [
 const leaveTypeOptions = [
   { label: 'Annual', value: 'annual' },
   { label: 'Sick', value: 'sick' },
+  { label: 'Special', value: 'special' },
   { label: 'Maternity', value: 'maternity' },
   { label: 'Unpaid', value: 'unpaid' },
 ]
@@ -198,6 +199,9 @@ const headerCellStyle = { background: '#f9fafb', fontSize: '11px', fontWeight: '
           </el-table-column>
           <el-table-column label="Sick Leave"  align="center">
             <template #default="{ row }"><span class="text-xs text-slate-700">{{ row?.sick?.entitlement }}/{{ row?.sick?.remaining }}</span></template>
+          </el-table-column>
+          <el-table-column label="Special Leave"  align="center">
+            <template #default="{ row }"><span class="text-xs text-slate-700">{{ row?.special?.entitlement }}/{{ row?.special?.remaining }}</span></template>
           </el-table-column>
           <el-table-column label="Maternity Leave"  align="center">
             <template #default="{ row }"><span class="text-xs text-slate-700">{{ row?.maternity?.entitlement }}/{{ row?.maternity?.remaining }}</span></template>
