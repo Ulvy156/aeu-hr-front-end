@@ -5,6 +5,7 @@ import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { parseApiError } from '@/utils/api-error'
 import { createUser } from '../services/user.api'
+import { USER_STATUS, USER_STATUS_OPTIONS } from '../types/user'
 import type { Role, CreateUserPayload } from '../types/user'
 import BaseInput from '@/components/common/BaseInput.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -30,7 +31,7 @@ const form = reactive<Omit<CreateUserPayload, 'roles'>>({
   name: '',
   email: '',
   password: '',
-  status: 'active',
+  status: USER_STATUS.ACTIVE,
 })
 
 const apiErrors = reactive<Record<string, string>>({
@@ -59,7 +60,7 @@ function resetForm() {
   form.name = ''
   form.email = ''
   form.password = ''
-  form.status = 'active'
+  form.status = USER_STATUS.ACTIVE
   selectedRole.value = ''
   apiErrors.password = ''
   formRef.value?.clearValidate()
@@ -126,8 +127,7 @@ async function handleSubmit() {
 
       <el-form-item label="Status" prop="status">
         <el-select v-model="form.status" class="w-full">
-          <el-option label="Active" value="active" />
-          <el-option label="Inactive" value="inactive" />
+          <el-option v-for="opt in USER_STATUS_OPTIONS" :key="opt.value" :label="opt.label" :value="opt.value" />
         </el-select>
       </el-form-item>
 

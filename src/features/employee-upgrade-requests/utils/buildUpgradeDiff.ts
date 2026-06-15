@@ -1,3 +1,4 @@
+import { EMPLOYMENT_STATUS_LABELS } from '@/features/employees/types/employee'
 import type { UpgradeRequestValues } from '../types/employee-upgrade-request'
 
 export interface UpgradeDiffRow {
@@ -17,6 +18,12 @@ function fkName(id: number | undefined, options: NameLookup[]): string {
   return options.find((o) => o.id === id)?.name ?? `#${id}`
 }
 
+function fkNameOrNull(id: number | null | undefined, options: NameLookup[]): string {
+  if (id === undefined) return '—'
+  if (id === null) return 'No Manager'
+  return options.find((o) => o.id === id)?.name ?? `#${id}`
+}
+
 function formatSalary(value: string | undefined): string {
   if (value === undefined) return '—'
   const num = Number(value)
@@ -27,7 +34,7 @@ function formatSalary(value: string | undefined): string {
 
 function statusLabel(status: string | undefined): string {
   if (!status) return '—'
-  return status.charAt(0).toUpperCase() + status.slice(1)
+  return EMPLOYMENT_STATUS_LABELS[status as keyof typeof EMPLOYMENT_STATUS_LABELS] ?? status
 }
 
 export function buildUpgradeDiff(
@@ -35,6 +42,7 @@ export function buildUpgradeDiff(
   proposed: UpgradeRequestValues,
   departments: NameLookup[],
   positions: NameLookup[],
+  employees: NameLookup[] = [],
 ): UpgradeDiffRow[] {
   const rows: UpgradeDiffRow[] = []
   const fields = new Set([...Object.keys(current), ...Object.keys(proposed)])
@@ -76,6 +84,15 @@ export function buildUpgradeDiff(
       label: 'Employment Status',
       before: statusLabel(current.employment_status),
       after,
+    })
+  }
+
+  if (fields.has('manager_id')) {
+    rows.push({
+      field: 'manager_id',
+      label: 'Manager',
+      before: fkNameOrNull(current.manager_id, employees),
+      after: fkNameOrNull(proposed.manager_id, employees),
     })
   }
 

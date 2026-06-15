@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { TrendingUp } from '@lucide/vue'
-import type { Employee } from '../types/employee'
+import { EMPLOYMENT_STATUS, EMPLOYMENT_STATUS_LABELS } from '../types/employee'
+import type { Employee, EmploymentStatus } from '../types/employee'
 import { StatusBadge, BaseButton } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
 import EmployeeEmploymentHistory from './EmployeeEmploymentHistory.vue'
@@ -28,11 +29,11 @@ function formatDate(val: string | null): string {
   return new Date(val).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-function empStatusType(status: string): 'success' | 'warning' | 'danger' | 'info' {
-  if (status === 'active') return 'success'
-  if (status === 'probation') return 'warning'
-  if (status === 'resigned') return 'warning'
-  if (status === 'terminated') return 'danger'
+function empStatusType(status: EmploymentStatus): 'success' | 'warning' | 'danger' | 'info' {
+  if (status === EMPLOYMENT_STATUS.FULL_TIME) return 'success'
+  if (status === EMPLOYMENT_STATUS.PROBATION) return 'warning'
+  if (status === EMPLOYMENT_STATUS.RESIGNED) return 'warning'
+  if (status === EMPLOYMENT_STATUS.TERMINATED) return 'danger'
   return 'info'
 }
 </script>
@@ -65,7 +66,7 @@ function empStatusType(status: string): 'success' | 'warning' | 'danger' | 'info
           <p class="text-base font-semibold text-slate-900">{{ employee.full_name }}</p>
           <p class="text-sm text-slate-500">{{ employee.employee_id }}</p>
           <el-tag :type="empStatusType(employee.employment_status)" size="small" round class="mt-1">
-            {{ employee.employment_status }}
+            {{ EMPLOYMENT_STATUS_LABELS[employee.employment_status] }}
           </el-tag>
         </div>
         <BaseButton
@@ -74,7 +75,7 @@ function empStatusType(status: string): 'success' | 'warning' | 'danger' | 'info
           @click="emit('request-upgrade', employee)"
         >
           <template #icon><TrendingUp class="w-4 h-4" /></template>
-          Request Upgrade
+          Request Promote
         </BaseButton>
       </div>
 
@@ -97,8 +98,14 @@ function empStatusType(status: string): 'success' | 'warning' | 'danger' | 'info
               <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Employment</p>
               <div class="flex justify-between"><span class="text-slate-500">Department</span><span class="text-slate-800">{{ employee.department?.name ?? '—' }}</span></div>
               <div class="flex justify-between"><span class="text-slate-500">Position</span><span class="text-slate-800">{{ employee.position?.name ?? '—' }}</span></div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Manager</span>
+                <span class="text-slate-800">
+                  {{ employee.manager ? `${employee.manager.full_name} (${employee.manager.employee_id})` : '—' }}
+                </span>
+              </div>
               <div class="flex justify-between"><span class="text-slate-500">Join Date</span><span class="text-slate-800">{{ formatDate(employee.join_date) }}</span></div>
-              <div v-if="employee.employment_status === 'probation'" class="flex justify-between"><span class="text-slate-500">Probation End Date</span><span class="text-slate-800">{{ formatDate(employee.probation_end_date) }}</span></div>
+              <div v-if="employee.employment_status === EMPLOYMENT_STATUS.PROBATION" class="flex justify-between"><span class="text-slate-500">Probation End Date</span><span class="text-slate-800">{{ formatDate(employee.probation_end_date) }}</span></div>
               <div class="flex justify-between"><span class="text-slate-500">Last Working Date</span><span class="text-slate-800">{{ formatDate(employee.last_working_date) }}</span></div>
               <div v-if="can('employees.update_salary')" class="flex justify-between">
                 <span class="text-slate-500">Base Salary</span>

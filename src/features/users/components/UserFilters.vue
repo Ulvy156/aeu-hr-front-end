@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { Search } from '@lucide/vue'
 import { BaseInput } from '@/components/common'
 import BaseButton from '@/components/common/BaseButton.vue';
+import { USER_STATUS_OPTIONS } from '../types/user'
 
 const props = defineProps<{
   search: string
@@ -50,8 +51,7 @@ function handleReset() {
         class="w-full"
         clearable
       >
-        <el-option label="Active" value="active" />
-        <el-option label="Inactive" value="inactive" />
+        <el-option v-for="opt in USER_STATUS_OPTIONS" :key="opt.value" :label="opt.label" :value="opt.value" />
       </el-select>
     </div>
     <!-- buttons -->

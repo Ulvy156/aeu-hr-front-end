@@ -63,10 +63,15 @@ const router = createRouter({
           meta: { permission: 'employees.view' },
         },
         {
-          path: 'employee-upgrade-requests',
-          name: 'employee-upgrade-requests',
+          path: 'employee-promotion-requests',
+          name: 'employee-promotion-requests',
           component: () => import('@/features/employee-upgrade-requests/views/UpgradeRequestsView.vue'),
           meta: { permission: 'employee_upgrade_requests.view' },
+        },
+        {
+          path: 'org-chart',
+          name: 'org-chart',
+          component: () => import('@/features/employee-hierarchy/views/OrgChartView.vue'),
         },
 
         // Attendance

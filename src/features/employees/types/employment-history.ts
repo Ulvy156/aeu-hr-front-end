@@ -4,6 +4,7 @@ export type EmploymentHistoryField =
   | 'base_salary'
   | 'employment_status'
   | 'probation_end_date'
+  | 'manager_id'
 
 export interface EmploymentHistoryFkValue {
   id: number

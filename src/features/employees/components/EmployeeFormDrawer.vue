@@ -3,10 +3,12 @@ import { ref, reactive, computed, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
+import { parseApiError, getFieldError, type ApiValidationErrors } from '@/utils/api-error'
 import { createEmployee, updateEmployee } from '../services/employee.api'
-import type { Employee, DeptOption, PositionOption } from '../types/employee'
+import { EMPLOYMENT_STATUS, EMPLOYMENT_STATUS_OPTIONS } from '../types/employee'
+import type { Employee, DeptOption, PositionOption, EmploymentStatus } from '../types/employee'
 import { usePermission } from '@/composables/usePermissions'
-import { BaseInput, BaseSelect, StatusBadge } from '@/components/common'
+import { BaseInput, BaseSelect, StatusBadge, EmployeeSearchSelect } from '@/components/common'
 import BaseButton from '@/components/common/BaseButton.vue'
 import { fetchAvailableEmployeeUsers } from '@/features/users/services/user.api'
 import type { UserListItem } from '@/features/users/types/user'
@@ -31,11 +33,17 @@ const submitting = ref(false)
 const photoFile = ref<File | null>(null)
 const userOptions = ref<UserListItem[]>([])
 const usersLoading = ref(false)
+const fieldErrors = ref<ApiValidationErrors>({})
 const isEdit = computed(() => props.employee !== null)
 
 const filteredPositions = computed(() => {
   if (!form.department_id) return props.positions
   return props.positions.filter((p) => p.department_id === form.department_id)
+})
+
+const selectedUserIsCeo = computed(() => {
+  const user = userOptions.value.find((u) => u.id === form.user_id)
+  return user?.roles.includes('ceo') ?? false
 })
 
 const form = reactive({
@@ -50,22 +58,16 @@ const form = reactive({
   join_date: null as string | null,
   last_working_date: null as string | null,
   base_salary: '',
-  employment_status: 'active' as 'active' | 'probation' | 'resigned' | 'terminated',
+  employment_status: EMPLOYMENT_STATUS.FULL_TIME as EmploymentStatus,
   probation_end_date: null as string | null,
   emergency_contact: '',
+  manager_id: null as number | null,
 })
 
 const genderOptions: { label: string; value: 'male' | 'female' | 'other' }[] = [
   { label: 'Male', value: 'male' },
   { label: 'Female', value: 'female' },
   { label: 'Other', value: 'other' },
-]
-
-const employmentStatusOptions: { label: string; value: 'active' | 'probation' | 'resigned' | 'terminated' }[] = [
-  { label: 'Active', value: 'active' },
-  { label: 'Probation', value: 'probation' },
-  { label: 'Resigned', value: 'resigned' },
-  { label: 'Terminated', value: 'terminated' },
 ]
 
 const rules: FormRules = {
@@ -79,6 +81,18 @@ const rules: FormRules = {
       validator: (_rule, value: string | null, callback: (error?: Error) => void) => {
         if (value && form.join_date && value < form.join_date) {
           callback(new Error('Probation end date must be on or after the join date'))
+          return
+        }
+        callback()
+      },
+      trigger: 'change',
+    },
+  ],
+  manager_id: [
+    {
+      validator: (_rule, value: number | null, callback: (error?: Error) => void) => {
+        if (!isEdit.value && !selectedUserIsCeo.value && !value) {
+          callback(new Error('A manager is required for this employee.'))
           return
         }
         callback()
@@ -131,6 +145,7 @@ watch(() => props.visible, (v) => {
     photoFile.value = null
     uploadRef.value?.clearFiles()
     formRef.value?.clearValidate()
+    fieldErrors.value = {}
   }
 })
 
@@ -140,8 +155,13 @@ watch(() => form.department_id, () => {
 })
 
 watch(() => form.employment_status, (s) => {
-  if (s === 'active' || s === 'probation') form.last_working_date = null
-  if (s !== 'probation') form.probation_end_date = null
+  if (s === EMPLOYMENT_STATUS.FULL_TIME || s === EMPLOYMENT_STATUS.PROBATION) form.last_working_date = null
+  if (s !== EMPLOYMENT_STATUS.PROBATION) form.probation_end_date = null
+})
+
+watch(() => form.user_id, () => {
+  if (selectedUserIsCeo.value) form.manager_id = null
+  formRef.value?.clearValidate('manager_id')
 })
 
 function resetForm() {
@@ -149,9 +169,10 @@ function resetForm() {
   form.full_name = ''
   form.gender = ''; form.date_of_birth = null; form.phone_number = ''; form.address = ''
   form.department_id = null; form.position_id = null; form.join_date = null
-  form.last_working_date = null; form.base_salary = ''; form.employment_status = 'active'
+  form.last_working_date = null; form.base_salary = ''; form.employment_status = EMPLOYMENT_STATUS.FULL_TIME
   form.probation_end_date = null
   form.emergency_contact = ''
+  form.manager_id = null
 }
 
 function onPhotoChange(file: { raw?: File }) {
@@ -171,19 +192,21 @@ function buildFormData(): FormData {
   if (form.join_date) fd.append('join_date', form.join_date)
   if (form.last_working_date) fd.append('last_working_date', form.last_working_date)
   fd.append('employment_status', form.employment_status)
-  if (form.employment_status === 'probation' && form.probation_end_date) {
+  if (form.employment_status === EMPLOYMENT_STATUS.PROBATION && form.probation_end_date) {
     fd.append('probation_end_date', form.probation_end_date)
   }
   if (can('employees.update_salary') || !isEdit.value) fd.append('base_salary', form.base_salary)
   if (form.emergency_contact) fd.append('emergency_contact', form.emergency_contact)
+  if (!isEdit.value && form.manager_id) fd.append('manager_id', String(form.manager_id))
   if (photoFile.value instanceof File) fd.append('profile_photo', photoFile.value)
   return fd
 }
 
 async function handleSubmit() {
+  fieldErrors.value = {}
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
-  if (['resigned', 'terminated'].includes(form.employment_status) && !form.last_working_date) {
+  if (([EMPLOYMENT_STATUS.RESIGNED, EMPLOYMENT_STATUS.TERMINATED] as EmploymentStatus[]).includes(form.employment_status) && !form.last_working_date) {
     notify.error('Last working date is required for resigned or terminated employees.')
     return
   }
@@ -200,6 +223,8 @@ async function handleSubmit() {
     emit('update:visible', false)
     emit('saved')
   } catch (err) {
+    const parsed = parseApiError(err)
+    fieldErrors.value = parsed.errors
     notify.error(getApiErrorMessage(err))
   } finally {
     submitting.value = false
@@ -302,15 +327,31 @@ async function handleSubmit() {
             filterable
           />
         </el-form-item>
+        <el-form-item
+          v-if="!isEdit && !selectedUserIsCeo"
+          label="Manager"
+          prop="manager_id"
+          required
+        >
+          <EmployeeSearchSelect v-model="form.manager_id" placeholder="Search manager..." />
+          <p v-if="getFieldError(fieldErrors, 'manager_id')" class="mt-1 text-xs text-red-500">
+            {{ getFieldError(fieldErrors, 'manager_id') }}
+          </p>
+        </el-form-item>
+        <div v-else-if="!isEdit" class="flex items-end pb-2">
+          <p class="text-xs text-slate-400">
+            The CEO sits at the top of the org chart and has no manager.
+          </p>
+        </div>
         <el-form-item label="Employment Status" prop="employment_status">
-          <BaseSelect v-model="form.employment_status" :options="employmentStatusOptions" />
+          <BaseSelect v-model="form.employment_status" :options="EMPLOYMENT_STATUS_OPTIONS" />
         </el-form-item>
         <el-form-item label="Join Date" prop="join_date">
           <el-date-picker v-model="form.join_date" type="date" placeholder="Select date" value-format="YYYY-MM-DD" class="w-full" />
         </el-form-item>
         <el-form-item
           label="Last Working Date"
-          :required="['resigned', 'terminated'].includes(form.employment_status)"
+          :required="([EMPLOYMENT_STATUS.RESIGNED, EMPLOYMENT_STATUS.TERMINATED] as EmploymentStatus[]).includes(form.employment_status)"
         >
           <el-date-picker
             v-model="form.last_working_date"
@@ -318,11 +359,11 @@ async function handleSubmit() {
             placeholder="Select date"
             value-format="YYYY-MM-DD"
             class="w-full"
-            :disabled="['active', 'probation'].includes(form.employment_status)"
+            :disabled="([EMPLOYMENT_STATUS.FULL_TIME, EMPLOYMENT_STATUS.PROBATION] as EmploymentStatus[]).includes(form.employment_status)"
           />
         </el-form-item>
         <el-form-item
-          v-if="form.employment_status === 'probation'"
+          v-if="form.employment_status === EMPLOYMENT_STATUS.PROBATION"
           label="Probation End Date"
           prop="probation_end_date"
         >

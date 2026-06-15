@@ -1,3 +1,19 @@
+export const USER_STATUS = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+} as const
+
+export type UserStatus = (typeof USER_STATUS)[keyof typeof USER_STATUS]
+
+export const USER_STATUS_LABELS: Record<UserStatus, string> = {
+  [USER_STATUS.ACTIVE]: 'Active',
+  [USER_STATUS.INACTIVE]: 'Inactive',
+}
+
+export const USER_STATUS_OPTIONS: { label: string; value: UserStatus }[] = Object.entries(USER_STATUS_LABELS).map(
+  ([value, label]) => ({ label, value: value as UserStatus }),
+)
+
 export interface UserDepartment {
   id: number
   name: string
@@ -21,7 +37,7 @@ export interface UserListItem {
   id: number
   name: string
   email: string
-  status: 'active' | 'inactive'
+  status: UserStatus
   roles: string[]
   employee: UserEmployee | null
   created_at: string
@@ -61,14 +77,14 @@ export interface CreateUserPayload {
   name: string
   email: string
   password: string
-  status: 'active' | 'inactive'
+  status: UserStatus
   roles: string[]
 }
 
 export interface UpdateUserPayload {
   name: string
   email: string
-  status: 'active' | 'inactive'
+  status: UserStatus
   roles: string[]
 }
 

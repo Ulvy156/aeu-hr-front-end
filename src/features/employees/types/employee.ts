@@ -18,6 +18,32 @@ export interface EmployeeUser {
   roles: string[]
 }
 
+export interface EmployeeManager {
+  id: number
+  employee_id: string
+  full_name: string
+}
+
+export const EMPLOYMENT_STATUS = {
+  FULL_TIME: 'full-time',
+  PROBATION: 'probation',
+  RESIGNED: 'resigned',
+  TERMINATED: 'terminated',
+} as const
+
+export type EmploymentStatus = (typeof EMPLOYMENT_STATUS)[keyof typeof EMPLOYMENT_STATUS]
+
+export const EMPLOYMENT_STATUS_LABELS: Record<EmploymentStatus, string> = {
+  [EMPLOYMENT_STATUS.FULL_TIME]: 'Full-time',
+  [EMPLOYMENT_STATUS.PROBATION]: 'Probation',
+  [EMPLOYMENT_STATUS.RESIGNED]: 'Resigned',
+  [EMPLOYMENT_STATUS.TERMINATED]: 'Terminated',
+}
+
+export const EMPLOYMENT_STATUS_OPTIONS: { label: string; value: EmploymentStatus }[] = Object.entries(
+  EMPLOYMENT_STATUS_LABELS,
+).map(([value, label]) => ({ label, value: value as EmploymentStatus }))
+
 export interface Employee {
   id: number
   employee_id: string
@@ -29,7 +55,7 @@ export interface Employee {
   join_date: string
   last_working_date: string | null
   base_salary: string
-  employment_status: 'active' | 'probation' | 'resigned' | 'terminated'
+  employment_status: EmploymentStatus
   probation_end_date: string | null
   emergency_contact: string | null
   profile_photo: string | null
@@ -37,6 +63,7 @@ export interface Employee {
   user: EmployeeUser | null
   department: EmployeeDepartment | null
   position: EmployeePosition | null
+  manager: EmployeeManager | null
   created_at: string
   updated_at: string
 }

@@ -1,5 +1,7 @@
+import type { EmploymentStatus } from '@/features/employees/types/employee'
+
 export type UpgradeRequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
-export type EmploymentStatus = 'active' | 'probation' | 'resigned' | 'terminated'
+export type { EmploymentStatus }
 
 export interface UpgradeRequestValues {
   department_id?: number
@@ -7,6 +9,7 @@ export interface UpgradeRequestValues {
   base_salary?: string
   employment_status?: EmploymentStatus
   last_working_date?: string | null
+  manager_id?: number | null
 }
 
 export interface UpgradeRequestAttachment {

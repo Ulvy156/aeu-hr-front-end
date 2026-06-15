@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { Search } from '@lucide/vue'
 import { BaseInput, BaseSelect } from '@/components/common'
+import { EMPLOYMENT_STATUS_OPTIONS } from '../types/employee'
 import type { DeptOption, PositionOption } from '../types/employee'
 import SearchButton from '@/components/resuable/SearchButton.vue'
 import ResetButton from '@/components/resuable/ResetButton.vue'
@@ -27,13 +28,6 @@ const filteredPositions = computed(() => {
   if (!localDeptId.value) return props.positions
   return props.positions.filter((p) => p.department_id === localDeptId.value)
 })
-
-const employmentStatusOptions = [
-  { label: 'Active', value: 'active' },
-  { label: 'Probation', value: 'probation' },
-  { label: 'Resigned', value: 'resigned' },
-  { label: 'Terminated', value: 'terminated' },
-]
 
 function onDeptChange() {
   if (localPosId.value) {
@@ -86,7 +80,7 @@ function handleReset() {
       filterable
     />
 
-    <BaseSelect v-model="localStatus" :options="employmentStatusOptions" placeholder="All Status" clearable />
+    <BaseSelect v-model="localStatus" :options="EMPLOYMENT_STATUS_OPTIONS" placeholder="All Status" clearable />
 
     <div class="flex gap-2">
       <SearchButton  @click="handleSearch" />

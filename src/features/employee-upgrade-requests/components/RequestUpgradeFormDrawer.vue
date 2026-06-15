@@ -3,10 +3,11 @@ import { ref, reactive, computed, watch } from 'vue'
 import { Paperclip } from '@lucide/vue'
 import { useNotify } from '@/composables/useNotify'
 import { parseApiError, getFieldError, type ApiValidationErrors } from '@/utils/api-error'
-import { BaseInput, BaseSelect, BaseButton } from '@/components/common'
+import { BaseInput, BaseSelect, BaseButton, EmployeeSearchSelect } from '@/components/common'
 import { createUpgradeRequest } from '../services/employee-upgrade-request.api'
-import type { Employee, DeptOption, PositionOption } from '@/features/employees/types/employee'
-import type { EmploymentStatus } from '../types/employee-upgrade-request'
+import { EMPLOYMENT_STATUS, EMPLOYMENT_STATUS_OPTIONS } from '@/features/employees/types/employee'
+import type { Employee, DeptOption, PositionOption, EmploymentStatus } from '@/features/employees/types/employee'
+import type { UpgradeRequestValues } from '../types/employee-upgrade-request'
 
 const props = defineProps<{
   visible: boolean
@@ -35,18 +36,13 @@ const form = reactive({
   base_salary: '',
   employment_status: '' as EmploymentStatus | '',
   last_working_date: null as string | null,
+  manager_id: null as number | null,
+  clear_manager: false,
   effective_date: null as string | null,
 })
 
-const employmentStatusOptions: { label: string; value: EmploymentStatus }[] = [
-  { label: 'Active', value: 'active' },
-  { label: 'Probation', value: 'probation' },
-  { label: 'Resigned', value: 'resigned' },
-  { label: 'Terminated', value: 'terminated' },
-]
-
 const requiresLastWorkingDate = computed(() =>
-  form.employment_status === 'resigned' || form.employment_status === 'terminated',
+  form.employment_status === EMPLOYMENT_STATUS.RESIGNED || form.employment_status === EMPLOYMENT_STATUS.TERMINATED,
 )
 
 const filteredPositions = computed(() => {
@@ -62,9 +58,13 @@ watch(() => form.department_id, () => {
 })
 
 watch(() => form.employment_status, (status) => {
-  if (status !== 'resigned' && status !== 'terminated') {
+  if (status !== EMPLOYMENT_STATUS.RESIGNED && status !== EMPLOYMENT_STATUS.TERMINATED) {
     form.last_working_date = null
   }
+})
+
+watch(() => form.clear_manager, (cleared) => {
+  if (cleared) form.manager_id = null
 })
 
 watch(() => props.visible, (v) => {
@@ -79,6 +79,8 @@ function resetForm() {
   form.base_salary = ''
   form.employment_status = ''
   form.last_working_date = null
+  form.manager_id = null
+  form.clear_manager = false
   form.effective_date = null
   attachments.value = []
   fieldErrors.value = {}
@@ -112,8 +114,8 @@ function onExceed() {
   notify.error('You can attach up to 3 files.')
 }
 
-function buildProposedValues(): Record<string, string | number> {
-  const values: Record<string, string | number> = {}
+function buildProposedValues(): UpgradeRequestValues {
+  const values: UpgradeRequestValues = {}
   if (form.department_id) values.department_id = form.department_id
   if (form.position_id) values.position_id = form.position_id
   if (form.base_salary !== '') values.base_salary = form.base_salary
@@ -122,6 +124,11 @@ function buildProposedValues(): Record<string, string | number> {
     if (requiresLastWorkingDate.value && form.last_working_date) {
       values.last_working_date = form.last_working_date
     }
+  }
+  if (form.clear_manager) {
+    values.manager_id = null
+  } else if (form.manager_id) {
+    values.manager_id = form.manager_id
   }
   return values
 }
@@ -168,7 +175,7 @@ function handleClose() {
 <template>
   <el-drawer
     :model-value="visible"
-    title="Request Upgrade"
+    title="Request Promote"
     direction="rtl"
     size="560px"
     :close-on-click-modal="false"
@@ -187,6 +194,7 @@ function handleClose() {
           <div><span class="text-slate-500">Position:</span> <span class="text-slate-800">{{ employee.position?.name ?? '—' }}</span></div>
           <div><span class="text-slate-500">Base Salary:</span> <span class="text-slate-800">{{ employee.base_salary }}</span></div>
           <div><span class="text-slate-500">Status:</span> <span class="text-slate-800 capitalize">{{ employee.employment_status }}</span></div>
+          <div><span class="text-slate-500">Manager:</span> <span class="text-slate-800">{{ employee.manager?.full_name ?? '—' }}</span></div>
         </div>
       </div>
 
@@ -224,7 +232,7 @@ function handleClose() {
           <el-form-item label="Employment Status">
             <BaseSelect
               v-model="form.employment_status"
-              :options="employmentStatusOptions"
+              :options="EMPLOYMENT_STATUS_OPTIONS"
               placeholder="No change"
               clearable
             />
@@ -249,6 +257,19 @@ function handleClose() {
               value-format="YYYY-MM-DD"
               class="w-full"
             />
+          </el-form-item>
+          <el-form-item label="Manager" class="col-span-2">
+            <EmployeeSearchSelect
+              v-model="form.manager_id"
+              placeholder="No change"
+              :disabled="form.clear_manager"
+            />
+            <el-checkbox v-model="form.clear_manager" class="mt-2">
+              Clear manager (remove from reporting line)
+            </el-checkbox>
+            <p v-if="getFieldError(fieldErrors, 'proposed_values.manager_id')" class="mt-1 text-xs text-red-500">
+              {{ getFieldError(fieldErrors, 'proposed_values.manager_id') }}
+            </p>
           </el-form-item>
         </div>
 

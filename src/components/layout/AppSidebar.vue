@@ -31,6 +31,7 @@ import {
   BriefcaseBusiness,
   UserPlus,
   TrendingUp,
+  Network,
 } from "@lucide/vue";
 
 defineProps<{
@@ -87,11 +88,12 @@ const menuGroups = computed<MenuGroup[]>(() => [
       { label: "Positions", path: "/positions", icon: Briefcase, permission: "positions.view" },
       { label: "Employees", path: "/employees", icon: Users, permission: "employees.view" },
       {
-        label: "Upgrade Requests",
-        path: "/employee-upgrade-requests",
+        label: "Promote Employee",
+        path: "/employee-promotion-requests",
         icon: TrendingUp,
         permission: "employee_upgrade_requests.view",
       },
+      { label: "Org Chart", path: "/org-chart", icon: Network },
     ],
   },
   {

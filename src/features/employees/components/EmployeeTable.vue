@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { MoreHorizontal } from '@lucide/vue'
-import type { Employee } from '../types/employee'
+import { EMPLOYMENT_STATUS, EMPLOYMENT_STATUS_LABELS } from '../types/employee'
+import type { Employee, EmploymentStatus } from '../types/employee'
 import { EmptyState, BasePagination } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
 
@@ -23,16 +24,12 @@ const emit = defineEmits<{
 
 const { can } = usePermission()
 
-function empStatusType(status: string): 'success' | 'warning' | 'danger' | 'info' {
-  if (status === 'active') return 'success'
-  if (status === 'probation') return 'warning'
-  if (status === 'resigned') return 'warning'
-  if (status === 'terminated') return 'danger'
+function empStatusType(status: EmploymentStatus): 'success' | 'warning' | 'danger' | 'info' {
+  if (status === EMPLOYMENT_STATUS.FULL_TIME) return 'success'
+  if (status === EMPLOYMENT_STATUS.PROBATION) return 'warning'
+  if (status === EMPLOYMENT_STATUS.RESIGNED) return 'warning'
+  if (status === EMPLOYMENT_STATUS.TERMINATED) return 'danger'
   return 'info'
-}
-
-function capitalizeFirst(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 function formatDate(val: string | null): string {
@@ -102,9 +99,9 @@ function formatDate(val: string | null): string {
         </el-table-column>
 
         <el-table-column label="Status" width="120">
-          <template #default="{ row }">
+          <template #default="{ row }: { row: Employee }">
             <el-tag :type="empStatusType(row.employment_status)" size="small" round>
-              {{ capitalizeFirst(row.employment_status) }}
+              {{ EMPLOYMENT_STATUS_LABELS[row.employment_status] }}
             </el-tag>
           </template>
         </el-table-column>
@@ -134,7 +131,7 @@ function formatDate(val: string | null): string {
                     v-if="can('employee_upgrade_requests.create')"
                     @click="emit('request-upgrade', row)"
                   >
-                    Request Upgrade
+                    Request Promote
                   </el-dropdown-item>
                   <el-dropdown-item
                     v-if="can('employees.delete')"

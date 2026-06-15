@@ -2,6 +2,8 @@
 import { onMounted, watch } from 'vue'
 import { BaseSelect, EmptyState, BasePagination } from '@/components/common'
 import { useEmploymentHistory } from '../composables/useEmploymentHistory'
+import { EMPLOYMENT_STATUS_LABELS } from '../types/employee'
+import type { EmploymentStatus } from '../types/employee'
 import type {
   EmploymentHistoryEntry,
   EmploymentHistoryField,
@@ -20,6 +22,7 @@ const fieldLabels: Record<EmploymentHistoryField, string> = {
   base_salary: 'Base Salary',
   employment_status: 'Employment Status',
   probation_end_date: 'Probation End Date',
+  manager_id: 'Manager',
 }
 
 const fieldOptions = Object.entries(fieldLabels).map(([value, label]) => ({ label, value }))
@@ -43,8 +46,8 @@ function formatValue(field: EmploymentHistoryField, value: EmploymentHistoryValu
   }
 
   if (field === 'employment_status') {
-    const status = String(value.value)
-    return status.charAt(0).toUpperCase() + status.slice(1)
+    const status = value.value as EmploymentStatus
+    return EMPLOYMENT_STATUS_LABELS[status] ?? String(status)
   }
 
   if (field === 'probation_end_date') {

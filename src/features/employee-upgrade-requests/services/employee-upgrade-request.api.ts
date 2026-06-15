@@ -40,8 +40,8 @@ export async function createUpgradeRequest(
     fd.append('employee_id', String(payload.employee_id))
     if (payload.effective_date) fd.append('effective_date', payload.effective_date)
     Object.entries(payload.proposed_values).forEach(([key, value]) => {
-      if (value === null || value === undefined) return
-      fd.append(`proposed_values[${key}]`, String(value))
+      if (value === undefined) return
+      fd.append(`proposed_values[${key}]`, value === null ? '' : String(value))
     })
     payload.attachments.forEach((file) => fd.append('attachments[]', file))
     const { data } = await api.post('/employee-upgrade-requests', fd, {
