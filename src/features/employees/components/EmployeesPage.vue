@@ -15,6 +15,7 @@ import EmployeeFilters from './EmployeeFilters.vue'
 import EmployeeTable from './EmployeeTable.vue'
 import EmployeeFormDrawer from './EmployeeFormDrawer.vue'
 import EmployeeDetailDrawer from './EmployeeDetailDrawer.vue'
+import RequestUpgradeFormDrawer from '@/features/employee-upgrade-requests/components/RequestUpgradeFormDrawer.vue'
 
 const { can } = usePermission()
 const notify = useNotify()
@@ -31,7 +32,9 @@ const {
 
 const formOpen = ref(false)
 const detailOpen = ref(false)
+const upgradeFormOpen = ref(false)
 const selectedEmployee = ref<Employee | null>(null)
+const upgradeEmployee = ref<Employee | null>(null)
 const departments = ref<DeptOption[]>([])
 const positions = ref<PositionOption[]>([])
 
@@ -66,6 +69,11 @@ function handleEdit(emp: Employee) {
 function handleView(emp: Employee) {
   selectedEmployee.value = emp
   detailOpen.value = true
+}
+
+function handleRequestUpgrade(emp: Employee) {
+  upgradeEmployee.value = emp
+  upgradeFormOpen.value = true
 }
 
 async function handleDelete(emp: Employee) {
@@ -141,6 +149,7 @@ async function handleDelete(emp: Employee) {
         @view="handleView"
         @edit="handleEdit"
         @delete="handleDelete"
+        @request-upgrade="handleRequestUpgrade"
         @page-change="onPageChange"
         @size-change="onPageSizeChange"
       />
@@ -157,6 +166,14 @@ async function handleDelete(emp: Employee) {
     <EmployeeDetailDrawer
       v-model:visible="detailOpen"
       :employee="selectedEmployee"
+      @request-upgrade="handleRequestUpgrade"
+    />
+
+    <RequestUpgradeFormDrawer
+      v-model:visible="upgradeFormOpen"
+      :employee="upgradeEmployee"
+      :departments="departments"
+      :positions="positions"
     />
   </div>
 </template>

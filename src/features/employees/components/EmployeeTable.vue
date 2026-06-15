@@ -16,6 +16,7 @@ const emit = defineEmits<{
   view: [emp: Employee]
   edit: [emp: Employee]
   delete: [emp: Employee]
+  'request-upgrade': [emp: Employee]
   'page-change': [page: number]
   'size-change': [size: number]
 }>()
@@ -128,6 +129,12 @@ function formatDate(val: string | null): string {
                   <el-dropdown-item @click="emit('view', row)">View Detail</el-dropdown-item>
                   <el-dropdown-item v-if="can('employees.update')" @click="emit('edit', row)">
                     Edit
+                  </el-dropdown-item>
+                  <el-dropdown-item
+                    v-if="can('employee_upgrade_requests.create')"
+                    @click="emit('request-upgrade', row)"
+                  >
+                    Request Upgrade
                   </el-dropdown-item>
                   <el-dropdown-item
                     v-if="can('employees.delete')"
