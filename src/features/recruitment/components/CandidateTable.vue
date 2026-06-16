@@ -89,6 +89,17 @@ function formatDate(value: string | null): string {
           </template>
         </el-table-column>
 
+        <el-table-column label="Interviewer(s)" min-width="160">
+          <template #default="{ row }">
+            <span v-if="!row.interviewers?.length" class="text-sm text-slate-400">No interviewer assigned</span>
+            <div v-else class="flex flex-wrap gap-1">
+              <el-tag v-for="i in row.interviewers" :key="i.id" size="small" type="info" effect="plain">
+                {{ i.full_name }}
+              </el-tag>
+            </div>
+          </template>
+        </el-table-column>
+
         <el-table-column label="CV" width="70" align="center">
           <template #default="{ row }">
             <a

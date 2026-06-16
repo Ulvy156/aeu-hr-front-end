@@ -10,22 +10,24 @@ interface EmployeeOption {
 
 const props = withDefaults(
   defineProps<{
-    modelValue: number | null
-    initialOption?: EmployeeOption | null
+    modelValue: number | number[] | null
+    initialOption?: EmployeeOption | EmployeeOption[] | null
     placeholder?: string
     disabled?: boolean
     clearable?: boolean
+    multiple?: boolean
   }>(),
   {
     initialOption: null,
     placeholder: 'Search employee...',
     disabled: false,
     clearable: true,
+    multiple: false,
   },
 )
 
 const emit = defineEmits<{
-  'update:modelValue': [value: number | null]
+  'update:modelValue': [value: number | number[] | null]
 }>()
 
 const options = ref<EmployeeOption[]>([])
@@ -54,22 +56,39 @@ function onSearch(query: string) {
 }
 
 async function ensureSelectedOption() {
-  const id = props.modelValue
-  if (id === null || options.value.some((o) => o.id === id)) return
+  const ids = props.multiple
+    ? ((props.modelValue as number[] | null) ?? [])
+    : props.modelValue !== null
+      ? [props.modelValue as number]
+      : []
 
-  if (props.initialOption?.id === id) {
-    options.value = [props.initialOption, ...options.value]
-    return
+  const missingIds = ids.filter((id) => !options.value.some((o) => o.id === id))
+  if (missingIds.length === 0) return
+
+  const initialOptions = props.initialOption
+    ? Array.isArray(props.initialOption)
+      ? props.initialOption
+      : [props.initialOption]
+    : []
+
+  const resolved: EmployeeOption[] = []
+  for (const id of missingIds) {
+    const fromInitial = initialOptions.find((o) => o.id === id)
+    if (fromInitial) {
+      resolved.push(fromInitial)
+      continue
+    }
+
+    try {
+      const res = await fetchEmployee(id)
+      resolved.push({ id: res.data.id, full_name: res.data.full_name, employee_id: res.data.employee_id })
+    } catch {
+      // existing employee could not be resolved, leave id-only
+    }
   }
 
-  try {
-    const res = await fetchEmployee(id)
-    options.value = [
-      { id: res.data.id, full_name: res.data.full_name, employee_id: res.data.employee_id },
-      ...options.value,
-    ]
-  } catch {
-    // existing employee could not be resolved, leave id-only
+  if (resolved.length) {
+    options.value = [...resolved, ...options.value]
   }
 }
 
@@ -83,6 +102,7 @@ watch(() => props.modelValue, ensureSelectedOption)
     :placeholder="placeholder"
     :disabled="disabled"
     :clearable="clearable"
+    :multiple="multiple"
     filterable
     remote
     reserve-keyword

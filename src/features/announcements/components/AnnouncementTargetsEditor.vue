@@ -93,7 +93,7 @@ function targetError(index: number): string | undefined {
           v-else-if="target.target_type === 'employee'"
           :model-value="target.target_id"
           placeholder="Search employee..."
-          @update:model-value="updateTarget(index, { target_id: $event })"
+          @update:model-value="updateTarget(index, { target_id: $event as number | null })"
         />
 
         <p v-if="targetError(index)" class="mt-1 text-xs text-red-500">{{ targetError(index) }}</p>

@@ -54,7 +54,7 @@ export interface Candidate {
   cv: CandidateCv | null
   status: CandidateStatus
   interview_date: string | null
-  interviewer: CandidateInterviewer | null
+  interviewers: CandidateInterviewer[]
   notes: string | null
   outcome_reason: string | null
   creator: CandidateUserRef
@@ -80,7 +80,7 @@ export interface CandidateFormPayload {
   source: CandidateSource | ''
   cv: File | null
   interview_date: string | null
-  interviewer_id: number | null
+  interviewer_ids: number[]
   notes: string | null
 }
 

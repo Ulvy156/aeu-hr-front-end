@@ -40,7 +40,7 @@ const vacancyTitle = ref('')
 const candidateStatus = ref('new')
 const existingCv = ref<CandidateCv | null>(null)
 const cvFile = ref<File | null>(null)
-const interviewer = ref<CandidateInterviewer | null>(null)
+const interviewers = ref<CandidateInterviewer[]>([])
 
 const isHired = computed(() => isEdit.value && candidateStatus.value === 'hired')
 
@@ -51,7 +51,7 @@ const form = reactive({
   email: '',
   source: '' as CandidateSource | '',
   interview_date: null as string | null,
-  interviewer_id: null as number | null,
+  interviewer_ids: [] as number[],
   notes: '',
 })
 
@@ -94,9 +94,9 @@ onMounted(async () => {
       form.email = candidate.email ?? ''
       form.source = candidate.source
       form.interview_date = candidate.interview_date
-      form.interviewer_id = candidate.interviewer?.id ?? null
+      form.interviewer_ids = candidate.interviewers.map((i) => i.id)
       form.notes = candidate.notes ?? ''
-      interviewer.value = candidate.interviewer
+      interviewers.value = candidate.interviewers
       vacancyTitle.value = candidate.vacancy?.title ?? ''
       candidateStatus.value = candidate.status
       existingCv.value = candidate.cv
@@ -159,7 +159,7 @@ async function handleSubmit() {
       source: form.source as CandidateSource,
       cv: cvFile.value,
       interview_date: form.interview_date || null,
-      interviewer_id: form.interviewer_id,
+      interviewer_ids: form.interviewer_ids,
       notes: form.notes || null,
     }
 
@@ -315,14 +315,15 @@ async function handleSubmit() {
             </p>
           </el-form-item>
 
-          <el-form-item label="Interviewer">
+          <el-form-item label="Interviewers">
             <EmployeeSearchSelect
-              v-model="form.interviewer_id"
-              :initial-option="interviewer"
-              placeholder="Search employee (optional)"
+              v-model="form.interviewer_ids"
+              multiple
+              :initial-option="interviewers"
+              placeholder="Search employees (optional)"
             />
-            <p v-if="getFieldError(fieldErrors, 'interviewer_id')" class="mt-1 text-xs text-red-500">
-              {{ getFieldError(fieldErrors, 'interviewer_id') }}
+            <p v-if="getFieldError(fieldErrors, 'interviewer_ids')" class="mt-1 text-xs text-red-500">
+              {{ getFieldError(fieldErrors, 'interviewer_ids') }}
             </p>
           </el-form-item>
         </div>
@@ -340,6 +341,7 @@ async function handleSubmit() {
       </div>
       <FormActions
         v-else
+        :showCancel="true"
         :loading="submitting"
         :submit-text="isEdit ? 'Save Changes' : 'Add Candidate'"
         @submit="handleSubmit"
