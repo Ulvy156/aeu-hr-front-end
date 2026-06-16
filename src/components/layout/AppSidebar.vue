@@ -32,6 +32,7 @@ import {
   UserPlus,
   TrendingUp,
   Network,
+  QrCode,
 } from "@lucide/vue";
 
 defineProps<{
@@ -111,6 +112,12 @@ const menuGroups = computed<MenuGroup[]>(() => [
         path: "/attendance/proxy",
         icon: UserCheck,
         permission: "attendance.proxy_clock",
+      },
+      {
+        label: "QR Attendance",
+        path: "/attendance/qr",
+        icon: QrCode,
+        permission: "attendance.generate_qr",
       },
     ],
   },

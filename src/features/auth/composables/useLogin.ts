@@ -1,5 +1,5 @@
 import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useAuthStore } from '@/features/auth/stores/auth.store'
 import { login } from '@/features/auth/services/auth.api'
@@ -7,6 +7,7 @@ import { parseApiError } from '@/utils/api-error'
 
 export function useLogin() {
   const router = useRouter()
+  const route = useRoute()
   const authStore = useAuthStore()
 
   const formRef = ref<FormInstance>()
@@ -48,7 +49,8 @@ export function useLogin() {
       const data = await login({ email: form.email, password: form.password })
       authStore.setToken(data.token)
       authStore.setUser(data.user)
-      router.push({ name: 'dashboard' })
+      const redirect = route.query.redirect as string | undefined
+      router.push(redirect || { name: 'dashboard' })
     } catch (err) {
       const { errors, message } = parseApiError(err)
       apiErrors.email = errors.email?.[0] ?? (Object.keys(errors).length === 0 ? message : '')

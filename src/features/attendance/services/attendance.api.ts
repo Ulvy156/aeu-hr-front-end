@@ -7,6 +7,9 @@ import type {
   MarkAbsentResult,
   PaginationMeta,
   ProxyClockPayload,
+  QRToken,
+  QRScanPayload,
+  QRScanResult,
 } from '../types/attendance'
 
 interface ApiResponse<T> {
@@ -74,5 +77,30 @@ export async function proxyClockIn(payload: ProxyClockPayload): Promise<ApiRespo
 
 export async function proxyClockOut(payload: ProxyClockPayload): Promise<ApiResponse<Attendance>> {
   const { data } = await api.post('/attendance/proxy-clock-out', payload)
+  return data
+}
+
+export async function generateQRToken(): Promise<ApiResponse<QRToken>> {
+  const { data } = await api.post('/attendance/qr/generate')
+  return data
+}
+
+export async function fetchCurrentQRToken(): Promise<ApiResponse<QRToken | null>> {
+  const { data } = await api.get('/attendance/qr/current')
+  return data
+}
+
+export async function downloadQRCode(id: number): Promise<Blob> {
+  const { data } = await api.get(`/attendance/qr/${id}/download`, { responseType: 'blob' })
+  return data
+}
+
+export async function deleteQRToken(id: number): Promise<ApiResponse<null>> {
+  const { data } = await api.delete(`/attendance/qr/${id}`)
+  return data
+}
+
+export async function scanQRCode(payload: QRScanPayload): Promise<ApiResponse<QRScanResult>> {
+  const { data } = await api.post('/attendance/qr/scan', payload)
   return data
 }

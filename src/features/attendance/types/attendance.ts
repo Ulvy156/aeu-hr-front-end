@@ -29,6 +29,8 @@ export interface Attendance {
   clock_out_time: string | null
   status: AttendanceStatus
   is_late: boolean
+  qr_clock_in: boolean
+  qr_clock_out: boolean
   correction_reason: string | null
   corrected_at: string | null
   employee: AttendanceEmployee
@@ -37,6 +39,29 @@ export interface Attendance {
   proxied_clock_out_by_user: ProxiedByUser | null
   created_at: string
   updated_at: string
+}
+
+export interface QRGeneratedBy {
+  id: number
+  name: string
+  email: string
+}
+
+export interface QRToken {
+  id: number
+  token: string
+  scan_url: string
+  generated_by: QRGeneratedBy
+  created_at: string
+}
+
+export interface QRScanPayload {
+  token: string
+}
+
+export interface QRScanResult {
+  action: 'qr_clock_in' | 'qr_clock_out'
+  attendance: Attendance
 }
 
 export interface CorrectionPayload {

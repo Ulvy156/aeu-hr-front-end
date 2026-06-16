@@ -91,6 +91,12 @@ const router = createRouter({
           component: () => import('@/features/attendance/views/AttendanceProxyView.vue'),
           meta: { permission: 'attendance.proxy_clock' },
         },
+        {
+          path: 'attendance/qr',
+          name: 'attendance-qr',
+          component: () => import('@/features/attendance/views/AttendanceQRView.vue'),
+          meta: { permission: 'attendance.generate_qr' },
+        },
 
         // Leave
         {
@@ -223,6 +229,13 @@ const router = createRouter({
       ],
     },
 
+    // QR scan — standalone page (no sidebar), requires auth
+    {
+      path: '/attendance/scan',
+      name: 'attendance-scan',
+      component: () => import('@/features/attendance/views/AttendanceQRScanView.vue'),
+    },
+
     // Catch-all
     {
       path: '/:pathMatch(.*)*',
@@ -246,7 +259,7 @@ router.beforeEach(async (to) => {
   const isPublicRoute = to.matched.some((r) => r.meta.requiresAuth === false)
 
   if (!isPublicRoute && !authStore.isAuthenticated) {
-    return { name: 'login' }
+    return { name: 'login', query: { redirect: to.fullPath } }
   }
 
   if (to.name === 'login' && authStore.isAuthenticated) {
