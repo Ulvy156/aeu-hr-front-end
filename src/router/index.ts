@@ -255,6 +255,12 @@ router.beforeEach(async (to) => {
     userLoaded = true
   }
 
+  // Root path — two layouts share path '/', so Vue Router may land on AuthLayout
+  // with no child match (blank page). Handle it here directly after user is loaded.
+  if (to.path === '/') {
+    return authStore.isAuthenticated ? { name: 'dashboard' } : { name: 'login' }
+  }
+
   // A route is public if any matched record explicitly sets requiresAuth: false
   const isPublicRoute = to.matched.some((r) => r.meta.requiresAuth === false)
 
