@@ -44,6 +44,12 @@ export const EMPLOYMENT_STATUS_OPTIONS: { label: string; value: EmploymentStatus
   EMPLOYMENT_STATUS_LABELS,
 ).map(([value, label]) => ({ label, value: value as EmploymentStatus }))
 
+export interface EmployeeDocument {
+  name: string
+  size: number
+  url: string
+}
+
 export interface Employee {
   id: number
   employee_id: string
@@ -60,6 +66,7 @@ export interface Employee {
   emergency_contact: string | null
   profile_photo: string | null
   profile_photo_url: string | null
+  documents: EmployeeDocument[]
   user: EmployeeUser | null
   department: EmployeeDepartment | null
   position: EmployeePosition | null
@@ -78,6 +85,11 @@ export interface PositionOption {
   name: string
   department_id: number | null
 }
+
+export const DOCUMENT_ALLOWED_TYPES = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'doc', 'docx']
+export const DOCUMENT_ACCEPT = '.pdf,.jpg,.jpeg,.png,.webp,.doc,.docx'
+export const DOCUMENT_MAX_COUNT = 5
+export const DOCUMENT_MAX_TOTAL_SIZE = 20 * 1024 * 1024
 
 export interface EmployeeListParams {
   search?: string
