@@ -7,8 +7,10 @@ import { usePermission } from '@/composables/usePermissions'
 import { getCompanySettings, updateCompanySettings } from '../services/companySetting.service'
 import type { CompanySettingForm } from '../types/companySetting.types'
 import CompanySettingsForm from '../components/CompanySettingsForm.vue'
+import DatabaseBackupCard from '../components/DatabaseBackupCard.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 const { can } = usePermission()
+const canDownloadBackup = computed(() => can('backups.download'))
 const notify = useNotify()
 const canUpdate = computed(() => can('company_settings.update'))
 
@@ -148,6 +150,9 @@ onMounted(loadSettings)
         @logo-changed="logoFile = $event"
         @update:form="Object.assign(form, $event)"
       />
+
+      <!-- Database Backup (admin only) -->
+      <DatabaseBackupCard v-if="canDownloadBackup && !loading" class="mt-6" />
     </div>
 
     <!-- Sticky bottom action bar -->
