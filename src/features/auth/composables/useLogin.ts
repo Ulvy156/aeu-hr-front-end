@@ -47,7 +47,7 @@ export function useLogin() {
 
     try {
       const data = await login({ email: form.email, password: form.password })
-      authStore.setToken(data.token)
+      authStore.setToken(data.access_token)
       authStore.setUser(data.user)
       const redirect = route.query.redirect as string | undefined
       router.push(redirect || { name: 'dashboard' })

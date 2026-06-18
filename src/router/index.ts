@@ -244,15 +244,18 @@ const router = createRouter({
   ],
 })
 
-let userLoaded = false
+let sessionRestored = false
 
 router.beforeEach(async (to) => {
   const authStore = useAuthStore()
 
-  // Restore user from cookie token on first navigation after page refresh
-  if (!userLoaded && authStore.token && !authStore.user) {
-    await authStore.loadUser()
-    userLoaded = true
+  // On page refresh the in-memory access token is lost.
+  // Try to restore the session via the httpOnly refresh-token cookie.
+  if (!sessionRestored) {
+    sessionRestored = true
+    if (!authStore.isAuthenticated) {
+      await authStore.restoreSession()
+    }
   }
 
   // Root path — two layouts share path '/', so Vue Router may land on AuthLayout

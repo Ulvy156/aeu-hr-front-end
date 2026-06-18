@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getCookie, setCookie, deleteCookie } from '@/utils/cookie'
-import { fetchMe, logout as apiLogout } from '@/features/auth/services/auth.api'
+import { fetchMe, logout as apiLogout, refreshToken } from '@/features/auth/services/auth.api'
+import { setAccessToken } from '@/lib/axios'
 import type { AuthUser } from '@/features/auth/types/auth'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<AuthUser | null>(null)
-  const token = ref<string | null>(getCookie('access_token'))
+  const token = ref<string | null>(null)
 
   const isAuthenticated = computed(() => !!token.value && !!user.value)
   const roles = computed(() => user.value?.roles ?? [])
@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function setToken(value: string): void {
     token.value = value
-    setCookie('access_token', value)
+    setAccessToken(value)
   }
 
   function setUser(value: AuthUser): void {
@@ -27,6 +27,16 @@ export const useAuthStore = defineStore('auth', () => {
 
   function hasAnyRole(list: string[]): boolean {
     return list.some((r) => roles.value.includes(r))
+  }
+
+  async function restoreSession(): Promise<void> {
+    try {
+      const data = await refreshToken()
+      setToken(data.access_token)
+      user.value = await fetchMe()
+    } catch {
+      clear()
+    }
   }
 
   async function loadUser(): Promise<void> {
@@ -49,7 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
   function clear(): void {
     user.value = null
     token.value = null
-    deleteCookie('access_token')
+    setAccessToken(null)
   }
 
   return {
@@ -62,6 +72,7 @@ export const useAuthStore = defineStore('auth', () => {
     setUser,
     hasRole,
     hasAnyRole,
+    restoreSession,
     loadUser,
     logout,
     clear,

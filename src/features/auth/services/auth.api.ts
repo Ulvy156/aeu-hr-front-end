@@ -1,5 +1,5 @@
 import api from '@/lib/axios'
-import type { ApiResponse, AuthUser, LoginData, LoginRequest } from '@/features/auth/types/auth'
+import type { ApiResponse, AuthUser, LoginData, LoginRequest, RefreshData } from '@/features/auth/types/auth'
 
 export async function login(credentials: LoginRequest): Promise<LoginData> {
   const res = await api.post<ApiResponse<LoginData>>('/login', {
@@ -7,6 +7,11 @@ export async function login(credentials: LoginRequest): Promise<LoginData> {
     password: credentials.password,
     device_name: credentials.device_name ?? 'web-client',
   })
+  return res.data.data
+}
+
+export async function refreshToken(): Promise<RefreshData> {
+  const res = await api.post<ApiResponse<RefreshData>>('/refresh')
   return res.data.data
 }
 

@@ -23,9 +23,16 @@ export interface LoginRequest {
 }
 
 export interface LoginData {
-  token: string
+  access_token: string
   token_type: string
+  expires_in: number
   user: AuthUser
+}
+
+export interface RefreshData {
+  access_token: string
+  token_type: string
+  expires_in: number
 }
 
 export interface ApiResponse<T> {
