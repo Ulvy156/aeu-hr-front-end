@@ -9,12 +9,16 @@ export function getCookie(name: string): string | null {
 export function setCookie(name: string, value: string, days = 7): void {
   const expires = new Date()
   expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000)
-  document.cookie = [
+  const parts = [
     `${name}=${encodeURIComponent(value)}`,
     `expires=${expires.toUTCString()}`,
     `path=${COOKIE_PATH}`,
     `SameSite=${SAME_SITE}`,
-  ].join('; ')
+  ]
+  if (window.location.protocol === 'https:') {
+    parts.push('Secure')
+  }
+  document.cookie = parts.join('; ')
 }
 
 export function deleteCookie(name: string): void {
