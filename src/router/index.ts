@@ -249,8 +249,6 @@ let sessionRestored = false
 router.beforeEach(async (to) => {
   const authStore = useAuthStore()
 
-  // On page refresh the in-memory access token is lost.
-  // Try to restore the session via the httpOnly refresh-token cookie.
   if (!sessionRestored) {
     sessionRestored = true
     if (!authStore.isAuthenticated) {

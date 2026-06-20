@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { fetchMe, logout as apiLogout, refreshToken } from '@/features/auth/services/auth.api'
+import { fetchMe, logout as apiLogout } from '@/features/auth/services/auth.api'
 import { setAccessToken } from '@/lib/axios'
 import { getCookie, setCookie, deleteCookie } from '@/utils/cookie'
 import type { AuthUser } from '@/features/auth/types/auth'
@@ -18,7 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
   function setToken(value: string): void {
     token.value = value
     setAccessToken(value)
-    setCookie(ACCESS_TOKEN_KEY, value)
+    setCookie(ACCESS_TOKEN_KEY, value, 365)
   }
 
   function setUser(value: AuthUser): void {
@@ -34,16 +34,12 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function restoreSession(): Promise<void> {
+    const savedToken = getCookie(ACCESS_TOKEN_KEY)
+    if (!savedToken) return
+
     try {
-      const savedToken = getCookie(ACCESS_TOKEN_KEY)
-      if (savedToken) {
-        token.value = savedToken
-        setAccessToken(savedToken)
-        user.value = await fetchMe()
-        return
-      }
-      const data = await refreshToken()
-      setToken(data.access_token)
+      token.value = savedToken
+      setAccessToken(savedToken)
       user.value = await fetchMe()
     } catch {
       clear()
