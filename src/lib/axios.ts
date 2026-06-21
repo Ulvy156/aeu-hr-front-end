@@ -57,12 +57,7 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    const isRefreshRequest = originalRequest.url === '/refresh'
-    if (isRefreshRequest) {
-      accessToken = null
-      const { useAuthStore } = await import('@/features/auth/stores/auth.store')
-      useAuthStore().clear()
-      window.location.href = '/login'
+    if (originalRequest.url === '/refresh') {
       return Promise.reject(error)
     }
 
