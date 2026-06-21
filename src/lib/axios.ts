@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { type InternalAxiosRequestConfig } from 'axios'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -27,20 +27,81 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+let isRefreshing = false
+let failedQueue: {
+  resolve: (config: InternalAxiosRequestConfig) => void
+  reject: (error: unknown) => void
+  config: InternalAxiosRequestConfig
+}[] = []
+
+function processQueue(newToken: string | null): void {
+  failedQueue.forEach(({ resolve, reject, config }) => {
+    if (newToken) {
+      config.headers.Authorization = `Bearer ${newToken}`
+      resolve(config)
+    } else {
+      reject(new Error('Refresh failed'))
+    }
+  })
+  failedQueue = []
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean
+    }
+
+    if (error.response?.status !== 401 || originalRequest._retry) {
+      return Promise.reject(error)
+    }
+
+    const isRefreshRequest = originalRequest.url === '/refresh'
+    if (isRefreshRequest) {
+      accessToken = null
+      const { useAuthStore } = await import('@/features/auth/stores/auth.store')
+      useAuthStore().clear()
+      window.location.href = '/login'
+      return Promise.reject(error)
+    }
+
+    if (isRefreshing) {
+      return new Promise<InternalAxiosRequestConfig>((resolve, reject) => {
+        failedQueue.push({ resolve, reject, config: originalRequest })
+      }).then((config) => api(config))
+    }
+
+    originalRequest._retry = true
+    isRefreshing = true
+
+    try {
+      const { refreshToken } = await import(
+        '@/features/auth/services/auth.api'
+      )
+      const data = await refreshToken()
+
+      accessToken = data.access_token
+
+      const { useAuthStore } = await import('@/features/auth/stores/auth.store')
+      useAuthStore().setToken(data.access_token)
+
+      processQueue(data.access_token)
+
+      originalRequest.headers.Authorization = `Bearer ${data.access_token}`
+      return api(originalRequest)
+    } catch {
+      processQueue(null)
       accessToken = null
 
       const { useAuthStore } = await import('@/features/auth/stores/auth.store')
-      const authStore = useAuthStore()
-      authStore.clear()
-
+      useAuthStore().clear()
       window.location.href = '/login'
-    }
 
-    return Promise.reject(error)
+      return Promise.reject(error)
+    } finally {
+      isRefreshing = false
+    }
   },
 )
 

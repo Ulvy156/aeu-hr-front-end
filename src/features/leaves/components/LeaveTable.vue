@@ -45,8 +45,17 @@ function formatDate(dateStr: string): string {
   })
 }
 
+const leaveTypeLabels: Record<string, string> = {
+  annual: 'Annual',
+  sick: 'Sick',
+  special: 'Special',
+  special_sick: 'Special Sick',
+  maternity: 'Maternity',
+  unpaid: 'Unpaid',
+}
+
 function formatLeaveType(type: string): string {
-  return type.charAt(0).toUpperCase() + type.slice(1)
+  return leaveTypeLabels[type] ?? type
 }
 
 function formatDurationType(type: string): string {
@@ -87,7 +96,7 @@ const headerCellStyle = {
           </template>
         </el-table-column>
 
-        <el-table-column label="Type" width="110">
+        <el-table-column label="Type" width="130">
           <template #default="{ row }">
             <span class="text-sm text-slate-700">{{ formatLeaveType(row.leave_type) }}</span>
           </template>

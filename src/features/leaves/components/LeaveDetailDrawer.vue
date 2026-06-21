@@ -51,8 +51,17 @@ function formatDateTime(dateStr: string): string {
   })
 }
 
+const leaveTypeLabels: Record<string, string> = {
+  annual: 'Annual',
+  sick: 'Sick',
+  special: 'Special',
+  special_sick: 'Special Sick',
+  maternity: 'Maternity',
+  unpaid: 'Unpaid',
+}
+
 function formatLeaveType(type: string): string {
-  return type.charAt(0).toUpperCase() + type.slice(1)
+  return leaveTypeLabels[type] ?? type
 }
 </script>
 

@@ -29,6 +29,12 @@ export interface LoginData {
   user: AuthUser
 }
 
+export interface RefreshData {
+  access_token: string
+  token_type: string
+  expires_in: number
+}
+
 export interface ApiResponse<T> {
   success: boolean
   message: string

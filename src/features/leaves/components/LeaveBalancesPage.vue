@@ -50,7 +50,7 @@ onMounted(() => {
   else {
     // if user is hr show their attendance else show nothing
     if (user?.employee?.id) {
-      loadBalances({ year: filterYear.value, employee_id: user?.employee?.id });
+      loadBalances({ year: filterYear.value, employee_id: user?.employee?.employee_id });
     } 
   }
 });
@@ -77,6 +77,7 @@ function getBalanceColor(leaveType: string): string {
     annual: "emerald",
     sick: "blue",
     special: "amber",
+    special_sick: "rose",
     maternity: "purple",
     unpaid: "slate",
   };
@@ -88,6 +89,7 @@ function getBalanceBg(leaveType: string): string {
     annual: "bg-emerald-50 border-emerald-100",
     sick: "bg-blue-50 border-blue-100",
     special: "bg-amber-50 border-amber-100",
+    special_sick: "bg-rose-50 border-rose-100",
     maternity: "bg-purple-50 border-purple-100",
     unpaid: "bg-slate-50 border-slate-100",
   };
@@ -99,14 +101,35 @@ function getIconColor(leaveType: string): string {
     annual: "text-emerald-600",
     sick: "text-blue-600",
     special: "text-amber-600",
+    special_sick: "text-rose-600",
     maternity: "text-purple-600",
     unpaid: "text-slate-500",
   };
   return map[leaveType] ?? "text-slate-500";
 }
 
+const leaveTypeLabels: Record<string, string> = {
+  annual: "Annual Leave",
+  sick: "Sick Leave",
+  special: "Special Leave",
+  special_sick: "Special Sick Leave",
+  maternity: "Maternity Leave",
+  unpaid: "Unpaid Leave",
+};
+
 function formatLeaveType(type: string): string {
-  return type.charAt(0).toUpperCase() + type.slice(1) + " Leave";
+  return leaveTypeLabels[type] ?? type;
+}
+
+const ruleLabels: Record<string, string> = {
+  per_year: "Per Year",
+  per_case: "Per Case",
+  per_case_per_year: "Per Case / Year",
+  unlimited: "Unlimited",
+};
+
+function formatRule(rule: string): string {
+  return ruleLabels[rule] ?? rule;
 }
 
 function getUsedPercent(balance: LeaveBalance): number {
@@ -239,7 +262,7 @@ function getUsedPercent(balance: LeaveBalance): number {
               />
             </div>
             <p class="text-xs text-slate-400 mt-1">
-              {{ getUsedPercent(balance) }}% used · {{ balance.rule }}
+              {{ getUsedPercent(balance) }}% used · {{ formatRule(balance.rule) }}
             </p>
           </template>
         </div>
@@ -247,8 +270,8 @@ function getUsedPercent(balance: LeaveBalance): number {
 
       <!-- Info note -->
       <div class="rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-700">
-        Only approved leave requests reduce annual, sick, and special balances. Balances are calculated
-        dynamically by the backend.
+        Only approved leave requests reduce annual, sick, special, and special sick balances. Balances
+        are calculated dynamically by the backend.
       </div>
     </template>
 

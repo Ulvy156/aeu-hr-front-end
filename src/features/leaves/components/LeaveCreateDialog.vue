@@ -39,6 +39,7 @@ const leaveTypeOptions = [
   { label: 'Annual Leave', value: 'annual' },
   { label: 'Sick Leave', value: 'sick' },
   { label: 'Special Leave', value: 'special' },
+  { label: 'Special Sick Leave', value: 'special_sick' },
   { label: 'Maternity Leave', value: 'maternity' },
   { label: 'Unpaid Leave', value: 'unpaid' },
 ]
@@ -204,6 +205,9 @@ watch(() => form.end_date, () => {
         </p>
         <p v-if="form.leave_type === 'special'" class="mt-1 text-xs text-slate-400">
           For situations like marriage, childbirth of spouse, or death of an immediate family member.
+        </p>
+        <p v-if="form.leave_type === 'special_sick'" class="mt-1 text-xs text-slate-400">
+          For extended serious illness. Requires at least 1 year of service. Max 180 days per case per year.
         </p>
       </el-form-item>
 

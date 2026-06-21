@@ -1,4 +1,4 @@
-export type LeaveType = 'annual' | 'sick' | 'special' | 'maternity' | 'unpaid'
+export type LeaveType = 'annual' | 'sick' | 'special' | 'maternity' | 'unpaid' | 'special_sick'
 export type DurationType = 'full_day' | 'half_day'
 export type LeaveStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected'

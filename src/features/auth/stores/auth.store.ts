@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { fetchMe, logout as apiLogout } from '@/features/auth/services/auth.api'
+import {
+  fetchMe,
+  refreshToken,
+  logout as apiLogout,
+} from '@/features/auth/services/auth.api'
 import { setAccessToken } from '@/lib/axios'
-import { getCookie, setCookie, deleteCookie } from '@/utils/cookie'
 import type { AuthUser } from '@/features/auth/types/auth'
-
-const ACCESS_TOKEN_KEY = 'access_token'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<AuthUser | null>(null)
@@ -18,7 +19,6 @@ export const useAuthStore = defineStore('auth', () => {
   function setToken(value: string): void {
     token.value = value
     setAccessToken(value)
-    setCookie(ACCESS_TOKEN_KEY, value, 365)
   }
 
   function setUser(value: AuthUser): void {
@@ -34,12 +34,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function restoreSession(): Promise<void> {
-    const savedToken = getCookie(ACCESS_TOKEN_KEY)
-    if (!savedToken) return
-
     try {
-      token.value = savedToken
-      setAccessToken(savedToken)
+      const data = await refreshToken()
+      token.value = data.access_token
+      setAccessToken(data.access_token)
       user.value = await fetchMe()
     } catch {
       clear()
@@ -67,7 +65,8 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     token.value = null
     setAccessToken(null)
-    deleteCookie(ACCESS_TOKEN_KEY)
+    // Clean up legacy cookie from old auth flow
+    document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax'
   }
 
   return {
