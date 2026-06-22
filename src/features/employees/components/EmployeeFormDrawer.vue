@@ -29,7 +29,7 @@ const photoFile = ref<File | null>(null)
 const {
   formRef, form, rules, submitting, fieldErrors, isEdit,
   userOptions, usersLoading, filteredPositions, selectedUserIsCeo,
-  loadAvailableUsers, populateForm, resetForm, handleSubmit,
+  filterPhoneInput, loadAvailableUsers, populateForm, resetForm, handleSubmit,
 } = useEmployeeForm(
   () => props.employee,
   () => props.positions,
@@ -133,8 +133,8 @@ function onSubmit() {
         <el-form-item label="Date of Birth">
           <el-date-picker v-model="form.date_of_birth" type="date" placeholder="Select date" value-format="YYYY-MM-DD" class="w-full" />
         </el-form-item>
-        <el-form-item label="Phone Number">
-          <BaseInput v-model="form.phone_number" placeholder="Phone number" />
+        <el-form-item label="Phone Number" prop="phone_number">
+          <BaseInput v-model="form.phone_number" placeholder="0xx xxx xxxx" maxlength="10" @input="filterPhoneInput" />
         </el-form-item>
         <el-form-item label="Emergency Contact">
           <BaseInput v-model="form.emergency_contact" placeholder="Name and phone" />

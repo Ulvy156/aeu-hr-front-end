@@ -54,9 +54,16 @@ export function useEmployeeForm(
     return user?.roles.includes('ceo') ?? false
   })
 
+  function filterPhoneInput(value: string) {
+    form.phone_number = value.replace(/\D/g, '')
+  }
+
   const rules: FormRules = {
     user_id: [{ required: true, message: 'User account is required', trigger: 'change' }],
     full_name: [{ required: true, message: 'Full name is required', trigger: 'blur' }],
+    phone_number: [
+      { pattern: /^0\d{8,9}$/, message: 'Phone must start with 0 and be 9-10 digits', trigger: 'blur' },
+    ],
     join_date: [{ required: true, message: 'Join date is required', trigger: 'change' }],
     employment_status: [{ required: true, message: 'Employment status is required', trigger: 'change' }],
     base_salary: [{ required: true, message: 'Base salary is required', trigger: 'blur' }],
@@ -220,6 +227,7 @@ export function useEmployeeForm(
     usersLoading,
     filteredPositions,
     selectedUserIsCeo,
+    filterPhoneInput,
     loadAvailableUsers,
     populateForm,
     resetForm,

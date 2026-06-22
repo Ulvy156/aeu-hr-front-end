@@ -73,10 +73,14 @@ const rules: FormRules = {
   ],
   phone: [
     { required: true, message: 'Phone is required', trigger: 'blur' },
-    { max: 50, message: 'Phone must be at most 50 characters', trigger: 'blur' },
+    { pattern: /^0\d{8,9}$/, message: 'Phone must start with 0 and be 9-10 digits', trigger: 'blur' },
   ],
   email: [{ type: 'email', message: 'Enter a valid email address', trigger: 'blur' }],
   source: [{ required: true, message: 'Source is required', trigger: 'change' }],
+}
+
+function filterPhoneInput(value: string) {
+  form.phone = value.replace(/\D/g, '')
 }
 
 onMounted(async () => {
@@ -228,7 +232,7 @@ async function handleSubmit() {
           </el-form-item>
 
           <el-form-item label="Phone" prop="phone">
-            <BaseInput v-model="form.phone" placeholder="Phone number" maxlength="50" />
+            <BaseInput v-model="form.phone" placeholder="0xx xxx xxxx" maxlength="10" @input="filterPhoneInput" />
             <p v-if="getFieldError(fieldErrors, 'phone')" class="mt-1 text-xs text-red-500">
               {{ getFieldError(fieldErrors, 'phone') }}
             </p>
