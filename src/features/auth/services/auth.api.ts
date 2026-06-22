@@ -4,7 +4,6 @@ import type {
   AuthUser,
   LoginData,
   LoginRequest,
-  RefreshData,
 } from '@/features/auth/types/auth'
 
 export async function login(credentials: LoginRequest): Promise<LoginData> {
@@ -13,11 +12,6 @@ export async function login(credentials: LoginRequest): Promise<LoginData> {
     password: credentials.password,
     device_name: credentials.device_name ?? 'web-client',
   })
-  return res.data.data
-}
-
-export async function refreshToken(): Promise<RefreshData> {
-  const res = await api.post<ApiResponse<RefreshData>>('/refresh')
   return res.data.data
 }
 
