@@ -53,6 +53,7 @@ function formatFileSize(bytes: number): string {
 function empStatusType(status: EmploymentStatus): 'success' | 'warning' | 'danger' | 'info' {
   if (status === EMPLOYMENT_STATUS.FULL_TIME) return 'success'
   if (status === EMPLOYMENT_STATUS.PROBATION) return 'warning'
+  if (status === EMPLOYMENT_STATUS.INTERN) return 'info'
   if (status === EMPLOYMENT_STATUS.RESIGNED) return 'warning'
   if (status === EMPLOYMENT_STATUS.TERMINATED) return 'danger'
   return 'info'
@@ -127,6 +128,7 @@ function empStatusType(status: EmploymentStatus): 'success' | 'warning' | 'dange
               </div>
               <div class="flex justify-between"><span class="text-slate-500">Join Date</span><span class="text-slate-800">{{ formatDate(detail.join_date) }}</span></div>
               <div v-if="detail.employment_status === EMPLOYMENT_STATUS.PROBATION" class="flex justify-between"><span class="text-slate-500">Probation End Date</span><span class="text-slate-800">{{ formatDate(detail.probation_end_date) }}</span></div>
+              <div v-if="detail.employment_status === EMPLOYMENT_STATUS.INTERN" class="flex justify-between"><span class="text-slate-500">Internship End Date</span><span class="text-slate-800">{{ formatDate(detail.intern_end_date) }}</span></div>
               <div class="flex justify-between"><span class="text-slate-500">Last Working Date</span><span class="text-slate-800">{{ formatDate(detail.last_working_date) }}</span></div>
               <div v-if="can('employees.update_salary')" class="flex justify-between">
                 <span class="text-slate-500">Base Salary</span>

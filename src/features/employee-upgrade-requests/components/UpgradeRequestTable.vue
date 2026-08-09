@@ -4,15 +4,12 @@ import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
 import { buildUpgradeDiff } from '../utils/buildUpgradeDiff'
 import type { EmployeeUpgradeRequest } from '../types/employee-upgrade-request'
 
-const props = defineProps<{
+defineProps<{
   requests: EmployeeUpgradeRequest[]
   loading: boolean
   currentPage: number
   pageSize: number
   total: number
-  departments: { id: number; name: string }[]
-  positions: { id: number; name: string }[]
-  employees: { id: number; name: string }[]
 }>()
 
 const emit = defineEmits<{
@@ -27,7 +24,7 @@ function formatDate(iso: string | null): string {
 }
 
 function summarize(request: EmployeeUpgradeRequest): string {
-  const rows = buildUpgradeDiff(request.current_values, request.proposed_values, props.departments, props.positions, props.employees)
+  const rows = buildUpgradeDiff(request.current_values, request.proposed_values)
   return rows.map((r) => `${r.label}: ${r.before} → ${r.after}`).join(', ')
 }
 </script>

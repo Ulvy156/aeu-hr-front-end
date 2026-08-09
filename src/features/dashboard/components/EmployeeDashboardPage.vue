@@ -28,12 +28,6 @@ function formatMonth(month: number): string {
   return MONTH_NAMES[month - 1] ?? String(month)
 }
 
-function formatDate(iso: string): string {
-  return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-  })
-}
-
 function formatTime(iso: string | null): string {
   if (!iso) return '—'
   return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })

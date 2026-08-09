@@ -1,5 +1,5 @@
 import { EMPLOYMENT_STATUS_LABELS } from '@/features/employees/types/employee'
-import type { UpgradeRequestValues } from '../types/employee-upgrade-request'
+import type { UpgradeRequestFkSnapshot, UpgradeRequestValueSnapshot } from '../types/employee-upgrade-request'
 
 export interface UpgradeDiffRow {
   field: string
@@ -8,20 +8,15 @@ export interface UpgradeDiffRow {
   after: string
 }
 
-interface NameLookup {
-  id: number
-  name: string
+function fkName(snapshot: UpgradeRequestFkSnapshot | undefined): string {
+  if (snapshot === undefined) return '—'
+  return snapshot.name ?? `#${snapshot.id}`
 }
 
-function fkName(id: number | undefined, options: NameLookup[]): string {
-  if (id === undefined) return '—'
-  return options.find((o) => o.id === id)?.name ?? `#${id}`
-}
-
-function fkNameOrNull(id: number | null | undefined, options: NameLookup[]): string {
-  if (id === undefined) return '—'
-  if (id === null) return 'No Manager'
-  return options.find((o) => o.id === id)?.name ?? `#${id}`
+function fkNameOrNull(snapshot: UpgradeRequestFkSnapshot | null | undefined): string {
+  if (snapshot === undefined) return '—'
+  if (snapshot === null) return 'No Manager'
+  return snapshot.name ?? `#${snapshot.id}`
 }
 
 function formatSalary(value: string | undefined): string {
@@ -38,11 +33,8 @@ function statusLabel(status: string | undefined): string {
 }
 
 export function buildUpgradeDiff(
-  current: UpgradeRequestValues,
-  proposed: UpgradeRequestValues,
-  departments: NameLookup[],
-  positions: NameLookup[],
-  employees: NameLookup[] = [],
+  current: UpgradeRequestValueSnapshot,
+  proposed: UpgradeRequestValueSnapshot,
 ): UpgradeDiffRow[] {
   const rows: UpgradeDiffRow[] = []
   const fields = new Set([...Object.keys(current), ...Object.keys(proposed)])
@@ -51,8 +43,8 @@ export function buildUpgradeDiff(
     rows.push({
       field: 'department_id',
       label: 'Department',
-      before: fkName(current.department_id, departments),
-      after: fkName(proposed.department_id, departments),
+      before: fkName(current.department_id),
+      after: fkName(proposed.department_id),
     })
   }
 
@@ -60,8 +52,8 @@ export function buildUpgradeDiff(
     rows.push({
       field: 'position_id',
       label: 'Position',
-      before: fkName(current.position_id, positions),
-      after: fkName(proposed.position_id, positions),
+      before: fkName(current.position_id),
+      after: fkName(proposed.position_id),
     })
   }
 
@@ -91,8 +83,8 @@ export function buildUpgradeDiff(
     rows.push({
       field: 'manager_id',
       label: 'Manager',
-      before: fkNameOrNull(current.manager_id, employees),
-      after: fkNameOrNull(proposed.manager_id, employees),
+      before: fkNameOrNull(current.manager_id),
+      after: fkNameOrNull(proposed.manager_id),
     })
   }
 

@@ -4,9 +4,6 @@ import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { usePermission } from '@/composables/usePermissions'
 import { PageHeader, AppCard, ConfirmDialog } from '@/components/common'
-import { fetchDepartments } from '@/features/departments/services/department.api'
-import { fetchPositions } from '@/features/positions/services/position.api'
-import { fetchEmployees } from '@/features/employees/services/employee.api'
 import { useUpgradeRequests } from '../composables/useUpgradeRequests'
 import { fetchUpgradeRequest } from '../services/employee-upgrade-request.api'
 import UpgradeRequestFilters from './UpgradeRequestFilters.vue'
@@ -31,10 +28,6 @@ const {
   handleCancel,
 } = useUpgradeRequests()
 
-const departments = ref<{ id: number; name: string }[]>([])
-const positions = ref<{ id: number; name: string }[]>([])
-const employees = ref<{ id: number; name: string }[]>([])
-
 const drawerOpen = ref(false)
 const detailLoading = ref(false)
 const selectedRequest = ref<EmployeeUpgradeRequest | null>(null)
@@ -49,21 +42,7 @@ const subtitle = computed(() =>
     : 'Track the upgrade requests you have submitted.',
 )
 
-onMounted(async () => {
-  await loadRequests()
-  try {
-    const [dRes, pRes, eRes] = await Promise.all([
-      fetchDepartments({ per_page: 100 }),
-      fetchPositions({ per_page: 100 }),
-      fetchEmployees({ per_page: 100 }),
-    ])
-    departments.value = dRes.data.map((d) => ({ id: d.id, name: d.name }))
-    positions.value = pRes.data.map((p) => ({ id: p.id, name: p.name }))
-    employees.value = eRes.data.map((e) => ({ id: e.id, name: e.full_name }))
-  } catch {
-    // non-critical, used only for resolving names in the diff display
-  }
-})
+onMounted(loadRequests)
 
 async function handleView(request: EmployeeUpgradeRequest) {
   selectedRequest.value = request
@@ -106,7 +85,7 @@ async function confirmApprove() {
   const ok = await handleApprove(selectedRequest.value.id)
   if (ok) {
     approveConfirmOpen.value = false
-    await refreshDetail()
+    drawerOpen.value = false
   }
 }
 
@@ -115,7 +94,7 @@ async function confirmReject(reason: string) {
   const ok = await handleReject(selectedRequest.value.id, { rejection_reason: reason })
   if (ok) {
     rejectDialogOpen.value = false
-    await refreshDetail()
+    drawerOpen.value = false
   }
 }
 
@@ -153,9 +132,6 @@ async function confirmCancel() {
         :current-page="meta.current_page"
         :page-size="meta.per_page"
         :total="meta.total"
-        :departments="departments"
-        :positions="positions"
-        :employees="employees"
         @view="handleView"
         @page-change="onPageChange"
         @size-change="onPageSizeChange"
@@ -167,9 +143,6 @@ async function confirmCancel() {
       :request="selectedRequest"
       :loading="detailLoading"
       :action-loading="actionLoading"
-      :departments="departments"
-      :positions="positions"
-      :employees="employees"
       @approve="openApproveConfirm"
       @reject="openRejectDialog"
       @cancel="openCancelConfirm"

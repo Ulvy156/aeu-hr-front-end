@@ -5,10 +5,17 @@ import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { parseApiError, type ApiValidationErrors } from '@/utils/api-error'
 import { usePermission } from '@/composables/usePermissions'
 import { createEmployee, updateEmployee } from '../services/employee.api'
-import { EMPLOYMENT_STATUS } from '../types/employee'
-import type { Employee, DeptOption, PositionOption, EmploymentStatus } from '../types/employee'
+import { ACTIVE_EMPLOYMENT_STATUSES, EMPLOYMENT_STATUS, TERMINAL_EMPLOYMENT_STATUSES } from '../types/employee'
+import type { Employee, PositionOption, EmploymentStatus } from '../types/employee'
 import { fetchAvailableEmployeeUsers } from '@/features/users/services/user.api'
 import type { UserListItem } from '@/features/users/types/user'
+
+function isAtLeast18(dateOfBirth: string): boolean {
+  const dob = new Date(dateOfBirth)
+  const cutoff = new Date()
+  cutoff.setFullYear(cutoff.getFullYear() - 18)
+  return dob <= cutoff
+}
 
 export function useEmployeeForm(
   getEmployee: () => Employee | null,
@@ -37,6 +44,7 @@ export function useEmployeeForm(
     base_salary: '',
     employment_status: EMPLOYMENT_STATUS.FULL_TIME as EmploymentStatus,
     probation_end_date: null as string | null,
+    intern_end_date: null as string | null,
     emergency_contact: '',
     manager_id: null as number | null,
   })
@@ -61,9 +69,25 @@ export function useEmployeeForm(
   const rules: FormRules = {
     user_id: [{ required: true, message: 'User account is required', trigger: 'change' }],
     full_name: [{ required: true, message: 'Full name is required', trigger: 'blur' }],
+    gender: [{ required: true, message: 'Gender is required', trigger: 'change' }],
     phone_number: [
+      { required: true, message: 'Phone number is required', trigger: 'blur' },
       { pattern: /^0\d{8,9}$/, message: 'Phone must start with 0 and be 9-10 digits', trigger: 'blur' },
     ],
+    date_of_birth: [
+      { required: true, message: 'Date of birth is required', trigger: 'change' },
+      {
+        validator: (_rule, value: string | null, callback: (error?: Error) => void) => {
+          if (value && !isAtLeast18(value)) {
+            callback(new Error('Employee must be at least 18 years old'))
+            return
+          }
+          callback()
+        },
+        trigger: 'change',
+      },
+    ],
+    position_id: [{ required: true, message: 'Position is required', trigger: 'change' }],
     join_date: [{ required: true, message: 'Join date is required', trigger: 'change' }],
     employment_status: [{ required: true, message: 'Employment status is required', trigger: 'change' }],
     base_salary: [{ required: true, message: 'Base salary is required', trigger: 'blur' }],
@@ -72,6 +96,18 @@ export function useEmployeeForm(
         validator: (_rule, value: string | null, callback: (error?: Error) => void) => {
           if (value && form.join_date && value < form.join_date) {
             callback(new Error('Probation end date must be on or after the join date'))
+            return
+          }
+          callback()
+        },
+        trigger: 'change',
+      },
+    ],
+    intern_end_date: [
+      {
+        validator: (_rule, value: string | null, callback: (error?: Error) => void) => {
+          if (value && form.join_date && value < form.join_date) {
+            callback(new Error('Internship end date must be on or after the join date'))
             return
           }
           callback()
@@ -119,6 +155,7 @@ export function useEmployeeForm(
     form.base_salary = emp.base_salary
     form.employment_status = emp.employment_status
     form.probation_end_date = emp.probation_end_date
+    form.intern_end_date = emp.intern_end_date
     form.emergency_contact = emp.emergency_contact ?? ''
     form.manager_id = emp.manager?.id ?? null
   }
@@ -130,6 +167,7 @@ export function useEmployeeForm(
     form.department_id = null; form.position_id = null; form.join_date = null
     form.last_working_date = null; form.base_salary = ''; form.employment_status = EMPLOYMENT_STATUS.FULL_TIME
     form.probation_end_date = null
+    form.intern_end_date = null
     form.emergency_contact = ''
     form.manager_id = null
   }
@@ -140,8 +178,9 @@ export function useEmployeeForm(
   })
 
   watch(() => form.employment_status, (s) => {
-    if (s === EMPLOYMENT_STATUS.FULL_TIME || s === EMPLOYMENT_STATUS.PROBATION) form.last_working_date = null
+    if (ACTIVE_EMPLOYMENT_STATUSES.includes(s)) form.last_working_date = null
     if (s !== EMPLOYMENT_STATUS.PROBATION) form.probation_end_date = null
+    if (s !== EMPLOYMENT_STATUS.INTERN) form.intern_end_date = null
   })
 
   watch(() => form.user_id, () => {
@@ -164,6 +203,9 @@ export function useEmployeeForm(
     fd.append('employment_status', form.employment_status)
     if (form.employment_status === EMPLOYMENT_STATUS.PROBATION && form.probation_end_date) {
       fd.append('probation_end_date', form.probation_end_date)
+    }
+    if (form.employment_status === EMPLOYMENT_STATUS.INTERN && form.intern_end_date) {
+      fd.append('intern_end_date', form.intern_end_date)
     }
     if (can('employees.update_salary') || !isEdit.value) fd.append('base_salary', form.base_salary)
     if (form.emergency_contact) fd.append('emergency_contact', form.emergency_contact)
@@ -189,7 +231,7 @@ export function useEmployeeForm(
     const valid = await formRef.value?.validate().catch(() => false)
     if (!valid) return
     if (
-      ([EMPLOYMENT_STATUS.RESIGNED, EMPLOYMENT_STATUS.TERMINATED] as EmploymentStatus[]).includes(form.employment_status)
+      TERMINAL_EMPLOYMENT_STATUSES.includes(form.employment_status)
       && !form.last_working_date
     ) {
       notify.error('Last working date is required for resigned or terminated employees.')

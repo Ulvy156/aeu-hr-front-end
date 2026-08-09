@@ -5,7 +5,7 @@ import { useNotify } from '@/composables/useNotify'
 import { parseApiError, getFieldError, type ApiValidationErrors } from '@/utils/api-error'
 import { BaseInput, BaseSelect, BaseButton, EmployeeSearchSelect } from '@/components/common'
 import { createUpgradeRequest } from '../services/employee-upgrade-request.api'
-import { EMPLOYMENT_STATUS, EMPLOYMENT_STATUS_OPTIONS } from '@/features/employees/types/employee'
+import { ACTIVE_EMPLOYMENT_STATUS_OPTIONS, TERMINAL_EMPLOYMENT_STATUSES } from '@/features/employees/types/employee'
 import type { Employee, DeptOption, PositionOption, EmploymentStatus } from '@/features/employees/types/employee'
 import type { UpgradeRequestValues } from '../types/employee-upgrade-request'
 
@@ -42,8 +42,10 @@ const form = reactive({
 })
 
 const requiresLastWorkingDate = computed(() =>
-  form.employment_status === EMPLOYMENT_STATUS.RESIGNED || form.employment_status === EMPLOYMENT_STATUS.TERMINATED,
+  TERMINAL_EMPLOYMENT_STATUSES.includes(form.employment_status as EmploymentStatus),
 )
+
+const employmentStatusOptions = ACTIVE_EMPLOYMENT_STATUS_OPTIONS
 
 const filteredPositions = computed(() => {
   const departmentId = form.department_id ?? props.employee?.department?.id ?? null
@@ -58,7 +60,7 @@ watch(() => form.department_id, () => {
 })
 
 watch(() => form.employment_status, (status) => {
-  if (status !== EMPLOYMENT_STATUS.RESIGNED && status !== EMPLOYMENT_STATUS.TERMINATED) {
+  if (!TERMINAL_EMPLOYMENT_STATUSES.includes(status as EmploymentStatus)) {
     form.last_working_date = null
   }
 })
@@ -232,7 +234,7 @@ function handleClose() {
           <el-form-item label="Employment Status">
             <BaseSelect
               v-model="form.employment_status"
-              :options="EMPLOYMENT_STATUS_OPTIONS"
+              :options="employmentStatusOptions"
               placeholder="No change"
               clearable
             />

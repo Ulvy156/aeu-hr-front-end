@@ -27,6 +27,7 @@ const { can } = usePermission()
 function empStatusType(status: EmploymentStatus): 'success' | 'warning' | 'danger' | 'info' {
   if (status === EMPLOYMENT_STATUS.FULL_TIME) return 'success'
   if (status === EMPLOYMENT_STATUS.PROBATION) return 'warning'
+  if (status === EMPLOYMENT_STATUS.INTERN) return 'info'
   if (status === EMPLOYMENT_STATUS.RESIGNED) return 'warning'
   if (status === EMPLOYMENT_STATUS.TERMINATED) return 'danger'
   return 'info'

@@ -12,6 +12,22 @@ export interface UpgradeRequestValues {
   manager_id?: number | null
 }
 
+export interface UpgradeRequestFkSnapshot {
+  id: number
+  name: string | null
+}
+
+// Shape of current_values/proposed_values as returned by the API: department_id,
+// position_id, and manager_id are resolved { id, name } snapshots, not raw ids.
+export interface UpgradeRequestValueSnapshot {
+  department_id?: UpgradeRequestFkSnapshot
+  position_id?: UpgradeRequestFkSnapshot
+  base_salary?: string
+  employment_status?: EmploymentStatus
+  last_working_date?: string | null
+  manager_id?: UpgradeRequestFkSnapshot | null
+}
+
 export interface UpgradeRequestAttachment {
   name: string
   size: number
@@ -32,8 +48,8 @@ export interface UpgradeRequestUserRef {
 export interface EmployeeUpgradeRequest {
   id: number
   status: UpgradeRequestStatus
-  current_values: UpgradeRequestValues
-  proposed_values: UpgradeRequestValues
+  current_values: UpgradeRequestValueSnapshot
+  proposed_values: UpgradeRequestValueSnapshot
   effective_date: string | null
   rejection_reason: string | null
   attachments: UpgradeRequestAttachment[]

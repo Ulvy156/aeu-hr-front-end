@@ -12,9 +12,6 @@ const props = defineProps<{
   request: EmployeeUpgradeRequest | null
   loading?: boolean
   actionLoading?: boolean
-  departments: { id: number; name: string }[]
-  positions: { id: number; name: string }[]
-  employees: { id: number; name: string }[]
 }>()
 
 const emit = defineEmits<{
@@ -29,7 +26,7 @@ const auth = useAuthStore()
 
 const diffRows = computed(() => {
   if (!props.request) return []
-  return buildUpgradeDiff(props.request.current_values, props.request.proposed_values, props.departments, props.positions, props.employees)
+  return buildUpgradeDiff(props.request.current_values, props.request.proposed_values)
 })
 
 const canApprove = computed(() => {

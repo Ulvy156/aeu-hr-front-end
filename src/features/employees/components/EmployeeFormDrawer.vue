@@ -2,8 +2,14 @@
 import { ref, computed, watch } from 'vue'
 import { getFieldError } from '@/utils/api-error'
 import { usePermission } from '@/composables/usePermissions'
-import { EMPLOYMENT_STATUS, EMPLOYMENT_STATUS_OPTIONS } from '../types/employee'
-import type { Employee, DeptOption, PositionOption, EmploymentStatus } from '../types/employee'
+import {
+  ACTIVE_EMPLOYMENT_STATUS_OPTIONS,
+  ACTIVE_EMPLOYMENT_STATUSES,
+  EMPLOYMENT_STATUS,
+  EMPLOYMENT_STATUS_OPTIONS,
+  TERMINAL_EMPLOYMENT_STATUSES,
+} from '../types/employee'
+import type { Employee, DeptOption, PositionOption } from '../types/employee'
 import { BaseInput, BaseSelect, StatusBadge, EmployeeSearchSelect } from '@/components/common'
 import BaseButton from '@/components/common/BaseButton.vue'
 import EmployeeDocumentUpload from './EmployeeDocumentUpload.vue'
@@ -37,11 +43,21 @@ const {
 
 const existingDocs = computed(() => props.employee?.documents ?? [])
 
+const employmentStatusOptions = computed(() =>
+  isEdit.value ? EMPLOYMENT_STATUS_OPTIONS : ACTIVE_EMPLOYMENT_STATUS_OPTIONS,
+)
+
 const genderOptions: { label: string; value: 'male' | 'female' | 'other' }[] = [
   { label: 'Male', value: 'male' },
   { label: 'Female', value: 'female' },
   { label: 'Other', value: 'other' },
 ]
+
+function disabledDobDate(date: Date) {
+  const cutoff = new Date()
+  cutoff.setFullYear(cutoff.getFullYear() - 18)
+  return date > cutoff
+}
 
 watch(() => props.employee, (emp) => {
   photoFile.value = null
@@ -78,6 +94,7 @@ function onSubmit() {
     () => {
       emit('update:visible', false)
       emit('saved')
+      resetForm()
     },
   )
 }
@@ -121,17 +138,27 @@ function onSubmit() {
           </template>
           <el-option v-for="u in userOptions" :key="u.id" :label="`${u.name} (${u.email})`" :value="u.id" />
         </el-select>
+        <p v-if="getFieldError(fieldErrors, 'user_id')" class="mt-1 text-xs text-red-500">
+          {{ getFieldError(fieldErrors, 'user_id') }}
+        </p>
       </el-form-item>
 
       <div class="grid grid-cols-2 gap-x-4">
         <el-form-item label="Full Name" prop="full_name">
           <BaseInput v-model="form.full_name" placeholder="Full name" />
         </el-form-item>
-        <el-form-item label="Gender">
+        <el-form-item label="Gender" prop="gender">
           <BaseSelect v-model="form.gender" :options="genderOptions" placeholder="Select gender" clearable />
         </el-form-item>
-        <el-form-item label="Date of Birth">
-          <el-date-picker v-model="form.date_of_birth" type="date" placeholder="Select date" value-format="YYYY-MM-DD" class="w-full" />
+        <el-form-item label="Date of Birth" prop="date_of_birth">
+          <el-date-picker
+            v-model="form.date_of_birth"
+            type="date"
+            placeholder="Select date"
+            value-format="YYYY-MM-DD"
+            :disabled-date="disabledDobDate"
+            class="w-full"
+          />
         </el-form-item>
         <el-form-item label="Phone Number" prop="phone_number">
           <BaseInput v-model="form.phone_number" placeholder="0xx xxx xxxx" maxlength="10" @input="filterPhoneInput" />
@@ -155,11 +182,11 @@ function onSubmit() {
             clearable
           />
         </el-form-item>
-        <el-form-item label="Position">
+        <el-form-item label="Position" prop="position_id">
           <BaseSelect
             v-model="form.position_id"
             :options="filteredPositions.map((p) => ({ label: p.name, value: p.id }))"
-            placeholder="No position"
+            placeholder="Select position"
             clearable
             filterable
           />
@@ -174,14 +201,14 @@ function onSubmit() {
           <p class="text-xs text-slate-400">The CEO sits at the top of the org chart and has no manager.</p>
         </div>
         <el-form-item label="Employment Status" prop="employment_status">
-          <BaseSelect v-model="form.employment_status" :options="EMPLOYMENT_STATUS_OPTIONS" />
+          <BaseSelect v-model="form.employment_status" :options="employmentStatusOptions" />
         </el-form-item>
         <el-form-item label="Join Date" prop="join_date">
           <el-date-picker v-model="form.join_date" type="date" placeholder="Select date" value-format="YYYY-MM-DD" class="w-full" />
         </el-form-item>
         <el-form-item
           label="Last Working Date"
-          :required="([EMPLOYMENT_STATUS.RESIGNED, EMPLOYMENT_STATUS.TERMINATED] as EmploymentStatus[]).includes(form.employment_status)"
+          :required="TERMINAL_EMPLOYMENT_STATUSES.includes(form.employment_status)"
         >
           <el-date-picker
             v-model="form.last_working_date"
@@ -189,11 +216,15 @@ function onSubmit() {
             placeholder="Select date"
             value-format="YYYY-MM-DD"
             class="w-full"
-            :disabled="([EMPLOYMENT_STATUS.FULL_TIME, EMPLOYMENT_STATUS.PROBATION] as EmploymentStatus[]).includes(form.employment_status)"
+            :disabled="ACTIVE_EMPLOYMENT_STATUSES.includes(form.employment_status)"
           />
         </el-form-item>
         <el-form-item v-if="form.employment_status === EMPLOYMENT_STATUS.PROBATION" label="Probation End Date" prop="probation_end_date">
           <el-date-picker v-model="form.probation_end_date" type="date" placeholder="Optional" value-format="YYYY-MM-DD" class="w-full" />
+          <p class="mt-1 text-xs text-slate-400">Defaults to 3 months after join date if left blank.</p>
+        </el-form-item>
+        <el-form-item v-if="form.employment_status === EMPLOYMENT_STATUS.INTERN" label="Internship End Date" prop="intern_end_date">
+          <el-date-picker v-model="form.intern_end_date" type="date" placeholder="Optional" value-format="YYYY-MM-DD" class="w-full" />
           <p class="mt-1 text-xs text-slate-400">Defaults to 3 months after join date if left blank.</p>
         </el-form-item>
         <el-form-item v-if="!isEdit || can('employees.update_salary')" label="Base Salary" prop="base_salary">
