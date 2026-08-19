@@ -221,10 +221,28 @@ const router = createRouter({
           meta: { permission: 'users.view' },
         },
         {
+          path: 'users/:id',
+          name: 'user-detail',
+          component: () => import('@/features/users/views/UserDetailView.vue'),
+          meta: { permission: 'users.view' },
+        },
+        {
+          path: 'users/:id/permissions',
+          name: 'user-permissions',
+          component: () => import('@/features/users/views/UserPermissionsView.vue'),
+          meta: { permission: 'users.assign_permissions' },
+        },
+        {
           path: 'audit-logs',
           name: 'audit-logs',
           component: () => import('@/features/audit-logs/views/AuditLogsView.vue'),
           meta: { permission: 'audit_logs.view' },
+        },
+        {
+          path: 'permissions',
+          name: 'permissions',
+          component: () => import('@/features/permissions/views/PermissionsView.vue'),
+          meta: { permission: 'roles_permissions.permissions_view' },
         },
       ],
     },

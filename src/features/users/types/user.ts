@@ -57,6 +57,7 @@ export interface Permission {
   id: number
   name: string
   module: string
+  description: string | null
 }
 
 export interface UserListParams {
@@ -109,6 +110,10 @@ export interface AddUserPermissionPayload {
 
 export interface RemoveUserPermissionPayload {
   permission: string
+}
+
+export interface UpdatePermissionDescriptionPayload {
+  description: string | null
 }
 
 export interface ResetPasswordPayload {

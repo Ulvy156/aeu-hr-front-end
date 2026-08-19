@@ -14,6 +14,7 @@ import type {
   SyncUserPermissionsPayload,
   AddUserPermissionPayload,
   RemoveUserPermissionPayload,
+  UpdatePermissionDescriptionPayload,
   ResetPasswordPayload,
 } from '../types/user'
 
@@ -79,6 +80,14 @@ export async function fetchPermissions(): Promise<ApiResponse<Permission[]>> {
 
 export async function getUserPermissions(userId: number): Promise<ApiResponse<UserPermissionsResponse>> {
   const { data } = await api.get(`/users/${userId}/permissions`)
+  return data
+}
+
+export async function updatePermissionDescription(
+  id: number,
+  payload: UpdatePermissionDescriptionPayload,
+): Promise<ApiResponse<Permission>> {
+  const { data } = await api.patch(`/permissions/${id}`, payload)
   return data
 }
 

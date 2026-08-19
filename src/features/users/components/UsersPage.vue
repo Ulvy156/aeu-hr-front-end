@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, defineAsyncComponent } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
@@ -16,12 +17,11 @@ import UserCard from './UserCard.vue'
 const UserCreateDialog = defineAsyncComponent(() => import('./UserCreateDialog.vue'));
 const UserEditDialog = defineAsyncComponent(() => import('./UserEditDialog.vue'));
 const UserRolesDialog = defineAsyncComponent(() => import('./UserRolesDialog.vue'));
-const UserDetailDrawer = defineAsyncComponent(() => import('./UserDetailDrawer.vue'));
-const UserPermissionDialog = defineAsyncComponent(() => import('./UserPermissionDialog.vue'));
 const UserResetPasswordDialog = defineAsyncComponent(() => import('./UserResetPasswordDialog.vue'));
 
 const { can } = usePermission()
 const notify = useNotify()
+const router = useRouter()
 const {
   users,
   meta,
@@ -36,12 +36,9 @@ const {
 const createOpen = ref(false)
 const editOpen = ref(false)
 const rolesOpen = ref(false)
-const permissionsOpen = ref(false)
-const detailOpen = ref(false)
 const resetPasswordOpen = ref(false)
 
 const selectedUser = ref<UserListItem | null>(null)
-const detailUserId = ref<number | null>(null)
 const roles = ref<Role[]>([])
 const isLoadUser = ref(false);
 
@@ -56,8 +53,7 @@ onMounted(async () => {
 })
 
 function handleView(user: UserListItem) {
-  detailUserId.value = user.id
-  detailOpen.value = true
+  router.push({ name: 'user-detail', params: { id: user.id } })
 }
 
 function handleEdit(user: UserListItem) {
@@ -71,8 +67,7 @@ function handleAssignRoles(user: UserListItem) {
 }
 
 function handleAssignPermissions(user: UserListItem) {
-  selectedUser.value = user
-  permissionsOpen.value = true
+  router.push({ name: 'user-permissions', params: { id: user.id } })
 }
 
 function handleResetPassword(user: UserListItem) {
@@ -178,17 +173,6 @@ async function reloadUser() {
       :user="selectedUser"
       :roles="roles"
       @updated="reloadUser"
-    />
-
-    <UserPermissionDialog
-      v-model:visible="permissionsOpen"
-      :user="selectedUser"
-      @saved="loadUsers"
-    />
-
-    <UserDetailDrawer
-      v-model:visible="detailOpen"
-      :user-id="detailUserId"
     />
 
     <UserResetPasswordDialog

@@ -33,6 +33,7 @@ import {
   TrendingUp,
   Network,
   QrCode,
+  KeyRound,
 } from "@lucide/vue";
 
 defineProps<{
@@ -178,6 +179,12 @@ const menuGroups = computed<MenuGroup[]>(() => [
         permission: "announcement_categories.view",
       },
       { label: "Audit Logs", path: "/audit-logs", icon: ScrollText, permission: "audit_logs.view" },
+      {
+        label: "Permissions",
+        path: "/permissions",
+        icon: KeyRound,
+        permission: "roles_permissions.permissions_view",
+      },
     ],
   },
     {
