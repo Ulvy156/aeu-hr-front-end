@@ -174,13 +174,16 @@ function onSubmit() {
       <!-- Employment -->
       <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 mt-2">Employment</p>
       <div class="grid grid-cols-2 gap-x-4">
-        <el-form-item label="Department">
+        <el-form-item label="Department" prop="department_id">
           <BaseSelect
             v-model="form.department_id"
             :options="departments.map((d) => ({ label: d.name, value: d.id }))"
-            placeholder="No department"
-            clearable
+            placeholder="Select department"
+            filterable
           />
+          <p v-if="getFieldError(fieldErrors, 'department_id')" class="mt-1 text-xs text-red-500">
+            {{ getFieldError(fieldErrors, 'department_id') }}
+          </p>
         </el-form-item>
         <el-form-item label="Position" prop="position_id">
           <BaseSelect
@@ -192,7 +195,11 @@ function onSubmit() {
           />
         </el-form-item>
         <el-form-item v-if="!selectedUserIsCeo" label="Manager" prop="manager_id" required>
-          <EmployeeSearchSelect v-model="form.manager_id" placeholder="Search manager..." />
+          <EmployeeSearchSelect
+            v-model="form.manager_id"
+            placeholder="Search manager..."
+            :department-id="form.department_id"
+          />
           <p v-if="getFieldError(fieldErrors, 'manager_id')" class="mt-1 text-xs text-red-500">
             {{ getFieldError(fieldErrors, 'manager_id') }}
           </p>

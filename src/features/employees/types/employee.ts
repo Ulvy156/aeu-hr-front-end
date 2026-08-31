@@ -114,6 +114,7 @@ export const DOCUMENT_MAX_TOTAL_SIZE = 20 * 1024 * 1024
 export interface EmployeeListParams {
   search?: string
   department_id?: number | null
+  include_ceo?: 1
   position_id?: number | null
   employment_status?: string
   per_page?: number

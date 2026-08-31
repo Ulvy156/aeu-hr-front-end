@@ -32,7 +32,15 @@ const form = reactive<PositionPayload>({
 
 const rules: FormRules = {
   name: [{ required: true, message: 'Position name is required', trigger: 'blur' }],
+  department_id: [{ required: true, message: 'Department is required', trigger: 'change' }],
   status: [{ required: true, message: 'Status is required', trigger: 'change' }],
+}
+
+function resetForm() {
+  form.name = ''
+  form.department_id = null
+  form.status = 'active'
+  formRef.value?.clearValidate()
 }
 
 watch(
@@ -43,9 +51,7 @@ watch(
       form.department_id = pos.department?.id ?? null
       form.status = pos.status
     } else {
-      form.name = ''
-      form.department_id = null
-      form.status = 'active'
+      resetForm()
     }
   },
 )
@@ -69,6 +75,7 @@ async function handleSubmit() {
     } else {
       await createPosition({ ...form })
       notify.success('Position created successfully.')
+      resetForm()
     }
     emit('update:visible', false)
     emit('saved')
@@ -93,10 +100,10 @@ async function handleSubmit() {
         <BaseInput v-model="form.name" placeholder="e.g. Accountant, HR Officer..." />
       </el-form-item>
 
-      <el-form-item label="Department">
+      <el-form-item label="Department" prop="department_id">
         <el-select
           v-model="form.department_id"
-          placeholder="No department"
+          placeholder="Select department"
           class="w-full"
           clearable
         >

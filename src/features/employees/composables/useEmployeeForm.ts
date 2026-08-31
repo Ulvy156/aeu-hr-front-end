@@ -87,6 +87,7 @@ export function useEmployeeForm(
         trigger: 'change',
       },
     ],
+    department_id: [{ required: true, message: 'Department is required', trigger: 'change' }],
     position_id: [{ required: true, message: 'Position is required', trigger: 'change' }],
     join_date: [{ required: true, message: 'Join date is required', trigger: 'change' }],
     employment_status: [{ required: true, message: 'Employment status is required', trigger: 'change' }],

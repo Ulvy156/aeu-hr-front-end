@@ -16,6 +16,7 @@ const props = withDefaults(
     disabled?: boolean
     clearable?: boolean
     multiple?: boolean
+    departmentId?: number | null
   }>(),
   {
     initialOption: null,
@@ -23,6 +24,7 @@ const props = withDefaults(
     disabled: false,
     clearable: true,
     multiple: false,
+    departmentId: null,
   },
 )
 
@@ -41,7 +43,10 @@ async function search(query: string) {
   }
   loading.value = true
   try {
-    const res = await fetchEmployees({ search: query, per_page: 15 })
+    const params = props.departmentId
+      ? { search: query, per_page: 15, department_id: props.departmentId, include_ceo: 1 as const }
+      : { search: query, per_page: 15 }
+    const res = await fetchEmployees(params)
     options.value = res.data.map((e) => ({ id: e.id, full_name: e.full_name, employee_id: e.employee_id }))
   } catch {
     options.value = []

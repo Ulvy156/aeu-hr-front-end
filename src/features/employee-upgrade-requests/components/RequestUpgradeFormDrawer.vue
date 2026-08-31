@@ -47,8 +47,10 @@ const requiresLastWorkingDate = computed(() =>
 
 const employmentStatusOptions = ACTIVE_EMPLOYMENT_STATUS_OPTIONS
 
+const effectiveDepartmentId = computed(() => form.department_id ?? props.employee?.department?.id ?? null)
+
 const filteredPositions = computed(() => {
-  const departmentId = form.department_id ?? props.employee?.department?.id ?? null
+  const departmentId = effectiveDepartmentId.value
   if (!departmentId) return props.positions
   return props.positions.filter((p) => p.department_id === departmentId)
 })
@@ -265,6 +267,7 @@ function handleClose() {
               v-model="form.manager_id"
               placeholder="No change"
               :disabled="form.clear_manager"
+              :department-id="effectiveDepartmentId"
             />
             <el-checkbox v-model="form.clear_manager" class="mt-2">
               Clear manager (remove from reporting line)
