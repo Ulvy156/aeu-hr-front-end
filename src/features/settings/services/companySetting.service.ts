@@ -33,9 +33,7 @@ export async function updateCompanySettings(
     fd.append('salary_currency', form.salary_currency)
     fd.append('payroll_day_rate', String(form.payroll_day_rate))
 
-    const { data } = await api.post('/settings/company', fd, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    const { data } = await api.post('/settings/company', fd)
     return data
   }
 
