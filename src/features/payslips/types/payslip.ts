@@ -11,6 +11,15 @@ export interface PayslipBatch {
   status: string
 }
 
+export interface PayslipTaxBracket {
+  bracket: string
+  from: string
+  to: string
+  rate: string
+  taxable_amount: string
+  tax_amount: string
+}
+
 export interface Payslip {
   id: number
   base_salary: string
@@ -19,12 +28,16 @@ export interface Payslip {
   present_days: string
   absent_days: string
   unpaid_leave_days: string
+  maternity_leave_days?: string
   gross_salary: string
   unpaid_deduction: string
   absence_deduction: string
+  maternity_deduction?: string
   taxable_salary: string
   tax_rate: string
   tax_amount: string
+  nssf_deduction?: string
+  tax_breakdown?: PayslipTaxBracket[]
   net_salary: string
   employee: PayslipEmployee
   payroll_batch: PayslipBatch
@@ -37,4 +50,15 @@ export interface PaginationMeta {
   last_page: number
   per_page: number
   total: number
+}
+
+const currentYear = new Date().getFullYear()
+
+/** Years shown as quick pills / summary cards on the payslips page. */
+export const PAYSLIP_YEAR_PILLS = [currentYear, currentYear - 1, currentYear - 2] as const
+
+export type PayslipYearPill = (typeof PAYSLIP_YEAR_PILLS)[number]
+
+export interface PayslipYearCounts {
+  years: Partial<Record<number, number>>
 }

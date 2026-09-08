@@ -1,25 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ComposeOption } from 'echarts/core'
-import type { BarSeriesOption, PieSeriesOption } from 'echarts/charts'
-import type {
-  GridComponentOption,
-  TooltipComponentOption,
-  LegendComponentOption,
-} from 'echarts/components'
+import type { EChartsCoreOption } from 'echarts/core'
 import { VChart } from '@/lib/echarts'
-
-type AppChartOption = ComposeOption<
-  | BarSeriesOption
-  | PieSeriesOption
-  | GridComponentOption
-  | TooltipComponentOption
-  | LegendComponentOption
->
 
 const props = withDefaults(
   defineProps<{
-    option: AppChartOption
+    option: EChartsCoreOption
     height?: number | string
   }>(),
   {
