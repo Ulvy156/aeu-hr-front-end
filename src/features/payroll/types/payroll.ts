@@ -11,7 +11,9 @@ export interface PayrollTotals {
   gross_salary: string
   unpaid_deduction: string
   absence_deduction: string
+  special_sick_deduction?: string
   tax_amount: string
+  nssf_deduction?: string
   net_salary: string
 }
 
@@ -80,3 +82,21 @@ export interface PaginationMeta {
   per_page: number
   total: number
 }
+
+export interface PayrollStatusCounts {
+  all: number
+  draft: number
+  pending_approval: number
+  approved: number
+  rejected: number
+}
+
+export const EMPTY_PAYROLL_STATUS_COUNTS: PayrollStatusCounts = {
+  all: 0,
+  draft: 0,
+  pending_approval: 0,
+  approved: 0,
+  rejected: 0,
+}
+
+export const PAYROLL_STATUS_VALUES = ['draft', 'pending_approval', 'approved', 'rejected'] as const

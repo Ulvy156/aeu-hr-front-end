@@ -44,9 +44,35 @@ export const EMPLOYMENT_STATUS_LABELS: Record<EmploymentStatus, string> = {
   [EMPLOYMENT_STATUS.TERMINATED]: 'Terminated',
 }
 
-export const EMPLOYMENT_STATUS_OPTIONS: { label: string; value: EmploymentStatus }[] = Object.entries(
-  EMPLOYMENT_STATUS_LABELS,
-).map(([value, label]) => ({ label, value: value as EmploymentStatus }))
+export const EMPLOYMENT_STATUS_OPTIONS: { label: string; value: EmploymentStatus }[] =
+  Object.entries(EMPLOYMENT_STATUS_LABELS).map(([value, label]) => ({
+    label,
+    value: value as EmploymentStatus,
+  }))
+
+export const EMPLOYMENT_STATUS_VALUES = Object.values(EMPLOYMENT_STATUS)
+
+export interface EmployeeStatusCounts {
+  all: number
+  active: number
+  left: number
+  'full-time': number
+  probation: number
+  intern: number
+  resigned: number
+  terminated: number
+}
+
+export const EMPTY_EMPLOYEE_STATUS_COUNTS: EmployeeStatusCounts = {
+  all: 0,
+  active: 0,
+  left: 0,
+  'full-time': 0,
+  probation: 0,
+  intern: 0,
+  resigned: 0,
+  terminated: 0,
+}
 
 // Statuses that keep the linked user account active and must not carry a last_working_date.
 export const ACTIVE_EMPLOYMENT_STATUSES: EmploymentStatus[] = [

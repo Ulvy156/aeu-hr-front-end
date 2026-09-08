@@ -47,7 +47,8 @@ function handleClose() {
     @update:model-value="handleClose"
   >
     <div class="mb-4 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-700">
-      Rejecting this request will leave the employee's current data unchanged. Please provide a clear reason.
+      Rejecting this request will leave the employee's current data unchanged. Please provide a
+      clear reason.
     </div>
 
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">

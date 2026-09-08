@@ -1,4 +1,9 @@
-export type AnnouncementStatus = 'draft' | 'pending_approval' | 'published' | 'rejected' | 'archived'
+export type AnnouncementStatus =
+  | 'draft'
+  | 'pending_approval'
+  | 'published'
+  | 'rejected'
+  | 'archived'
 export type AnnouncementPriority = 'normal' | 'important' | 'urgent'
 export type AnnouncementTargetType = 'all' | 'role' | 'department' | 'employee'
 export type AnnouncementReadStatus = 'read' | 'unread'
@@ -92,4 +97,44 @@ export interface PaginationMeta {
   last_page: number
   per_page: number
   total: number
+}
+
+export interface AnnouncementStatusCounts {
+  all: number
+  draft: number
+  pending_approval: number
+  published: number
+  rejected: number
+  archived: number
+}
+
+export interface AnnouncementBoardCounts {
+  all: number
+  unread: number
+  read: number
+  urgent_or_important: number
+}
+
+export const ANNOUNCEMENT_STATUS_VALUES = [
+  'draft',
+  'pending_approval',
+  'published',
+  'rejected',
+  'archived',
+] as const
+
+export const EMPTY_ANNOUNCEMENT_STATUS_COUNTS: AnnouncementStatusCounts = {
+  all: 0,
+  draft: 0,
+  pending_approval: 0,
+  published: 0,
+  rejected: 0,
+  archived: 0,
+}
+
+export const EMPTY_ANNOUNCEMENT_BOARD_COUNTS: AnnouncementBoardCounts = {
+  all: 0,
+  unread: 0,
+  read: 0,
+  urgent_or_important: 0,
 }

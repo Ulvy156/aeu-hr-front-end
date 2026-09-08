@@ -3,6 +3,29 @@ import type { EmploymentStatus } from '@/features/employees/types/employee'
 export type UpgradeRequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
 export type { EmploymentStatus }
 
+export const UPGRADE_REQUEST_STATUS_VALUES: UpgradeRequestStatus[] = [
+  'pending',
+  'approved',
+  'rejected',
+  'cancelled',
+]
+
+export interface UpgradeRequestStatusCounts {
+  all: number
+  pending: number
+  approved: number
+  rejected: number
+  cancelled: number
+}
+
+export const EMPTY_UPGRADE_REQUEST_STATUS_COUNTS: UpgradeRequestStatusCounts = {
+  all: 0,
+  pending: 0,
+  approved: 0,
+  rejected: 0,
+  cancelled: 0,
+}
+
 export interface UpgradeRequestValues {
   department_id?: number
   position_id?: number

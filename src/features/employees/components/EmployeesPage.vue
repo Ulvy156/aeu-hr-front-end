@@ -4,7 +4,7 @@ import { ElMessageBox } from 'element-plus'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { UserPlus } from '@lucide/vue'
-import { PageHeader } from '@/components/common'
+import { AppCard, BaseButton, PageHeader } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
 import { useEmployees } from '../composables/useEmployees'
 import { deleteEmployee } from '../services/employee.api'
@@ -13,6 +13,7 @@ import { fetchPositions } from '@/features/positions/services/position.api'
 import type { Employee, DeptOption, PositionOption } from '../types/employee'
 import EmployeeFilters from './EmployeeFilters.vue'
 import EmployeeTable from './EmployeeTable.vue'
+import EmployeeSummaryCards from './EmployeeSummaryCards.vue'
 import EmployeeFormDrawer from './EmployeeFormDrawer.vue'
 import EmployeeDetailDrawer from './EmployeeDetailDrawer.vue'
 import RequestUpgradeFormDrawer from '@/features/employee-upgrade-requests/components/RequestUpgradeFormDrawer.vue'
@@ -21,6 +22,7 @@ const { can } = usePermission()
 const notify = useNotify()
 const {
   employees,
+  statusCounts,
   meta,
   loading,
   filters,
@@ -82,7 +84,12 @@ async function handleDelete(emp: Employee) {
     await ElMessageBox.confirm(
       `Are you sure you want to delete "${emp.full_name}"? This will soft-delete the record and deactivate their account.`,
       'Delete Employee',
-      { confirmButtonText: 'Delete', cancelButtonText: 'Cancel', type: 'warning', confirmButtonClass: 'el-button--danger' },
+      {
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        type: 'warning',
+        confirmButtonClass: 'el-button--danger',
+      },
     )
   } catch {
     return
@@ -99,47 +106,41 @@ async function handleDelete(emp: Employee) {
 </script>
 
 <template>
-  <div class="space-y-5">
-    <!-- Page header -->
+  <div class="space-y-6">
     <PageHeader
       title="Employees"
       subtitle="Manage employee records, profiles, and employment details."
     >
       <template #action>
-        <button
-          v-if="can('employees.create')"
-          class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
-          @click="handleCreate"
-        >
-          <UserPlus class="w-4 h-4" />
+        <BaseButton v-if="can('employees.create')" type="primary" @click="handleCreate">
+          <UserPlus class="mr-1.5 h-4 w-4" />
           Add Employee
-        </button>
+        </BaseButton>
       </template>
     </PageHeader>
 
-    <!-- Filter card -->
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-      <EmployeeFilters
-        :search="filters.search"
-        :department-id="filters.department_id"
-        :position-id="filters.position_id"
-        :job-level="filters.job_level"
-        :employment-status="filters.employment_status"
-        :departments="departments"
-        :positions="positions"
-        @apply="applyFilters"
-      />
-    </div>
+    <EmployeeSummaryCards :counts="statusCounts" :loading="loading && employees.length === 0" />
 
-    <!-- Table card -->
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-        <div>
-          <h2 class="text-base font-semibold text-slate-900">Employee List</h2>
-          <p class="text-sm text-slate-500 mt-0.5">
-            {{ meta.total }} {{ meta.total === 1 ? 'employee' : 'employees' }} found
-          </p>
-        </div>
+    <AppCard no-padding>
+      <div class="border-b border-gray-100 px-5 py-4">
+        <EmployeeFilters
+          :search="filters.search"
+          :department-id="filters.department_id"
+          :position-id="filters.position_id"
+          :job-level="filters.job_level"
+          :employment-status="filters.employment_status"
+          :departments="departments"
+          :positions="positions"
+          :counts="statusCounts"
+          @apply="applyFilters"
+        />
+      </div>
+
+      <div class="flex items-center justify-between px-5 py-3">
+        <p class="text-sm text-slate-500">
+          {{ meta.total }} {{ meta.total === 1 ? 'employee' : 'employees' }}
+        </p>
+        <p class="text-xs text-slate-400">Row click opens detail</p>
       </div>
 
       <EmployeeTable
@@ -155,7 +156,7 @@ async function handleDelete(emp: Employee) {
         @page-change="onPageChange"
         @size-change="onPageSizeChange"
       />
-    </div>
+    </AppCard>
 
     <EmployeeFormDrawer
       v-model:visible="formOpen"

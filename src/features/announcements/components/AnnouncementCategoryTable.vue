@@ -37,7 +37,9 @@ function formatDate(iso: string): string {
         v-if="loading"
         class="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-b-xl"
       >
-        <div class="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <div
+          class="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"
+        />
       </div>
 
       <el-table :data="categories" class="w-full">
@@ -68,7 +70,11 @@ function formatDate(iso: string): string {
         <el-table-column label="Actions" width="100" fixed="right" align="center">
           <template #default="{ row }">
             <div class="flex items-center justify-center gap-1">
-              <el-tooltip v-if="can('announcement_categories.update')" content="Edit" placement="top">
+              <el-tooltip
+                v-if="can('announcement_categories.update')"
+                content="Edit"
+                placement="top"
+              >
                 <button
                   class="p-1.5 rounded-md hover:bg-gray-100 transition-colors text-slate-500 hover:text-emerald-600"
                   @click="emit('edit', row)"

@@ -49,7 +49,13 @@ function handleReset() {
         </template>
       </BaseInput>
 
-      <BaseSelect v-model="localStatus" :options="statusOptions" placeholder="All Status" clearable class="w-1/2" />
+      <BaseSelect
+        v-model="localStatus"
+        :options="statusOptions"
+        placeholder="All Status"
+        clearable
+        class="w-1/2"
+      />
     </div>
 
     <div class="w-1/2 flex justify-end">

@@ -1,5 +1,11 @@
 import api from '@/lib/axios'
-import type { Vacancy, VacancyListParams, VacancyPayload, PaginationMeta } from '../types/vacancy'
+import type {
+  Vacancy,
+  VacancyListParams,
+  VacancyPayload,
+  VacancySummary,
+  PaginationMeta,
+} from '../types/vacancy'
 
 interface ApiResponse<T> {
   success: boolean
@@ -12,6 +18,7 @@ interface PaginatedApiResponse<T> {
   message: string
   data: T[]
   meta: PaginationMeta
+  summary?: VacancySummary
 }
 
 export async function fetchVacancies(

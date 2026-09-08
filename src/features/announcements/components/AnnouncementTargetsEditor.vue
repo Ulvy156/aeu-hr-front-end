@@ -59,11 +59,7 @@ function targetError(index: number): string | undefined {
 
 <template>
   <div class="space-y-3">
-    <div
-      v-for="(target, index) in modelValue"
-      :key="index"
-      class="flex items-start gap-2"
-    >
+    <div v-for="(target, index) in modelValue" :key="index" class="flex items-start gap-2">
       <BaseSelect
         :model-value="target.target_type"
         :options="targetTypeOptions"

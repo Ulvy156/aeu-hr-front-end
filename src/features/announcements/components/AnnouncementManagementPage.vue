@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Plus } from '@lucide/vue'
+import { Megaphone, Plus } from '@lucide/vue'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { usePermission } from '@/composables/usePermissions'
-import { AppCard, BaseButton, ConfirmDialog, PageHeader } from '@/components/common'
+import { AppCard, BaseButton, ConfirmDialog } from '@/components/common'
 import { useAnnouncements } from '../composables/useAnnouncements'
 import { fetchAnnouncement } from '../services/announcement.api'
+import { needsAttention } from '../utils/announcementDisplay'
 import AnnouncementFilters from './AnnouncementFilters.vue'
 import AnnouncementTable from './AnnouncementTable.vue'
+import AnnouncementSummaryCards from './AnnouncementSummaryCards.vue'
+import AnnouncementPendingCard from './AnnouncementPendingCard.vue'
+import AnnouncementNeedsAttention from './AnnouncementNeedsAttention.vue'
 import AnnouncementDetailDrawer from './AnnouncementDetailDrawer.vue'
 import RejectAnnouncementDialog from './RejectAnnouncementDialog.vue'
 import type { Announcement } from '../types/announcement'
@@ -19,9 +23,13 @@ const { can } = usePermission()
 const notify = useNotify()
 const {
   announcements,
+  statusCounts,
+  pendingAnnouncement,
+  latestRejected,
   meta,
   loading,
   actionLoading,
+  filters,
   loadAnnouncements,
   applyFilters,
   onPageChange,
@@ -42,6 +50,15 @@ const cancelSubmissionConfirmOpen = ref(false)
 const approveConfirmOpen = ref(false)
 const rejectDialogOpen = ref(false)
 const archiveConfirmOpen = ref(false)
+
+const showNeedsAttention = computed(() => announcements.value.some(needsAttention))
+const rejectedMessage = computed(() => {
+  const item = latestRejected.value
+  if (!item || statusCounts.value.rejected <= 0) return ''
+  if (filters.status === 'pending_approval') return ''
+  if (item.rejection_reason) return `${item.title} — ${item.rejection_reason}`
+  return `${item.title} was rejected.`
+})
 
 onMounted(loadAnnouncements)
 
@@ -73,23 +90,28 @@ async function refreshDetail() {
   }
 }
 
-function openSubmitConfirm() {
+function openSubmitConfirm(announcement?: Announcement) {
+  if (announcement) selectedAnnouncement.value = announcement
   submitConfirmOpen.value = true
 }
 
-function openCancelSubmissionConfirm() {
+function openCancelSubmissionConfirm(announcement?: Announcement) {
+  if (announcement) selectedAnnouncement.value = announcement
   cancelSubmissionConfirmOpen.value = true
 }
 
-function openApproveConfirm() {
+function openApproveConfirm(announcement?: Announcement) {
+  if (announcement) selectedAnnouncement.value = announcement
   approveConfirmOpen.value = true
 }
 
-function openRejectDialog() {
+function openRejectDialog(announcement?: Announcement) {
+  if (announcement) selectedAnnouncement.value = announcement
   rejectDialogOpen.value = true
 }
 
-function openArchiveConfirm() {
+function openArchiveConfirm(announcement?: Announcement) {
+  if (announcement) selectedAnnouncement.value = announcement
   archiveConfirmOpen.value = true
 }
 
@@ -141,44 +163,80 @@ async function confirmArchive() {
 
 <template>
   <div class="space-y-6">
-    <PageHeader
-      title="Announcements"
-      subtitle="Create, review, and publish company announcements."
-    >
-      <template #action>
-        <BaseButton
-          v-if="can('announcements.create')"
-          type="primary"
-          class="!bg-emerald-600 !border-emerald-600 hover:!bg-emerald-700"
-          @click="handleCreate"
-        >
-          <Plus class="w-4 h-4 mr-1.5" />
-          New Announcement
-        </BaseButton>
-      </template>
-    </PageHeader>
+    <div class="flex items-start justify-between">
+      <div class="flex items-center gap-3">
+        <div class="shrink-0 rounded-xl border border-emerald-100 bg-emerald-50 p-2">
+          <Megaphone class="h-5 w-5 text-emerald-600" />
+        </div>
+        <div>
+          <h1 class="text-2xl font-semibold text-slate-900">Announcements</h1>
+          <p class="mt-0.5 text-sm text-slate-500">
+            Create, review, and publish company announcements.
+          </p>
+        </div>
+      </div>
+      <BaseButton
+        v-if="can('announcements.create')"
+        type="primary"
+        class="!border-emerald-600 !bg-emerald-600 hover:!bg-emerald-700"
+        @click="handleCreate"
+      >
+        <Plus class="mr-1.5 h-4 w-4" />
+        New Announcement
+      </BaseButton>
+    </div>
 
-    <AnnouncementFilters @apply="applyFilters" />
+    <AnnouncementSummaryCards
+      :counts="statusCounts"
+      :loading="loading && announcements.length === 0"
+    />
+
+    <AnnouncementPendingCard
+      v-if="pendingAnnouncement"
+      :announcement="pendingAnnouncement"
+      @view="handleView"
+      @approve="openApproveConfirm"
+      @reject="openRejectDialog"
+    />
+
+    <div
+      v-if="rejectedMessage"
+      class="rounded-lg border border-amber-100 bg-amber-50 p-3 text-sm text-amber-700"
+    >
+      {{ rejectedMessage }} Edit and resubmit when ready.
+    </div>
 
     <AppCard no-padding>
-      <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-        <div>
-          <h3 class="text-sm font-semibold text-slate-800">Announcements</h3>
-          <p class="text-xs text-slate-400 mt-0.5">All announcements you have access to view.</p>
-        </div>
-        <span class="text-xs text-slate-400 font-medium">{{ meta.total }} records</span>
+      <div class="border-b border-gray-100 px-5 py-4">
+        <AnnouncementFilters
+          :search="filters.search"
+          :category="filters.category"
+          :priority="filters.priority"
+          :status="filters.status"
+          :created-by="filters.created_by"
+          :counts="statusCounts"
+          @apply="applyFilters"
+        />
       </div>
 
-      <AnnouncementTable
-        :announcements="announcements"
-        :loading="loading"
-        :current-page="meta.current_page"
-        :page-size="meta.per_page"
-        :total="meta.total"
-        @view="handleView"
-        @page-change="onPageChange"
-        @size-change="onPageSizeChange"
-      />
+      <div :class="showNeedsAttention ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_260px]' : ''">
+        <AnnouncementTable
+          :announcements="announcements"
+          :loading="loading"
+          :current-page="meta.current_page"
+          :page-size="meta.per_page"
+          :total="meta.total"
+          @view="handleView"
+          @submit="openSubmitConfirm"
+          @approve="openApproveConfirm"
+          @reject="openRejectDialog"
+          @archive="openArchiveConfirm"
+          @page-change="onPageChange"
+          @size-change="onPageSizeChange"
+        />
+
+        <AnnouncementNeedsAttention :announcements="announcements" @view="handleView" />
+      </div>
     </AppCard>
 
     <AnnouncementDetailDrawer

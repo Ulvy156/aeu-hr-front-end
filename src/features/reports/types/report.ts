@@ -60,7 +60,10 @@ export interface PayrollStatusSummaryItem {
   status: string
   batch_count: number
   item_count: number
-  [key: string]: unknown
+  gross_salary: string
+  tax_amount: string
+  nssf_deduction: string
+  net_salary: string
 }
 
 // ── Attendance report item shapes ──────────────────────
@@ -78,15 +81,15 @@ export interface AttendanceReportItem {
 }
 
 export interface AttendanceMonthlySummaryItem {
-  employee: ReportEmployee
-  month: number
-  year: number
+  id: number
+  employee_id: string
+  full_name: string
   present_count: number
   late_count: number
   absent_count: number
   missing_clock_out_count: number
-  total_working_days: number
-  [key: string]: unknown
+  total_records: number
+  employee?: ReportEmployee
 }
 
 // ── Leave report item shapes ───────────────────────────
@@ -104,17 +107,21 @@ export interface LeaveReportItem {
   created_at: string
 }
 
+export interface LeaveBalanceBucket {
+  entitlement?: string | null
+  used?: string | null
+  remaining?: string | null
+  rule?: string
+}
+
 export interface LeaveBalanceReportItem {
   employee: ReportEmployee
   year: number
-  balances: {
-    leave_type: string
-    entitlement: string | null
-    used: string | null
-    remaining: string | null
-    is_unlimited: boolean
-  }[]
-  [key: string]: unknown
+  annual?: LeaveBalanceBucket
+  sick?: LeaveBalanceBucket
+  special?: LeaveBalanceBucket
+  maternity?: LeaveBalanceBucket
+  unpaid?: LeaveBalanceBucket
 }
 
 // ── Filter param shapes ────────────────────────────────

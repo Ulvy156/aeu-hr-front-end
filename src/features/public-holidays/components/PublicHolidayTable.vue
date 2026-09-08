@@ -3,6 +3,12 @@ import { Pencil, Ban, CalendarDays, Plus } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
 import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
 import type { PublicHoliday } from '../types/public-holiday'
+import {
+  formatHolidayDate,
+  holidayRelativeLabel,
+  holidayWeekday,
+  isSoonHoliday,
+} from '../utils/holidayDisplay'
 
 defineProps<{
   holidays: PublicHoliday[]
@@ -31,12 +37,10 @@ const headerCellStyle = {
   borderBottom: '1px solid #e5e7eb',
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
+function rowClassName({ row }: { row: PublicHoliday }): string {
+  if (isSoonHoliday(row)) return 'bg-blue-50/40'
+  if (row.status === 'inactive') return 'opacity-80'
+  return ''
 }
 </script>
 
@@ -45,28 +49,49 @@ function formatDate(dateStr: string): string {
     <div class="relative">
       <div
         v-if="loading"
-        class="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-b-xl"
+        class="absolute inset-0 z-10 flex items-center justify-center rounded-b-xl bg-white/70"
       >
-        <div class="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <div
+          class="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent"
+        />
       </div>
 
-      <el-table :data="holidays" class="w-full" :header-cell-style="headerCellStyle">
-
-        <el-table-column label="Holiday Date" width="160">
+      <el-table
+        :data="holidays"
+        class="w-full"
+        :header-cell-style="headerCellStyle"
+        :row-class-name="rowClassName"
+      >
+        <el-table-column label="Date" width="180">
           <template #default="{ row }">
-            <span class="text-sm font-medium text-slate-900">{{ formatDate(row.holiday_date) }}</span>
+            <div class="py-0.5">
+              <p class="text-sm font-semibold text-slate-900">
+                {{ formatHolidayDate(row.holiday_date) }}
+              </p>
+              <div class="mt-0.5 flex flex-wrap items-center gap-1.5">
+                <span class="text-xs text-slate-500">{{ holidayWeekday(row.holiday_date) }}</span>
+                <span
+                  v-if="isSoonHoliday(row)"
+                  class="rounded-md bg-blue-50 px-1.5 py-0.5 text-[11px] font-medium text-blue-700"
+                >
+                  {{ holidayRelativeLabel(row.holiday_date) }}
+                </span>
+                <span v-else class="text-xs text-slate-400">
+                  {{ holidayRelativeLabel(row.holiday_date) }}
+                </span>
+              </div>
+            </div>
           </template>
         </el-table-column>
 
-        <el-table-column label="Name" min-width="200">
+        <el-table-column label="Holiday" min-width="240">
           <template #default="{ row }">
-            <span class="text-sm font-medium text-slate-800">{{ row.name }}</span>
-          </template>
-        </el-table-column>
-
-        <el-table-column label="Description" min-width="240">
-          <template #default="{ row }">
-            <span class="text-sm text-slate-400">{{ row.description ?? '—' }}</span>
+            <div class="min-w-0 py-0.5">
+              <p class="truncate text-sm font-semibold text-slate-900">{{ row.name }}</p>
+              <p class="mt-0.5 truncate text-xs text-slate-500">
+                {{ row.description ?? 'No description' }}
+              </p>
+            </div>
           </template>
         </el-table-column>
 
@@ -81,10 +106,10 @@ function formatDate(dateStr: string): string {
             <div class="flex items-center justify-center gap-1">
               <el-tooltip v-if="can('public_holidays.update')" content="Edit" placement="top">
                 <button
-                  class="p-1.5 rounded-md hover:bg-blue-50 transition-colors text-slate-400 hover:text-blue-600"
+                  class="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
                   @click="emit('edit', row)"
                 >
-                  <Pencil class="w-4 h-4" />
+                  <Pencil class="h-4 w-4" />
                 </button>
               </el-tooltip>
 
@@ -94,10 +119,10 @@ function formatDate(dateStr: string): string {
                 placement="top"
               >
                 <button
-                  class="p-1.5 rounded-md hover:bg-red-50 transition-colors text-amber-500 hover:text-red-600"
+                  class="rounded-md p-1.5 text-amber-500 transition-colors hover:bg-red-50 hover:text-red-600"
                   @click="emit('disable', row)"
                 >
-                  <Ban class="w-4 h-4" />
+                  <Ban class="h-4 w-4" />
                 </button>
               </el-tooltip>
             </div>
@@ -112,11 +137,10 @@ function formatDate(dateStr: string): string {
             @action="emit('create')"
           >
             <template #icon>
-              <CalendarDays class="w-full h-full" stroke-width="1.25" />
+              <CalendarDays class="h-full w-full" stroke-width="1.25" />
             </template>
           </EmptyState>
         </template>
-
       </el-table>
     </div>
 

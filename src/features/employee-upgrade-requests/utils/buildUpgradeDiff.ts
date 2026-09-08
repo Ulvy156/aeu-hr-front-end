@@ -1,5 +1,8 @@
 import { EMPLOYMENT_STATUS_LABELS } from '@/features/employees/types/employee'
-import type { UpgradeRequestFkSnapshot, UpgradeRequestValueSnapshot } from '../types/employee-upgrade-request'
+import type {
+  UpgradeRequestFkSnapshot,
+  UpgradeRequestValueSnapshot,
+} from '../types/employee-upgrade-request'
 
 export interface UpgradeDiffRow {
   field: string

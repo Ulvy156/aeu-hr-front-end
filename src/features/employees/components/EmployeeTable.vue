@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { MoreHorizontal } from '@lucide/vue'
-import { EMPLOYMENT_STATUS, EMPLOYMENT_STATUS_LABELS } from '../types/employee'
-import type { Employee, EmploymentStatus } from '../types/employee'
+import { EMPLOYMENT_STATUS_LABELS } from '../types/employee'
+import type { Employee } from '../types/employee'
 import { formatPositionLabel } from '@/features/positions/types/job-level'
-import { EmptyState, BasePagination } from '@/components/common'
+import { EmptyState, BasePagination, StatusBadge } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
+import {
+  employeeTenureLabel,
+  employmentStatusHint,
+  formatEmployeeDate,
+} from '../utils/employeeDisplay'
 
 defineProps<{
   employees: Employee[]
@@ -24,20 +29,6 @@ const emit = defineEmits<{
 }>()
 
 const { can } = usePermission()
-
-function empStatusType(status: EmploymentStatus): 'success' | 'warning' | 'danger' | 'info' {
-  if (status === EMPLOYMENT_STATUS.FULL_TIME) return 'success'
-  if (status === EMPLOYMENT_STATUS.PROBATION) return 'warning'
-  if (status === EMPLOYMENT_STATUS.INTERN) return 'info'
-  if (status === EMPLOYMENT_STATUS.RESIGNED) return 'warning'
-  if (status === EMPLOYMENT_STATUS.TERMINATED) return 'danger'
-  return 'info'
-}
-
-function formatDate(val: string | null): string {
-  if (!val) return '—'
-  return new Date(val).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-}
 </script>
 
 <template>
@@ -45,106 +36,113 @@ function formatDate(val: string | null): string {
     <div class="relative">
       <div
         v-if="loading"
-        class="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-b-xl"
+        class="absolute inset-0 z-10 flex items-center justify-center rounded-b-xl bg-white/70"
       >
-        <div class="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <div
+          class="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent"
+        />
       </div>
 
-      <el-table :data="employees" class="w-full">
-        <!-- Name + Employee ID (combined) -->
-        <el-table-column label="Employee" min-width="200">
+      <el-table :data="employees" class="w-full" @row-click="(row: Employee) => emit('view', row)">
+        <el-table-column label="Employee" min-width="240">
           <template #default="{ row }">
             <div class="flex items-center gap-2.5">
               <img
                 v-if="row.profile_photo_url"
                 :src="row.profile_photo_url"
-                class="w-9 h-9 rounded-full object-cover shrink-0"
+                class="h-9 w-9 shrink-0 rounded-full object-cover"
               />
               <div
                 v-else
-                class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0"
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100"
               >
                 <span class="text-sm font-semibold text-emerald-700">
                   {{ row.full_name.charAt(0).toUpperCase() }}
                 </span>
               </div>
               <div class="min-w-0">
-                <p class="text-sm font-medium text-slate-900 truncate">{{ row.full_name }}</p>
-                <p class="text-xs text-slate-500 font-mono">{{ row.employee_id }}</p>
+                <p
+                  class="cursor-pointer truncate text-sm font-medium text-slate-900 hover:text-emerald-600"
+                >
+                  {{ row.full_name }}
+                </p>
+                <p class="truncate text-xs text-slate-500">
+                  {{ row.user?.email ? `${row.employee_id} · ${row.user.email}` : row.employee_id }}
+                </p>
               </div>
             </div>
           </template>
         </el-table-column>
 
-        <el-table-column label="Email" min-width="180">
+        <el-table-column label="Role" min-width="180">
           <template #default="{ row }">
-            <span class="text-sm text-slate-600">{{ row.user?.email ?? '—' }}</span>
+            <p class="truncate text-sm font-medium text-slate-800">
+              {{
+                row.position ? formatPositionLabel(row.position.name, row.position.job_level) : '—'
+              }}
+            </p>
+            <p class="text-xs text-slate-500">{{ row.department?.name ?? '—' }}</p>
           </template>
         </el-table-column>
 
-        <el-table-column label="Phone" width="130">
+        <el-table-column label="Manager" min-width="140">
           <template #default="{ row }">
-            <span class="text-sm text-slate-600">{{ row.phone_number ?? '—' }}</span>
+            <span class="text-sm text-slate-600">{{ row.manager?.full_name ?? '—' }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="Department" min-width="130">
-          <template #default="{ row }">
-            <span class="text-sm text-slate-600">{{ row.department?.name ?? '—' }}</span>
-          </template>
-        </el-table-column>
-
-        <el-table-column label="Position" min-width="130">
-          <template #default="{ row }">
-            <span class="text-sm text-slate-600">{{ row.position ? formatPositionLabel(row.position.name, row.position.job_level) : '—' }}</span>
-          </template>
-        </el-table-column>
-
-        <el-table-column label="Status" width="120">
+        <el-table-column label="Status" width="140">
           <template #default="{ row }: { row: Employee }">
-            <el-tag :type="empStatusType(row.employment_status)" size="small" round>
-              {{ EMPLOYMENT_STATUS_LABELS[row.employment_status] }}
-            </el-tag>
+            <StatusBadge
+              :status="row.employment_status"
+              :custom-label="EMPLOYMENT_STATUS_LABELS[row.employment_status]"
+            />
+            <p v-if="employmentStatusHint(row)" class="mt-0.5 text-xs text-slate-400">
+              {{ employmentStatusHint(row) }}
+            </p>
           </template>
         </el-table-column>
 
-        <el-table-column label="Join Date" width="130">
+        <el-table-column label="Joined" width="130">
           <template #default="{ row }">
-            <span class="text-sm text-slate-500">{{ formatDate(row.join_date) }}</span>
+            <p class="text-sm text-slate-600">{{ formatEmployeeDate(row.join_date) }}</p>
+            <p class="text-xs text-slate-400">{{ employeeTenureLabel(row.join_date) }}</p>
           </template>
         </el-table-column>
 
         <el-table-column label="Actions" width="90" fixed="right" align="center">
           <template #default="{ row }">
-            <el-dropdown trigger="click">
-              <button
-                class="p-1.5 rounded-md hover:bg-gray-100 transition-colors text-slate-500 hover:text-slate-700"
-                @click.stop
-              >
-                <MoreHorizontal class="w-4 h-4" />
-              </button>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item @click="emit('view', row)">View Detail</el-dropdown-item>
-                  <el-dropdown-item v-if="can('employees.update')" @click="emit('edit', row)">
-                    Edit
-                  </el-dropdown-item>
-                  <el-dropdown-item
-                    v-if="can('employee_upgrade_requests.create')"
-                    @click="emit('request-upgrade', row)"
-                  >
-                    Request Promote
-                  </el-dropdown-item>
-                  <el-dropdown-item
-                    v-if="can('employees.delete')"
-                    style="color: #dc2626"
-                    @click="emit('delete', row)"
-                  >
-                    Delete
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+            <div @click.stop>
+              <el-dropdown trigger="click">
+                <button
+                  class="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-gray-100 hover:text-slate-700"
+                  @click.stop
+                >
+                  <MoreHorizontal class="h-4 w-4" />
+                </button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item @click="emit('view', row)">View Detail</el-dropdown-item>
+                    <el-dropdown-item v-if="can('employees.update')" @click="emit('edit', row)">
+                      Edit
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                      v-if="can('employee_upgrade_requests.create')"
+                      @click="emit('request-upgrade', row)"
+                    >
+                      Request Promote
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                      v-if="can('employees.delete')"
+                      style="color: #dc2626"
+                      @click="emit('delete', row)"
+                    >
+                      Delete
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
           </template>
         </el-table-column>
 

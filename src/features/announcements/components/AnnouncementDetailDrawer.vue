@@ -131,7 +131,9 @@ function handleEdit() {
         </div>
         <div class="flex items-center gap-2">
           <StatusBadge :status="announcement.priority" />
-          <span class="text-xs text-slate-400">{{ announcement.category?.name ?? 'Uncategorized' }}</span>
+          <span class="text-xs text-slate-400">{{
+            announcement.category?.name ?? 'Uncategorized'
+          }}</span>
         </div>
       </div>
 
@@ -144,14 +146,19 @@ function handleEdit() {
         <p>{{ announcement.rejection_reason }}</p>
         <p v-if="announcement.rejected_by_user" class="mt-1 text-xs text-red-500">
           by {{ announcement.rejected_by_user.name }}
-          <template v-if="announcement.rejected_at"> · {{ formatDateTime(announcement.rejected_at) }}</template>
+          <template v-if="announcement.rejected_at">
+            · {{ formatDateTime(announcement.rejected_at) }}</template
+          >
         </p>
       </div>
 
       <!-- Content -->
       <div class="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
         <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Content</h4>
-        <div class="announcement-content text-sm text-slate-700 leading-relaxed" v-html="sanitizeHtml(announcement.content)" />
+        <div
+          class="announcement-content text-sm text-slate-700 leading-relaxed"
+          v-html="sanitizeHtml(announcement.content)"
+        />
 
         <a
           v-if="announcement.attachment"
@@ -180,7 +187,10 @@ function handleEdit() {
       </div>
 
       <!-- Read summary -->
-      <AnnouncementReadSummary v-if="announcement.read_summary" :summary="announcement.read_summary" />
+      <AnnouncementReadSummary
+        v-if="announcement.read_summary"
+        :summary="announcement.read_summary"
+      />
 
       <!-- Workflow info -->
       <div class="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
@@ -201,7 +211,9 @@ function handleEdit() {
           </div>
           <div v-if="announcement.submitted_at">
             <p class="text-slate-400 text-xs mb-0.5">Submitted At</p>
-            <p class="font-medium text-slate-800">{{ formatDateTime(announcement.submitted_at) }}</p>
+            <p class="font-medium text-slate-800">
+              {{ formatDateTime(announcement.submitted_at) }}
+            </p>
           </div>
           <div v-if="announcement.approved_by_user">
             <p class="text-slate-400 text-xs mb-0.5">Approved By</p>

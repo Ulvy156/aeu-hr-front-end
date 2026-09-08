@@ -36,6 +36,7 @@ export function useReport(fetchFn: FetchFn, exportFn: ExportFn) {
     exportLoading.value = true
     try {
       await exportFn(params)
+      notify.success('Report exported.')
     } catch (err) {
       notify.error(getApiErrorMessage(err))
     } finally {

@@ -1,21 +1,32 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { Banknote } from '@lucide/vue'
+import { useRouter } from 'vue-router'
+import { Banknote, Plus } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
 import { usePayrolls } from '../composables/usePayrolls'
 import { AppCard, BaseButton, ConfirmDialog } from '@/components/common'
+import { formatPayrollPeriod, needsAttention } from '../utils/payrollDisplay'
 import PayrollFilters from './PayrollFilters.vue'
 import PayrollTable from './PayrollTable.vue'
+import PayrollSummaryCards from './PayrollSummaryCards.vue'
+import PayrollCurrentCycle from './PayrollCurrentCycle.vue'
+import PayrollNeedsAttention from './PayrollNeedsAttention.vue'
 import GeneratePayrollDialog from './GeneratePayrollDialog.vue'
 import RejectPayrollDialog from './RejectPayrollDialog.vue'
 import type { PayrollBatch } from '../types/payroll'
 
+const router = useRouter()
 const { can, hasRole } = usePermission()
 const {
   payrolls,
+  statusCounts,
+  currentCycle,
+  lastApproved,
+  latestRejected,
   meta,
   loading,
   actionLoading,
+  filters,
   loadPayrolls,
   applyFilters,
   onPageChange,
@@ -33,11 +44,23 @@ const rejectDialogOpen = ref(false)
 const selectedPayroll = ref<PayrollBatch | null>(null)
 
 const canGenerate = computed(() => can('payrolls.generate'))
-const showDepartmentScopeBanner = computed(() =>
-  hasRole('head') && !hasRole('hr') && !hasRole('admin') && !hasRole('gm') && !hasRole('ceo'),
+const showDepartmentScopeBanner = computed(
+  () => hasRole('head') && !hasRole('hr') && !hasRole('admin') && !hasRole('gm') && !hasRole('ceo'),
 )
+const showNeedsAttention = computed(() => payrolls.value.some(needsAttention))
+const rejectedMessage = computed(() => {
+  const batch = latestRejected.value
+  if (!batch || statusCounts.value.rejected <= 0) return ''
+  const period = formatPayrollPeriod(batch.month, batch.year)
+  if (batch.rejection_reason) return `${period} was rejected: ${batch.rejection_reason}`
+  return `${period} was rejected.`
+})
 
 onMounted(loadPayrolls)
+
+function viewPayroll(payroll: PayrollBatch) {
+  router.push({ name: 'payroll-detail', params: { id: payroll.id } })
+}
 
 function openSubmitConfirm(payroll: PayrollBatch) {
   selectedPayroll.value = payroll
@@ -80,11 +103,10 @@ async function confirmReject(reason: string) {
 
 <template>
   <div class="space-y-6">
-    <!-- Page header -->
     <div class="flex items-start justify-between">
       <div class="flex items-center gap-3">
-        <div class="p-2 bg-emerald-50 rounded-xl border border-emerald-100 shrink-0">
-          <Banknote class="w-5 h-5 text-emerald-600" />
+        <div class="shrink-0 rounded-xl border border-emerald-100 bg-emerald-50 p-2">
+          <Banknote class="h-5 w-5 text-emerald-600" />
         </div>
         <div>
           <h1 class="text-2xl font-semibold text-slate-900">Payroll</h1>
@@ -97,7 +119,8 @@ async function confirmReject(reason: string) {
         class="!bg-emerald-600 !border-emerald-600 hover:!bg-emerald-700"
         @click="generateOpen = true"
       >
-        + Generate Payroll
+        <Plus class="mr-1.5 h-4 w-4" />
+        Generate Payroll
       </BaseButton>
     </div>
 
@@ -108,41 +131,62 @@ async function confirmReject(reason: string) {
       Totals and payroll items are limited to your department.
     </div>
 
-    <!-- Filters -->
-    <PayrollFilters @apply="applyFilters" />
+    <PayrollSummaryCards
+      :counts="statusCounts"
+      :last-approved="lastApproved"
+      :loading="loading && payrolls.length === 0"
+    />
 
-    <!-- Table card -->
+    <PayrollCurrentCycle
+      v-if="currentCycle"
+      :payroll="currentCycle"
+      @view="viewPayroll"
+      @approve="openApproveConfirm"
+      @reject="openRejectDialog"
+    />
+
+    <div
+      v-if="rejectedMessage"
+      class="rounded-lg border border-amber-100 bg-amber-50 p-3 text-sm text-amber-700"
+    >
+      {{ rejectedMessage }} Open the batch to correct items.
+    </div>
+
     <AppCard no-padding>
-      <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-        <div>
-          <h3 class="text-sm font-semibold text-slate-800">Payroll Batches</h3>
-          <p class="text-xs text-slate-400 mt-0.5">All payroll batches you have access to view.</p>
-        </div>
-        <span class="text-xs text-slate-400 font-medium">{{ meta.total }} records</span>
+      <div class="border-b border-gray-100 px-5 py-4">
+        <PayrollFilters
+          :month="filters.month"
+          :year="filters.year"
+          :status="filters.status"
+          :counts="statusCounts"
+          @apply="applyFilters"
+        />
       </div>
 
-      <PayrollTable
-        :payrolls="payrolls"
-        :loading="loading"
-        :current-page="meta.current_page"
-        :page-size="meta.per_page"
-        :total="meta.total"
-        @submit="openSubmitConfirm"
-        @approve="openApproveConfirm"
-        @reject="openRejectDialog"
-        @page-change="onPageChange"
-        @size-change="onPageSizeChange"
-      />
+      <div :class="showNeedsAttention ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_260px]' : ''">
+        <PayrollTable
+          :payrolls="payrolls"
+          :loading="loading"
+          :current-page="meta.current_page"
+          :page-size="meta.per_page"
+          :total="meta.total"
+          @submit="openSubmitConfirm"
+          @approve="openApproveConfirm"
+          @reject="openRejectDialog"
+          @page-change="onPageChange"
+          @size-change="onPageSizeChange"
+        />
+
+        <PayrollNeedsAttention :payrolls="payrolls" @view="viewPayroll" />
+      </div>
     </AppCard>
 
-    <!-- Generate dialog -->
     <GeneratePayrollDialog
       v-model:visible="generateOpen"
       :loading="actionLoading"
       @generate="confirmGenerate"
     />
 
-    <!-- Submit confirm -->
     <ConfirmDialog
       v-model="submitConfirmOpen"
       title="Submit Payroll"
@@ -154,7 +198,6 @@ async function confirmReject(reason: string) {
       @cancel="submitConfirmOpen = false"
     />
 
-    <!-- Approve confirm -->
     <ConfirmDialog
       v-model="approveConfirmOpen"
       title="Approve Payroll"
@@ -166,7 +209,6 @@ async function confirmReject(reason: string) {
       @cancel="approveConfirmOpen = false"
     />
 
-    <!-- Reject dialog -->
     <RejectPayrollDialog
       v-model:visible="rejectDialogOpen"
       :loading="actionLoading"

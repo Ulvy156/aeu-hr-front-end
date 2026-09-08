@@ -3,6 +3,8 @@ import { Pencil, CircleX } from '@lucide/vue'
 import type { Vacancy } from '../types/vacancy'
 import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
+import VacancyHiringBar from './VacancyHiringBar.vue'
+import { formatVacancyDate, isVacancyOverdue, relativeTargetLabel } from '../utils/vacancyDisplay'
 
 defineProps<{
   vacancies: Vacancy[]
@@ -21,14 +23,6 @@ const emit = defineEmits<{
 }>()
 
 const { can } = usePermission()
-
-function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
 </script>
 
 <template>
@@ -36,33 +30,43 @@ function formatDate(value: string): string {
     <div class="relative">
       <div
         v-if="loading"
-        class="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-b-xl"
+        class="absolute inset-0 z-10 flex items-center justify-center rounded-b-xl bg-white/70"
       >
-        <div class="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <div
+          class="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent"
+        />
       </div>
 
       <el-table :data="vacancies" class="w-full" @row-click="(row: Vacancy) => emit('view', row)">
-        <el-table-column label="Title" min-width="200">
+        <el-table-column label="Vacancy" min-width="220">
           <template #default="{ row }">
-            <span class="text-sm font-medium text-slate-900 cursor-pointer hover:text-emerald-600">{{ row.title }}</span>
+            <div>
+              <span
+                class="cursor-pointer text-sm font-medium text-slate-900 hover:text-emerald-600"
+              >
+                {{ row.title }}
+              </span>
+              <p class="text-xs text-slate-500">{{ row.department?.name ?? '—' }}</p>
+            </div>
           </template>
         </el-table-column>
 
-        <el-table-column label="Department" min-width="160">
+        <el-table-column label="Hiring" min-width="180">
           <template #default="{ row }">
-            <span class="text-sm text-slate-600">{{ row.department?.name ?? '—' }}</span>
+            <VacancyHiringBar :filled="row.filled_headcount" :required="row.required_headcount" />
           </template>
         </el-table-column>
 
-        <el-table-column label="Headcount" width="120" align="center">
+        <el-table-column label="Target date" width="150">
           <template #default="{ row }">
-            <span class="text-sm text-slate-600">{{ row.filled_headcount }} / {{ row.required_headcount }}</span>
-          </template>
-        </el-table-column>
-
-        <el-table-column label="Target Hiring Date" width="170">
-          <template #default="{ row }">
-            <span class="text-sm text-slate-500">{{ formatDate(row.target_hiring_date) }}</span>
+            <p class="text-sm text-slate-600">{{ formatVacancyDate(row.target_hiring_date) }}</p>
+            <span
+              v-if="isVacancyOverdue(row)"
+              class="mt-0.5 inline-flex rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700"
+            >
+              Overdue
+            </span>
+            <p v-else class="text-xs text-slate-400">{{ relativeTargetLabel(row) }}</p>
           </template>
         </el-table-column>
 
@@ -72,15 +76,21 @@ function formatDate(value: string): string {
           </template>
         </el-table-column>
 
+        <el-table-column label="Posted by" min-width="140">
+          <template #default="{ row }">
+            <span class="text-sm text-slate-600">{{ row.creator?.name ?? '—' }}</span>
+          </template>
+        </el-table-column>
+
         <el-table-column label="Actions" width="100" fixed="right" align="center">
           <template #default="{ row }">
             <div class="flex items-center justify-center gap-1" @click.stop>
               <el-tooltip v-if="can('recruitment.vacancies.update')" content="Edit" placement="top">
                 <button
-                  class="p-1.5 rounded-md hover:bg-gray-100 transition-colors text-slate-500 hover:text-emerald-600"
+                  class="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-gray-100 hover:text-emerald-600"
                   @click="emit('edit', row)"
                 >
-                  <Pencil class="w-4 h-4" />
+                  <Pencil class="h-4 w-4" />
                 </button>
               </el-tooltip>
 
@@ -90,10 +100,10 @@ function formatDate(value: string): string {
                 placement="top"
               >
                 <button
-                  class="p-1.5 rounded-md hover:bg-gray-100 transition-colors text-slate-500 hover:text-red-600"
+                  class="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-gray-100 hover:text-red-600"
                   @click="emit('close', row)"
                 >
-                  <CircleX class="w-4 h-4" />
+                  <CircleX class="h-4 w-4" />
                 </button>
               </el-tooltip>
             </div>
@@ -101,7 +111,10 @@ function formatDate(value: string): string {
         </el-table-column>
 
         <template #empty>
-          <EmptyState title="No vacancies found" description="Try adjusting your search or filters." />
+          <EmptyState
+            title="No vacancies found"
+            description="Try adjusting your search or filters."
+          />
         </template>
       </el-table>
     </div>

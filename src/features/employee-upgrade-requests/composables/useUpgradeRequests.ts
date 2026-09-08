@@ -7,16 +7,21 @@ import {
   rejectUpgradeRequest,
   cancelUpgradeRequest,
 } from '../services/employee-upgrade-request.api'
-import type {
-  EmployeeUpgradeRequest,
-  EmployeeUpgradeRequestListParams,
-  PaginationMeta,
-  UpgradeRequestRejectPayload,
+import {
+  EMPTY_UPGRADE_REQUEST_STATUS_COUNTS,
+  UPGRADE_REQUEST_STATUS_VALUES,
+  type EmployeeUpgradeRequest,
+  type EmployeeUpgradeRequestListParams,
+  type PaginationMeta,
+  type UpgradeRequestRejectPayload,
+  type UpgradeRequestStatus,
+  type UpgradeRequestStatusCounts,
 } from '../types/employee-upgrade-request'
 
 export function useUpgradeRequests() {
   const notify = useNotify()
   const requests = ref<EmployeeUpgradeRequest[]>([])
+  const statusCounts = ref<UpgradeRequestStatusCounts>({ ...EMPTY_UPGRADE_REQUEST_STATUS_COUNTS })
   const meta = ref<PaginationMeta>({
     current_page: 1,
     last_page: 1,
@@ -28,47 +33,80 @@ export function useUpgradeRequests() {
 
   const filters = reactive({
     employee_id: null as number | null,
-    status: '' as EmployeeUpgradeRequestListParams['status'] | '',
+    status: '' as UpgradeRequestStatus | '',
     page: 1,
     per_page: 15,
   })
 
-  async function loadRequests() {
+  function listParams(
+    overrides: EmployeeUpgradeRequestListParams = {},
+  ): EmployeeUpgradeRequestListParams {
+    const params: EmployeeUpgradeRequestListParams = {
+      page: 1,
+      per_page: 1,
+      ...overrides,
+    }
+    if (filters.employee_id) params.employee_id = filters.employee_id
+    return params
+  }
+
+  async function loadOverview() {
+    const results = await Promise.all(
+      UPGRADE_REQUEST_STATUS_VALUES.map((status) => fetchUpgradeRequests(listParams({ status }))),
+    )
+
+    const counts: UpgradeRequestStatusCounts = { ...EMPTY_UPGRADE_REQUEST_STATUS_COUNTS }
+    UPGRADE_REQUEST_STATUS_VALUES.forEach((status, index) => {
+      counts[status] = results[index]?.meta.total ?? 0
+    })
+    counts.all = counts.pending + counts.approved + counts.rejected + counts.cancelled
+    statusCounts.value = counts
+  }
+
+  async function loadList() {
+    const params: EmployeeUpgradeRequestListParams = {
+      page: filters.page,
+      per_page: filters.per_page,
+    }
+    if (filters.employee_id) params.employee_id = filters.employee_id
+    if (filters.status) params.status = filters.status
+
+    const res = await fetchUpgradeRequests(params)
+    requests.value = res.data
+    meta.value = res.meta
+  }
+
+  async function loadRequests(includeOverview = true) {
     loading.value = true
     try {
-      const params: EmployeeUpgradeRequestListParams = {
-        page: filters.page,
-        per_page: filters.per_page,
+      const tasks: Promise<void>[] = [loadList()]
+      if (includeOverview) tasks.push(loadOverview())
+      const results = await Promise.allSettled(tasks)
+      const failed = results.find((result) => result.status === 'rejected')
+      if (failed && failed.status === 'rejected') {
+        notify.error(getApiErrorMessage(failed.reason))
       }
-      if (filters.employee_id) params.employee_id = filters.employee_id
-      if (filters.status) params.status = filters.status
-
-      const res = await fetchUpgradeRequests(params)
-      requests.value = res.data
-      meta.value = res.meta
-    } catch (err) {
-      notify.error(getApiErrorMessage(err))
     } finally {
       loading.value = false
     }
   }
 
-  function applyFilters(next: { employee_id: number | null; status: string }) {
-    filters.employee_id = next.employee_id
-    filters.status = next.status as EmployeeUpgradeRequestListParams['status'] | ''
+  function applyFilters(employeeId: number | null, status: string) {
+    filters.employee_id = employeeId
+    filters.status = status as UpgradeRequestStatus | ''
     filters.page = 1
     loadRequests()
   }
 
   function onPageChange(page: number) {
     filters.page = page
-    loadRequests()
+    loadRequests(false)
   }
 
   function onPageSizeChange(size: number) {
     filters.per_page = size
     filters.page = 1
-    loadRequests()
+    loadRequests(false)
   }
 
   async function handleApprove(id: number): Promise<boolean> {
@@ -120,6 +158,7 @@ export function useUpgradeRequests() {
 
   return {
     requests,
+    statusCounts,
     meta,
     loading,
     actionLoading,

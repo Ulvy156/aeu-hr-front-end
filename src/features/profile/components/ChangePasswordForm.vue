@@ -13,7 +13,7 @@ const { formRef, loading, form, apiErrors, rules, handleSubmit } = useChangePass
     :model="form"
     :rules="rules"
     label-position="top"
-    class="max-w-md"
+    class="w-full"
   >
     <el-form-item label="Current Password" prop="current_password">
       <BaseInput
@@ -57,8 +57,13 @@ const { formRef, loading, form, apiErrors, rules, handleSubmit } = useChangePass
       />
     </el-form-item>
 
-    <BaseButton type="primary" :loading="loading" native-type="submit">
-      {{ loading ? 'Changing Password...' : 'Change Password' }}
+    <BaseButton
+      type="primary"
+      class="!border-emerald-600 !bg-emerald-600 hover:!bg-emerald-700"
+      :loading="loading"
+      native-type="submit"
+    >
+      {{ loading ? 'Changing password...' : 'Change password' }}
     </BaseButton>
   </el-form>
 </template>

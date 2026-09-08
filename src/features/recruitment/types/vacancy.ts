@@ -24,6 +24,22 @@ export interface Vacancy {
   updated_at: string
 }
 
+export interface VacancySummary {
+  open_count: number
+  closed_count: number
+  open_required_headcount: number
+  open_filled_headcount: number
+  overdue_open_count: number
+}
+
+export const EMPTY_VACANCY_SUMMARY: VacancySummary = {
+  open_count: 0,
+  closed_count: 0,
+  open_required_headcount: 0,
+  open_filled_headcount: 0,
+  overdue_open_count: 0,
+}
+
 export interface VacancyListParams {
   search?: string
   department?: number

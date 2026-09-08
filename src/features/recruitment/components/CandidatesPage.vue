@@ -61,7 +61,11 @@ async function submitStatusChange(status: Candidate['status'], outcomeReason: st
   <div>
     <PageHeader title="Candidates" subtitle="Track candidates through the recruitment pipeline.">
       <template #action>
-        <BaseButton v-if="can('recruitment.candidates.create')" type="primary" @click="handleCreate">
+        <BaseButton
+          v-if="can('recruitment.candidates.create')"
+          type="primary"
+          @click="handleCreate"
+        >
           <Plus class="w-4 h-4 mr-1.5" />
           Add Candidate
         </BaseButton>
@@ -69,13 +73,14 @@ async function submitStatusChange(status: Candidate['status'], outcomeReason: st
     </PageHeader>
 
     <AppCard no-padding>
-      <div class="px-5 py-4 border-b border-gray-100">
+      <div class="px-5 py-5 border-b border-gray-100">
         <CandidateFilters
           :search="filters.search"
           :vacancy="filters.vacancy"
           :source="filters.source"
           :status="filters.status"
           :interview-date="filters.interview_date"
+          :total="meta.total"
           @apply="applyFilters"
         />
       </div>

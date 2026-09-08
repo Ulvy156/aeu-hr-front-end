@@ -23,3 +23,31 @@ export interface PaginationMeta {
   per_page: number
   total: number
 }
+
+export interface HolidayYearCounts {
+  previous: number
+  current: number
+  next: number
+  all: number
+}
+
+export interface HolidayStatusCounts {
+  all: number
+  active: number
+  inactive: number
+  within_30_days: number
+}
+
+export const EMPTY_HOLIDAY_YEAR_COUNTS: HolidayYearCounts = {
+  previous: 0,
+  current: 0,
+  next: 0,
+  all: 0,
+}
+
+export const EMPTY_HOLIDAY_STATUS_COUNTS: HolidayStatusCounts = {
+  all: 0,
+  active: 0,
+  inactive: 0,
+  within_30_days: 0,
+}

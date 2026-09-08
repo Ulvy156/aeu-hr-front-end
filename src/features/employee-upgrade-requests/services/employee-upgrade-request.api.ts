@@ -27,7 +27,9 @@ export async function fetchUpgradeRequests(
   return data
 }
 
-export async function fetchUpgradeRequest(id: number): Promise<ApiResponse<EmployeeUpgradeRequest>> {
+export async function fetchUpgradeRequest(
+  id: number,
+): Promise<ApiResponse<EmployeeUpgradeRequest>> {
   const { data } = await api.get(`/employee-upgrade-requests/${id}`)
   return data
 }
@@ -58,7 +60,9 @@ export async function createUpgradeRequest(
   return data
 }
 
-export async function approveUpgradeRequest(id: number): Promise<ApiResponse<EmployeeUpgradeRequest>> {
+export async function approveUpgradeRequest(
+  id: number,
+): Promise<ApiResponse<EmployeeUpgradeRequest>> {
   const { data } = await api.post(`/employee-upgrade-requests/${id}/approve`)
   return data
 }
@@ -71,7 +75,9 @@ export async function rejectUpgradeRequest(
   return data
 }
 
-export async function cancelUpgradeRequest(id: number): Promise<ApiResponse<EmployeeUpgradeRequest>> {
+export async function cancelUpgradeRequest(
+  id: number,
+): Promise<ApiResponse<EmployeeUpgradeRequest>> {
   const { data } = await api.post(`/employee-upgrade-requests/${id}/cancel`)
   return data
 }

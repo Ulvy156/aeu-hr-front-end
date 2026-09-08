@@ -64,7 +64,11 @@ function formatDateTime(iso: string | null): string {
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  return new Date(iso).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
 }
 </script>
 
@@ -104,7 +108,9 @@ function formatDate(iso: string | null): string {
 
       <!-- Proposed changes -->
       <div class="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
-        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Proposed Changes</h4>
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          Proposed Changes
+        </h4>
         <div v-if="diffRows.length" class="space-y-2">
           <div v-for="row in diffRows" :key="row.field" class="text-sm">
             <span class="text-slate-500">{{ row.label }}: </span>
@@ -117,7 +123,10 @@ function formatDate(iso: string | null): string {
       </div>
 
       <!-- Attachments -->
-      <div v-if="request.attachments.length" class="bg-white border border-gray-200 rounded-xl p-4 space-y-2">
+      <div
+        v-if="request.attachments.length"
+        class="bg-white border border-gray-200 rounded-xl p-4 space-y-2"
+      >
         <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Attachments</h4>
         <div class="space-y-1.5">
           <a
@@ -180,11 +189,7 @@ function formatDate(iso: string | null): string {
         >
           Reject
         </BaseButton>
-        <BaseButton
-          v-if="canCancel"
-          :loading="actionLoading"
-          @click="emit('cancel', request)"
-        >
+        <BaseButton v-if="canCancel" :loading="actionLoading" @click="emit('cancel', request)">
           Cancel Request
         </BaseButton>
       </div>

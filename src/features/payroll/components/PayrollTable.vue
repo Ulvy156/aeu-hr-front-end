@@ -4,6 +4,13 @@ import { Eye, Send, CheckCircle, XCircle } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
 import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
 import type { PayrollBatch } from '../types/payroll'
+import {
+  displayedDeductionTotal,
+  formatPayrollMoney,
+  formatPayrollPeriod,
+  payrollStatusLabel,
+  payrollTimeline,
+} from '../utils/payrollDisplay'
 
 defineProps<{
   payrolls: PayrollBatch[]
@@ -24,30 +31,8 @@ const emit = defineEmits<{
 const router = useRouter()
 const { can } = usePermission()
 
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-]
-
-function formatMonth(month: number): string {
-  return MONTH_NAMES[month - 1] ?? String(month)
-}
-
-function formatMoney(value: string | undefined): string {
-  if (!value) return '—'
-  return Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
 function viewDetail(payroll: PayrollBatch) {
   router.push({ name: 'payroll-detail', params: { id: payroll.id } })
-}
-
-const headerCellStyle = {
-  background: '#f9fafb',
-  fontSize: '12px',
-  fontWeight: '600',
-  color: '#6b7280',
-  borderBottom: '1px solid #e5e7eb',
 }
 </script>
 
@@ -56,78 +41,111 @@ const headerCellStyle = {
     <div class="relative">
       <div
         v-if="loading"
-        class="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-b-xl"
+        class="absolute inset-0 z-10 flex items-center justify-center rounded-b-xl bg-white/70"
       >
-        <div class="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <div
+          class="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent"
+        />
       </div>
 
-      <el-table :data="payrolls" class="w-full" :header-cell-style="headerCellStyle">
-        <el-table-column label="Period" min-width="140">
+      <el-table :data="payrolls" class="w-full" @row-click="(row: PayrollBatch) => viewDetail(row)">
+        <el-table-column label="Period" min-width="200">
           <template #default="{ row }">
-            <p class="text-sm font-semibold text-slate-800">{{ formatMonth(row.month) }} {{ row.year }}</p>
+            <p class="cursor-pointer text-sm font-semibold text-slate-800 hover:text-emerald-600">
+              {{ formatPayrollPeriod(row.month, row.year) }}
+            </p>
+            <p v-if="payrollTimeline(row)" class="text-xs text-slate-500">
+              {{ payrollTimeline(row) }}
+            </p>
+            <p
+              v-if="row.status === 'rejected' && row.rejection_reason"
+              class="mt-0.5 line-clamp-2 text-xs text-slate-500"
+            >
+              {{ row.rejection_reason }}
+            </p>
           </template>
         </el-table-column>
 
-        <el-table-column label="Status" width="140">
+        <el-table-column label="Status" width="150">
           <template #default="{ row }">
-            <StatusBadge :status="row.status" />
+            <StatusBadge :status="row.status" :custom-label="payrollStatusLabel(row.status)" />
           </template>
         </el-table-column>
 
-        <el-table-column label="Employees" width="100" align="center">
+        <el-table-column label="Employees" width="110" align="center">
           <template #default="{ row }">
             <span class="text-sm text-slate-700">{{ row.item_count }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="Gross Salary" width="140" align="right">
+        <el-table-column label="Deductions" width="150" align="right">
           <template #default="{ row }">
-            <span class="text-sm font-medium text-slate-800">{{ formatMoney(row.totals?.gross_salary) }}</span>
+            <p class="text-sm text-slate-800">{{ displayedDeductionTotal(row.totals) }}</p>
+            <p class="text-xs text-slate-400">
+              Tax {{ formatPayrollMoney(row.totals?.tax_amount) }}
+            </p>
           </template>
         </el-table-column>
 
-        <el-table-column label="Net Salary" width="140" align="right">
+        <el-table-column label="Net" width="160" align="right">
           <template #default="{ row }">
-            <span class="text-sm font-semibold text-emerald-700">{{ formatMoney(row.totals?.net_salary) }}</span>
+            <p class="text-sm font-semibold text-emerald-700">
+              {{ formatPayrollMoney(row.totals?.net_salary) }}
+            </p>
+            <p class="text-xs text-slate-400">
+              Gross {{ formatPayrollMoney(row.totals?.gross_salary) }}
+            </p>
           </template>
         </el-table-column>
 
         <el-table-column label="Actions" width="140" fixed="right" align="center">
           <template #default="{ row }">
-            <div class="flex items-center justify-center gap-1">
+            <div class="flex items-center justify-center gap-1" @click.stop>
               <el-tooltip content="View Detail" placement="top">
                 <button
-                  class="p-1.5 rounded-md hover:bg-blue-50 transition-colors text-slate-400 hover:text-blue-600"
+                  class="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
                   @click="viewDetail(row)"
                 >
-                  <Eye class="w-4 h-4" />
+                  <Eye class="h-4 w-4" />
                 </button>
               </el-tooltip>
 
-              <el-tooltip v-if="can('payrolls.submit') && row.status === 'draft'" content="Submit for Approval" placement="top">
+              <el-tooltip
+                v-if="can('payrolls.submit') && row.status === 'draft'"
+                content="Submit for Approval"
+                placement="top"
+              >
                 <button
-                  class="p-1.5 rounded-md hover:bg-amber-50 transition-colors text-slate-400 hover:text-amber-600"
+                  class="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-600"
                   @click="emit('submit', row)"
                 >
-                  <Send class="w-4 h-4" />
+                  <Send class="h-4 w-4" />
                 </button>
               </el-tooltip>
 
-              <el-tooltip v-if="can('payrolls.approve') && row.status === 'pending_approval'" content="Approve" placement="top">
+              <el-tooltip
+                v-if="can('payrolls.approve') && row.status === 'pending_approval'"
+                content="Approve"
+                placement="top"
+              >
                 <button
-                  class="p-1.5 rounded-md hover:bg-emerald-50 transition-colors text-slate-400 hover:text-emerald-600"
+                  class="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-emerald-50 hover:text-emerald-600"
                   @click="emit('approve', row)"
                 >
-                  <CheckCircle class="w-4 h-4" />
+                  <CheckCircle class="h-4 w-4" />
                 </button>
               </el-tooltip>
 
-              <el-tooltip v-if="can('payrolls.reject') && row.status === 'pending_approval'" content="Reject" placement="top">
+              <el-tooltip
+                v-if="can('payrolls.reject') && row.status === 'pending_approval'"
+                content="Reject"
+                placement="top"
+              >
                 <button
-                  class="p-1.5 rounded-md hover:bg-red-50 transition-colors text-slate-400 hover:text-red-600"
+                  class="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
                   @click="emit('reject', row)"
                 >
-                  <XCircle class="w-4 h-4" />
+                  <XCircle class="h-4 w-4" />
                 </button>
               </el-tooltip>
             </div>

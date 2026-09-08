@@ -6,9 +6,21 @@ import { Paperclip, X } from '@lucide/vue'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { parseApiError, getFieldError, type ApiValidationErrors } from '@/utils/api-error'
-import { AppCard, BaseInput, BaseButton, BaseSelect, FormActions, PageHeader, RichTextEditor } from '@/components/common'
+import {
+  AppCard,
+  BaseInput,
+  BaseButton,
+  BaseSelect,
+  FormActions,
+  PageHeader,
+  RichTextEditor,
+} from '@/components/common'
 import { fetchAnnouncementCategories } from '../services/announcement-category.api'
-import { fetchAnnouncement, createAnnouncement, updateAnnouncement } from '../services/announcement.api'
+import {
+  fetchAnnouncement,
+  createAnnouncement,
+  updateAnnouncement,
+} from '../services/announcement.api'
 import AnnouncementTargetsEditor from './AnnouncementTargetsEditor.vue'
 import type { AnnouncementAttachment, AnnouncementTarget } from '../types/announcement'
 
@@ -90,7 +102,10 @@ onMounted(async () => {
       existingAttachment.value = announcement.attachment
 
       if (form.category_id && !categoryOptions.value.some((c) => c.id === form.category_id)) {
-        categoryOptions.value = [...categoryOptions.value, { id: form.category_id, name: announcement.category.name }]
+        categoryOptions.value = [
+          ...categoryOptions.value,
+          { id: form.category_id, name: announcement.category.name },
+        ]
         categoryInactive.value = true
       }
     }
@@ -178,7 +193,9 @@ async function handleSubmit() {
         v-if="loading"
         class="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-xl"
       >
-        <div class="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <div
+          class="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"
+        />
       </div>
 
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="space-y-1">
@@ -189,7 +206,8 @@ async function handleSubmit() {
             placeholder="Select category"
           />
           <p v-if="categoryInactive" class="mt-1 text-xs text-amber-600">
-            This category is currently inactive. It is shown because it is the announcement's current category.
+            This category is currently inactive. It is shown because it is the announcement's
+            current category.
           </p>
           <p v-if="getFieldError(fieldErrors, 'category_id')" class="mt-1 text-xs text-red-500">
             {{ getFieldError(fieldErrors, 'category_id') }}
@@ -197,7 +215,12 @@ async function handleSubmit() {
         </el-form-item>
 
         <el-form-item label="Title" prop="title">
-          <BaseInput v-model="form.title" placeholder="Announcement title" maxlength="255" show-word-limit />
+          <BaseInput
+            v-model="form.title"
+            placeholder="Announcement title"
+            maxlength="255"
+            show-word-limit
+          />
           <p v-if="getFieldError(fieldErrors, 'title')" class="mt-1 text-xs text-red-500">
             {{ getFieldError(fieldErrors, 'title') }}
           </p>
@@ -238,12 +261,19 @@ async function handleSubmit() {
               </button>
             </div>
 
-            <div v-if="attachmentFile" class="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
+            <div
+              v-if="attachmentFile"
+              class="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2"
+            >
               <span class="inline-flex items-center gap-2 text-sm text-slate-700">
                 <Paperclip class="w-4 h-4" />
                 {{ attachmentFile.name }}
               </span>
-              <button type="button" class="text-slate-400 hover:text-red-500" @click="removeNewFile">
+              <button
+                type="button"
+                class="text-slate-400 hover:text-red-500"
+                @click="removeNewFile"
+              >
                 <X class="w-4 h-4" />
               </button>
             </div>
@@ -256,7 +286,9 @@ async function handleSubmit() {
               accept=".pdf,.jpg,.jpeg,.png"
               :on-change="onFileChange"
             >
-              <BaseButton size="small">{{ existingAttachment ? 'Replace File' : 'Select File' }}</BaseButton>
+              <BaseButton size="small">{{
+                existingAttachment ? 'Replace File' : 'Select File'
+              }}</BaseButton>
               <template #tip>
                 <p class="text-xs text-slate-400 mt-1">PDF, JPG, JPEG or PNG — max 2048 KB</p>
               </template>

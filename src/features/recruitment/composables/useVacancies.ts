@@ -2,11 +2,18 @@ import { ref, reactive } from 'vue'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { fetchVacancies } from '../services/vacancy.api'
-import type { Vacancy, PaginationMeta, VacancyStatus } from '../types/vacancy'
+import {
+  EMPTY_VACANCY_SUMMARY,
+  type Vacancy,
+  type PaginationMeta,
+  type VacancyStatus,
+  type VacancySummary,
+} from '../types/vacancy'
 
 export function useVacancies() {
   const notify = useNotify()
   const vacancies = ref<Vacancy[]>([])
+  const summary = ref<VacancySummary>({ ...EMPTY_VACANCY_SUMMARY })
   const meta = ref<PaginationMeta>({
     current_page: 1,
     last_page: 1,
@@ -39,6 +46,7 @@ export function useVacancies() {
       const res = await fetchVacancies(params)
       vacancies.value = res.data
       meta.value = res.meta
+      summary.value = res.summary ? { ...res.summary } : { ...EMPTY_VACANCY_SUMMARY }
     } catch (err) {
       notify.error(getApiErrorMessage(err))
     } finally {
@@ -73,6 +81,7 @@ export function useVacancies() {
 
   return {
     vacancies,
+    summary,
     meta,
     loading,
     filters,
