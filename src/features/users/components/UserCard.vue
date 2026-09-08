@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+  <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-5">
     <div
       v-for="card in summaryCards"
       :key="card.label"
@@ -21,8 +21,11 @@
 
 <script lang="ts" setup>
 import {
+  Briefcase,
   BriefcaseBusiness,
+  Building2,
   Crown,
+  Network,
   ShieldAlert,
   ShieldCheck,
   ShieldUser,
@@ -101,6 +104,27 @@ const summaryCards = computed(() => {
       icon: Crown,
       iconBg: 'bg-amber-50',
       iconColor: 'text-amber-600',
+    },
+    {
+      label: 'GM Users',
+      value: roles?.gm ?? 0,
+      icon: Network,
+      iconBg: 'bg-sky-50',
+      iconColor: 'text-sky-600',
+    },
+    {
+      label: 'Head Users',
+      value: roles?.head ?? 0,
+      icon: Building2,
+      iconBg: 'bg-violet-50',
+      iconColor: 'text-violet-600',
+    },
+    {
+      label: 'Manager Users',
+      value: roles?.manager ?? 0,
+      icon: Briefcase,
+      iconBg: 'bg-teal-50',
+      iconColor: 'text-teal-600',
     },
     {
       label: 'Employee Users',

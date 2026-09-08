@@ -1,5 +1,6 @@
 import { ref, reactive, computed, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { parseApiError, type ApiValidationErrors } from '@/utils/api-error'
@@ -9,6 +10,7 @@ import { ACTIVE_EMPLOYMENT_STATUSES, EMPLOYMENT_STATUS, TERMINAL_EMPLOYMENT_STAT
 import type { Employee, PositionOption, EmploymentStatus } from '../types/employee'
 import { fetchAvailableEmployeeUsers } from '@/features/users/services/user.api'
 import type { UserListItem } from '@/features/users/types/user'
+import { defaultRoleForJobLevel, type JobLevel } from '@/features/positions/types/job-level'
 
 function isAtLeast18(dateOfBirth: string): boolean {
   const dob = new Date(dateOfBirth)
@@ -29,6 +31,7 @@ export function useEmployeeForm(
   const usersLoading = ref(false)
   const fieldErrors = ref<ApiValidationErrors>({})
   const isEdit = computed(() => getEmployee() !== null)
+  const originalPositionId = ref<number | null>(null)
 
   const form = reactive({
     user_id: null as number | null,
@@ -57,9 +60,20 @@ export function useEmployeeForm(
 
   const selectedUserIsCeo = computed(() => {
     const emp = getEmployee()
+    if (emp?.user?.is_ceo) return true
     if (emp?.user?.roles?.includes('ceo')) return true
     const user = userOptions.value.find((u) => u.id === form.user_id)
     return user?.roles.includes('ceo') ?? false
+  })
+
+  const selectedPosition = computed(() =>
+    getPositions().find((p) => p.id === form.position_id) ?? null,
+  )
+
+  const inheritedRoleHint = computed(() => {
+    const level = selectedPosition.value?.job_level as JobLevel | undefined
+    if (!level) return null
+    return defaultRoleForJobLevel(level)
   })
 
   function filterPhoneInput(value: string) {
@@ -159,6 +173,7 @@ export function useEmployeeForm(
     form.intern_end_date = emp.intern_end_date
     form.emergency_contact = emp.emergency_contact ?? ''
     form.manager_id = emp.manager?.id ?? null
+    originalPositionId.value = emp.position?.id ?? null
   }
 
   function resetForm() {
@@ -171,6 +186,7 @@ export function useEmployeeForm(
     form.intern_end_date = null
     form.emergency_contact = ''
     form.manager_id = null
+    originalPositionId.value = null
   }
 
   watch(() => form.department_id, () => {
@@ -185,7 +201,6 @@ export function useEmployeeForm(
   })
 
   watch(() => form.user_id, () => {
-    if (selectedUserIsCeo.value) form.manager_id = null
     formRef.value?.clearValidate('manager_id')
   })
 
@@ -210,7 +225,7 @@ export function useEmployeeForm(
     }
     if (can('employees.update_salary') || !isEdit.value) fd.append('base_salary', form.base_salary)
     if (form.emergency_contact) fd.append('emergency_contact', form.emergency_contact)
-    if (form.manager_id) fd.append('manager_id', String(form.manager_id))
+    fd.append('manager_id', form.manager_id != null ? String(form.manager_id) : '')
     if (photoFile instanceof File) fd.append('profile_photo', photoFile)
 
     docFiles.forEach((file, i) => fd.append(`documents[${i}]`, file))
@@ -237,6 +252,17 @@ export function useEmployeeForm(
     ) {
       notify.error('Last working date is required for resigned or terminated employees.')
       return
+    }
+    if (isEdit.value && form.position_id !== originalPositionId.value) {
+      try {
+        await ElMessageBox.confirm(
+          "Changing position updates this employee's default system role from the new job level, except HR and Admin.",
+          'Change position?',
+          { confirmButtonText: 'Continue', cancelButtonText: 'Cancel', type: 'warning' },
+        )
+      } catch {
+        return
+      }
     }
     submitting.value = true
     try {
@@ -270,6 +296,7 @@ export function useEmployeeForm(
     usersLoading,
     filteredPositions,
     selectedUserIsCeo,
+    inheritedRoleHint,
     filterPhoneInput,
     loadAvailableUsers,
     populateForm,

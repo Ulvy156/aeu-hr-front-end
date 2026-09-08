@@ -10,7 +10,7 @@ import GeneratePayrollDialog from './GeneratePayrollDialog.vue'
 import RejectPayrollDialog from './RejectPayrollDialog.vue'
 import type { PayrollBatch } from '../types/payroll'
 
-const { can } = usePermission()
+const { can, hasRole } = usePermission()
 const {
   payrolls,
   meta,
@@ -33,6 +33,9 @@ const rejectDialogOpen = ref(false)
 const selectedPayroll = ref<PayrollBatch | null>(null)
 
 const canGenerate = computed(() => can('payrolls.generate'))
+const showDepartmentScopeBanner = computed(() =>
+  hasRole('head') && !hasRole('hr') && !hasRole('admin') && !hasRole('gm') && !hasRole('ceo'),
+)
 
 onMounted(loadPayrolls)
 
@@ -96,6 +99,13 @@ async function confirmReject(reason: string) {
       >
         + Generate Payroll
       </BaseButton>
+    </div>
+
+    <div
+      v-if="showDepartmentScopeBanner"
+      class="rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+    >
+      Totals and payroll items are limited to your department.
     </div>
 
     <!-- Filters -->

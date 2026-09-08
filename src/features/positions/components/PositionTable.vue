@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Pencil, Trash2 } from '@lucide/vue'
 import type { Position } from '../types/position'
+import { formatJobLevel } from '../types/job-level'
 import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
 
@@ -50,6 +51,12 @@ function formatDate(iso: string): string {
         <el-table-column label="Department" min-width="160">
           <template #default="{ row }">
             <span class="text-sm text-slate-600">{{ row.department?.name ?? '—' }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="Job Level" width="130">
+          <template #default="{ row }">
+            <span class="text-sm text-slate-600">{{ formatJobLevel(row.job_level) || '—' }}</span>
           </template>
         </el-table-column>
 

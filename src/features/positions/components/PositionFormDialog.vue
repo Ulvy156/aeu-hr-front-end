@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { createPosition, updatePosition } from '../services/position.api'
 import { BaseInput } from '@/components/common'
 import type { Position, PositionPayload, DepartmentOption } from '../types/position'
+import { JOB_LEVEL, JOB_LEVEL_OPTIONS } from '../types/job-level'
 import BaseButton from '@/components/common/BaseButton.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 const props = defineProps<{
@@ -27,18 +29,21 @@ const isEdit = computed(() => props.position !== null)
 const form = reactive<PositionPayload>({
   name: '',
   department_id: null,
+  job_level: JOB_LEVEL.JUNIOR,
   status: 'active',
 })
 
 const rules: FormRules = {
   name: [{ required: true, message: 'Position name is required', trigger: 'blur' }],
   department_id: [{ required: true, message: 'Department is required', trigger: 'change' }],
+  job_level: [{ required: true, message: 'Job level is required', trigger: 'change' }],
   status: [{ required: true, message: 'Status is required', trigger: 'change' }],
 }
 
 function resetForm() {
   form.name = ''
   form.department_id = null
+  form.job_level = JOB_LEVEL.JUNIOR
   form.status = 'active'
   formRef.value?.clearValidate()
 }
@@ -49,6 +54,7 @@ watch(
     if (pos) {
       form.name = pos.name
       form.department_id = pos.department?.id ?? null
+      form.job_level = pos.job_level
       form.status = pos.status
     } else {
       resetForm()
@@ -66,6 +72,18 @@ watch(
 async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
+
+  if (isEdit.value && props.position && form.job_level !== props.position.job_level) {
+    try {
+      await ElMessageBox.confirm(
+        'Changing job level updates the default system role of employees in this position, except HR and Admin.',
+        'Change job level?',
+        { confirmButtonText: 'Continue', cancelButtonText: 'Cancel', type: 'warning' },
+      )
+    } catch {
+      return
+    }
+  }
 
   submitting.value = true
   try {
@@ -112,6 +130,17 @@ async function handleSubmit() {
             :key="dept.id"
             :label="dept.name"
             :value="dept.id"
+          />
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="Job Level" prop="job_level">
+        <el-select v-model="form.job_level" placeholder="Select job level" class="w-full">
+          <el-option
+            v-for="opt in JOB_LEVEL_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
           />
         </el-select>
       </el-form-item>

@@ -56,3 +56,20 @@ export async function searchEmployees(q: string): Promise<EmployeeSearchOption[]
   const { data } = await api.get('/employees/search', { params: { q } })
   return data
 }
+
+export interface LineManagerOption {
+  id: number
+  employee_id: string
+  full_name: string
+  department: { id: number; name: string } | null
+  position: { id: number; name: string; job_level: string } | null
+}
+
+export async function fetchLineManagers(params: {
+  q: string
+  exclude_id?: number | null
+  per_page?: number
+}): Promise<ApiResponse<LineManagerOption[]>> {
+  const { data } = await api.get('/employees/managers', { params })
+  return data
+}

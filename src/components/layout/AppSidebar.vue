@@ -47,7 +47,12 @@ defineEmits<{
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const { can } = usePermission();
+const { can, canAny } = usePermission();
+
+function canAccess(permission?: string | string[]): boolean {
+  if (!permission) return true
+  return Array.isArray(permission) ? canAny(permission) : can(permission)
+}
 const isClickLogout = ref(false);
 const isLogginOut = ref(false);
 
@@ -65,7 +70,7 @@ interface MenuItem {
   label: string;
   path: string;
   icon: unknown;
-  permission?: string;
+  permission?: string | string[];
 }
 
 interface MenuGroup {
@@ -155,7 +160,7 @@ const menuGroups = computed<MenuGroup[]>(() => [
   },
   {
     label: "Reports",
-    items: [{ label: "Reports", path: "/reports", icon: BarChart2, permission: "reports.payroll_view" }],
+    items: [{ label: "Reports", path: "/reports", icon: BarChart2, permission: ["reports.payroll_view", "reports.attendance_view", "reports.leave_view"] }],
   },
   {
     label: "Communication",
@@ -202,7 +207,7 @@ const visibleMenuGroups = computed<MenuGroup[]>(() =>
   menuGroups.value
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => !item.permission || can(item.permission)),
+      items: group.items.filter((item) => canAccess(item.permission)),
     }))
     .filter((group) => group.items.length > 0),
 );
@@ -253,7 +258,7 @@ const visibleMenuGroups = computed<MenuGroup[]>(() =>
         <!-- Group items -->
         <template v-for="item in group.items" :key="item.path">
           <RouterLink
-            v-if="!item.permission || can(item.permission)"
+            v-if="canAccess(item.permission)"
             :to="item.path"
             class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-medium transition-colors group"
             :class="

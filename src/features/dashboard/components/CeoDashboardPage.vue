@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { BarChart2, CalendarDays, Banknote, AlertCircle, CheckCircle } from '@lucide/vue'
 import { useAuthStore } from '@/features/auth/stores/auth.store'
 import { useDashboard } from '@/composables/useDashboard'
 import { getCeoDashboard } from '../services/dashboard.api'
 import { StatusBadge } from '@/components/common'
 import type { CeoDashboardData } from '../types/dashboard'
+import { usePermission } from '@/composables/usePermissions'
 
 const auth = useAuthStore()
+const { can, hasRole } = usePermission()
 const { data, loading, error, load } = useDashboard<CeoDashboardData>(getCeoDashboard)
 
 onMounted(load)
+
+const isGmOnly = computed(() => hasRole('gm') && !hasRole('ceo'))
+const canApprovePayroll = computed(() => can('payrolls.approve'))
+const canApproveLeave = computed(() => can('leaves.approve_ceo') || can('leaves.approve_hr'))
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -52,7 +58,7 @@ const headerCellStyle = {
         <BarChart2 class="w-5 h-5 text-emerald-600" />
       </div>
       <div>
-        <h1 class="text-2xl font-semibold text-slate-900">CEO Dashboard</h1>
+        <h1 class="text-2xl font-semibold text-slate-900">{{ isGmOnly ? 'GM Dashboard' : 'CEO Dashboard' }}</h1>
         <p class="mt-0.5 text-sm text-slate-500">
           Welcome back, <span class="font-medium text-slate-700">{{ auth.user?.name }}</span>.
           Today is {{ data?.date ? new Date(data.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : '…' }}.
@@ -73,7 +79,7 @@ const headerCellStyle = {
 
     <template v-else-if="data">
       <!-- Payroll approval summary -->
-      <div>
+      <div v-if="canApprovePayroll">
         <h2 class="text-sm font-semibold text-slate-600 mb-3 flex items-center gap-2">
           <Banknote class="w-4 h-4" /> Payroll Approval
         </h2>
@@ -138,7 +144,7 @@ const headerCellStyle = {
       </div>
 
       <!-- Pending leave approvals -->
-      <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
+      <div v-if="canApproveLeave" class="bg-white border border-gray-200 rounded-xl shadow-sm">
         <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <CalendarDays class="w-4 h-4 text-slate-400" />

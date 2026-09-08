@@ -4,6 +4,7 @@ import { User } from '@lucide/vue'
 import { AppCard, StatusBadge, EmptyState } from '@/components/common'
 import { useProfile } from '../composables/useProfile'
 import ChangePasswordForm from './ChangePasswordForm.vue'
+import { formatJobLevel } from '@/features/positions/types/job-level'
 
 const { profile, loading, fetchProfile } = useProfile()
 
@@ -152,6 +153,10 @@ function val(v: string | null | undefined): string {
             <div>
               <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Position</p>
               <p class="text-sm text-slate-800">{{ profile.employee.position?.name ?? '—' }}</p>
+            </div>
+            <div>
+              <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Job Level</p>
+              <p class="text-sm text-slate-800">{{ formatJobLevel(profile.job_level) || '—' }}</p>
             </div>
             <div>
               <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Join Date</p>

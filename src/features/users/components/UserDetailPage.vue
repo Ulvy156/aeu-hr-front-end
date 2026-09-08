@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, User, Shield, Link, Search } from '@lucide/vue'
 import { AppCard, BaseInput, StatusBadge, EmptyState } from '@/components/common'
 import { useUserDetail } from '../composables/useUserDetail'
+import { formatPositionLabel } from '@/features/positions/types/job-level'
 
 const route = useRoute()
 const router = useRouter()
@@ -118,7 +119,7 @@ onMounted(() => load(userId.value))
               <p class="text-slate-800 font-medium">{{ user.employee.full_name }}</p>
               <p class="text-slate-500">{{ user.employee.employee_id }}</p>
               <p v-if="user.employee.department || user.employee.position" class="text-slate-500">
-                {{ user.employee.position?.name }}<template v-if="user.employee.position && user.employee.department"> · </template>{{ user.employee.department?.name }}
+                {{ user.employee.position ? formatPositionLabel(user.employee.position.name, user.employee.position.job_level) : '' }}<template v-if="user.employee.position && user.employee.department"> · </template>{{ user.employee.department?.name }}
               </p>
             </div>
           </div>

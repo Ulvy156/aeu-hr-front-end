@@ -3,6 +3,7 @@ import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { fetchPositions } from '../services/position.api'
 import type { Position, PaginationMeta } from '../types/position'
+import type { JobLevel } from '../types/job-level'
 
 export function usePositions() {
   const notify = useNotify()
@@ -18,6 +19,7 @@ export function usePositions() {
   const filters = reactive({
     search: '',
     department_id: null as number | null,
+    job_level: '' as JobLevel | '',
     status: '',
     page: 1,
     per_page: 15,
@@ -32,6 +34,7 @@ export function usePositions() {
       }
       if (filters.search) params.search = filters.search
       if (filters.department_id) params.department_id = filters.department_id
+      if (filters.job_level) params.job_level = filters.job_level
       if (filters.status) params.status = filters.status
 
       const res = await fetchPositions(params)
@@ -44,9 +47,10 @@ export function usePositions() {
     }
   }
 
-  function applyFilters(search: string, departmentId: number | null, status: string) {
+  function applyFilters(search: string, departmentId: number | null, jobLevel: JobLevel | '', status: string) {
     filters.search = search
     filters.department_id = departmentId
+    filters.job_level = jobLevel
     filters.status = status
     filters.page = 1
     loadPositions()

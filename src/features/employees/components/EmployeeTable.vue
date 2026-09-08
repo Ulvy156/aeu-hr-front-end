@@ -2,6 +2,7 @@
 import { MoreHorizontal } from '@lucide/vue'
 import { EMPLOYMENT_STATUS, EMPLOYMENT_STATUS_LABELS } from '../types/employee'
 import type { Employee, EmploymentStatus } from '../types/employee'
+import { formatPositionLabel } from '@/features/positions/types/job-level'
 import { EmptyState, BasePagination } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
 
@@ -95,7 +96,7 @@ function formatDate(val: string | null): string {
 
         <el-table-column label="Position" min-width="130">
           <template #default="{ row }">
-            <span class="text-sm text-slate-600">{{ row.position?.name ?? '—' }}</span>
+            <span class="text-sm text-slate-600">{{ row.position ? formatPositionLabel(row.position.name, row.position.job_level) : '—' }}</span>
           </template>
         </el-table-column>
 

@@ -100,6 +100,7 @@ async function handleDelete(position: Position) {
         <PositionFilters
           :search="filters.search"
           :department-id="filters.department_id"
+          :job-level="filters.job_level"
           :status="filters.status"
           :departments="departments"
           @apply="applyFilters"

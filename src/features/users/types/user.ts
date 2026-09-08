@@ -22,6 +22,7 @@ export interface UserDepartment {
 export interface UserPosition {
   id: number
   name: string
+  job_level?: string | null
 }
 
 export interface UserEmployee {
@@ -129,6 +130,9 @@ export interface UserSummary {
     admin: number,
     hr: number,
     ceo: number,
-    employee: number
+    employee: number,
+    manager?: number,
+    head?: number,
+    gm?: number,
   }
 }

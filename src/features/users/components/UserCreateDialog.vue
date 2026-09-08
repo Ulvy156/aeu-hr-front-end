@@ -140,6 +140,9 @@ async function handleSubmit() {
             :value="role.name"
           />
         </el-select>
+        <p class="mt-1 text-xs text-slate-400">
+          Create users as employee (or hr/admin). Manager, Head, GM, and CEO are assigned from the employee's position. HR and Admin are never overwritten.
+        </p>
       </el-form-item>
     </el-form>
 

@@ -3,6 +3,7 @@ import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { fetchEmployees } from '../services/employee.api'
 import type { Employee, PaginationMeta } from '../types/employee'
+import type { JobLevel } from '@/features/positions/types/job-level'
 
 export function useEmployees() {
   const notify = useNotify()
@@ -19,6 +20,7 @@ export function useEmployees() {
     search: '',
     department_id: null as number | null,
     position_id: null as number | null,
+    job_level: '' as JobLevel | '',
     employment_status: '',
     page: 1,
     per_page: 15,
@@ -34,6 +36,7 @@ export function useEmployees() {
       if (filters.search) params.search = filters.search
       if (filters.department_id) params.department_id = filters.department_id
       if (filters.position_id) params.position_id = filters.position_id
+      if (filters.job_level) params.job_level = filters.job_level
       if (filters.employment_status) params.employment_status = filters.employment_status
 
       const res = await fetchEmployees(params)
@@ -50,11 +53,13 @@ export function useEmployees() {
     search: string,
     deptId: number | null,
     posId: number | null,
+    jobLevel: JobLevel | '',
     status: string,
   ) {
     filters.search = search
     filters.department_id = deptId
     filters.position_id = posId
+    filters.job_level = jobLevel
     filters.employment_status = status
     filters.page = 1
     loadEmployees()

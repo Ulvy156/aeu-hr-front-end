@@ -50,6 +50,7 @@ onMounted(async () => {
       id: p.id,
       name: p.name,
       department_id: p.department?.id ?? null,
+      job_level: p.job_level,
     }))
   } catch {
     // non-critical
@@ -122,6 +123,7 @@ async function handleDelete(emp: Employee) {
         :search="filters.search"
         :department-id="filters.department_id"
         :position-id="filters.position_id"
+        :job-level="filters.job_level"
         :employment-status="filters.employment_status"
         :departments="departments"
         :positions="positions"

@@ -1,3 +1,5 @@
+import type { JobLevel } from '@/features/positions/types/job-level'
+
 export interface ProfileDepartment {
   id: number
   name: string
@@ -6,6 +8,7 @@ export interface ProfileDepartment {
 export interface ProfilePosition {
   id: number
   name: string
+  job_level?: JobLevel | null
 }
 
 export interface ProfileEmployee {
@@ -33,6 +36,7 @@ export interface ProfileUser {
   status: string
   roles: string[]
   permissions: string[]
+  job_level: JobLevel | null
   employee: ProfileEmployee | null
 }
 

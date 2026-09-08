@@ -7,6 +7,7 @@ export interface EmployeeDepartment {
 export interface EmployeePosition {
   id: number
   name: string
+  job_level: string
   status: string
 }
 
@@ -15,7 +16,8 @@ export interface EmployeeUser {
   name: string
   email: string
   status: string
-  roles: string[]
+  roles?: string[]
+  is_ceo?: boolean
 }
 
 export interface EmployeeManager {
@@ -104,6 +106,7 @@ export interface PositionOption {
   id: number
   name: string
   department_id: number | null
+  job_level?: string | null
 }
 
 export const DOCUMENT_ALLOWED_TYPES = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'doc', 'docx']
@@ -116,6 +119,7 @@ export interface EmployeeListParams {
   department_id?: number | null
   include_ceo?: 1
   position_id?: number | null
+  job_level?: string | null
   employment_status?: string
   per_page?: number
   page?: number

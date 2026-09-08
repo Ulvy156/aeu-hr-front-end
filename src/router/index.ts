@@ -6,7 +6,7 @@ import { useAuthStore } from '@/features/auth/stores/auth.store'
 declare module 'vue-router' {
   interface RouteMeta {
     requiresAuth?: boolean
-    permission?: string
+    permission?: string | string[]
   }
 }
 
@@ -192,7 +192,7 @@ const router = createRouter({
           path: 'reports',
           name: 'reports',
           component: () => import('@/features/reports/views/ReportsView.vue'),
-          meta: { permission: 'reports.payroll_view' },
+          meta: { permission: ['reports.payroll_view', 'reports.attendance_view', 'reports.leave_view'] },
         },
 
         // Profile
@@ -294,7 +294,8 @@ router.beforeEach(async (to) => {
   // Permission guard
   const requiredPermission = to.meta.permission
   if (requiredPermission && authStore.isAuthenticated) {
-    const allowed = authStore.permissions?.includes(requiredPermission) ?? false
+    const required = Array.isArray(requiredPermission) ? requiredPermission : [requiredPermission]
+    const allowed = required.some((permission) => authStore.permissions?.includes(permission) ?? false)
     if (!allowed) {
       return router.hasRoute('forbidden') ? { name: 'forbidden' } : { name: 'dashboard' }
     }

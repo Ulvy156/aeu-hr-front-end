@@ -7,6 +7,7 @@ import { BaseInput, BaseSelect, BaseButton, EmployeeSearchSelect } from '@/compo
 import { createUpgradeRequest } from '../services/employee-upgrade-request.api'
 import { ACTIVE_EMPLOYMENT_STATUS_OPTIONS, TERMINAL_EMPLOYMENT_STATUSES } from '@/features/employees/types/employee'
 import type { Employee, DeptOption, PositionOption, EmploymentStatus } from '@/features/employees/types/employee'
+import { formatPositionLabel } from '@/features/positions/types/job-level'
 import type { UpgradeRequestValues } from '../types/employee-upgrade-request'
 
 const props = defineProps<{
@@ -219,7 +220,7 @@ function handleClose() {
           <el-form-item label="Position">
             <BaseSelect
               v-model="form.position_id"
-              :options="filteredPositions.map((p) => ({ label: p.name, value: p.id }))"
+              :options="filteredPositions.map((p) => ({ label: formatPositionLabel(p.name, p.job_level), value: p.id }))"
               placeholder="No change"
               clearable
               filterable
@@ -265,9 +266,10 @@ function handleClose() {
           <el-form-item label="Manager" class="col-span-2">
             <EmployeeSearchSelect
               v-model="form.manager_id"
-              placeholder="No change"
+              mode="line-managers"
+              placeholder="No change — search in any department"
               :disabled="form.clear_manager"
-              :department-id="effectiveDepartmentId"
+              :exclude-id="employee?.id ?? null"
             />
             <el-checkbox v-model="form.clear_manager" class="mt-2">
               Clear manager (remove from reporting line)

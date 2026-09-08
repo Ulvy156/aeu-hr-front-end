@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { EmployeeHierarchyNode } from '../types/employee-hierarchy'
+import { formatPositionLabel } from '@/features/positions/types/job-level'
 
 defineProps<{
   node: EmployeeHierarchyNode
@@ -16,7 +17,7 @@ defineProps<{
         </el-avatar>
         <div class="min-w-0 text-left">
           <p class="text-sm font-semibold text-slate-900 whitespace-nowrap">{{ node.full_name }}</p>
-          <p class="text-xs text-slate-500 whitespace-nowrap">{{ node.position?.name ?? '—' }}</p>
+          <p class="text-xs text-slate-500 whitespace-nowrap">{{ node.position ? formatPositionLabel(node.position.name, node.position.job_level) : '—' }}</p>
         </div>
       </div>
     </el-card>

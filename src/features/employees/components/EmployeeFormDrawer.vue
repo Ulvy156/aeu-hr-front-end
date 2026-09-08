@@ -10,6 +10,7 @@ import {
   TERMINAL_EMPLOYMENT_STATUSES,
 } from '../types/employee'
 import type { Employee, DeptOption, PositionOption } from '../types/employee'
+import { formatPositionLabel } from '@/features/positions/types/job-level'
 import { BaseInput, BaseSelect, StatusBadge, EmployeeSearchSelect } from '@/components/common'
 import BaseButton from '@/components/common/BaseButton.vue'
 import EmployeeDocumentUpload from './EmployeeDocumentUpload.vue'
@@ -34,7 +35,7 @@ const photoFile = ref<File | null>(null)
 
 const {
   formRef, form, rules, submitting, fieldErrors, isEdit,
-  userOptions, usersLoading, filteredPositions, selectedUserIsCeo,
+  userOptions, usersLoading, filteredPositions, selectedUserIsCeo, inheritedRoleHint,
   filterPhoneInput, loadAvailableUsers, populateForm, resetForm, handleSubmit,
 } = useEmployeeForm(
   () => props.employee,
@@ -188,25 +189,39 @@ function onSubmit() {
         <el-form-item label="Position" prop="position_id">
           <BaseSelect
             v-model="form.position_id"
-            :options="filteredPositions.map((p) => ({ label: p.name, value: p.id }))"
+            :options="filteredPositions.map((p) => ({ label: formatPositionLabel(p.name, p.job_level), value: p.id }))"
             placeholder="Select position"
             clearable
             filterable
           />
+          <p v-if="!isEdit && inheritedRoleHint" class="mt-1 text-xs text-slate-400">
+            System role will be set to <span class="font-medium text-slate-600">{{ inheritedRoleHint }}</span> from this job level. HR and Admin are never overwritten.
+          </p>
         </el-form-item>
-        <el-form-item v-if="!selectedUserIsCeo" label="Manager" prop="manager_id" required>
+        <el-form-item
+          label="Manager"
+          prop="manager_id"
+          :required="!selectedUserIsCeo"
+        >
           <EmployeeSearchSelect
             v-model="form.manager_id"
-            placeholder="Search manager..."
-            :department-id="form.department_id"
+            mode="line-managers"
+            placeholder="Search manager in any department..."
+            :clearable="selectedUserIsCeo"
+            :exclude-id="employee?.id ?? null"
+            :initial-option="employee?.manager ? {
+              id: employee.manager.id,
+              full_name: employee.manager.full_name,
+              employee_id: employee.manager.employee_id,
+            } : null"
           />
+          <p v-if="selectedUserIsCeo" class="mt-1 text-xs text-slate-400">
+            Optional for the CEO. Leave empty if they have no manager.
+          </p>
           <p v-if="getFieldError(fieldErrors, 'manager_id')" class="mt-1 text-xs text-red-500">
             {{ getFieldError(fieldErrors, 'manager_id') }}
           </p>
         </el-form-item>
-        <div v-else class="flex items-end pb-2">
-          <p class="text-xs text-slate-400">The CEO sits at the top of the org chart and has no manager.</p>
-        </div>
         <el-form-item label="Employment Status" prop="employment_status">
           <BaseSelect v-model="form.employment_status" :options="employmentStatusOptions" />
         </el-form-item>

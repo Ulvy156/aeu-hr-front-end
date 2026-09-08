@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { fetchEmployees, fetchEmployee } from '@/features/employees/services/employee.api'
+import {
+  fetchEmployees,
+  fetchEmployee,
+  fetchLineManagers,
+} from '@/features/employees/services/employee.api'
 
 interface EmployeeOption {
   id: number
   full_name: string
   employee_id: string
+  department_name?: string | null
 }
 
 const props = withDefaults(
@@ -17,6 +22,8 @@ const props = withDefaults(
     clearable?: boolean
     multiple?: boolean
     departmentId?: number | null
+    mode?: 'employees' | 'line-managers'
+    excludeId?: number | null
   }>(),
   {
     initialOption: null,
@@ -25,6 +32,8 @@ const props = withDefaults(
     clearable: true,
     multiple: false,
     departmentId: null,
+    mode: 'employees',
+    excludeId: null,
   },
 )
 
@@ -36,6 +45,11 @@ const options = ref<EmployeeOption[]>([])
 const loading = ref(false)
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 
+function optionLabel(emp: EmployeeOption): string {
+  const base = `${emp.full_name} (${emp.employee_id})`
+  return emp.department_name ? `${base} · ${emp.department_name}` : base
+}
+
 async function search(query: string) {
   if (!query || query.length < 2) {
     options.value = []
@@ -43,11 +57,29 @@ async function search(query: string) {
   }
   loading.value = true
   try {
-    const params = props.departmentId
-      ? { search: query, per_page: 15, department_id: props.departmentId, include_ceo: 1 as const }
-      : { search: query, per_page: 15 }
-    const res = await fetchEmployees(params)
-    options.value = res.data.map((e) => ({ id: e.id, full_name: e.full_name, employee_id: e.employee_id }))
+    if (props.mode === 'line-managers') {
+      const res = await fetchLineManagers({
+        q: query,
+        exclude_id: props.excludeId ?? undefined,
+        per_page: 15,
+      })
+      options.value = res.data.map((e) => ({
+        id: e.id,
+        full_name: e.full_name,
+        employee_id: e.employee_id,
+        department_name: e.department?.name ?? null,
+      }))
+    } else {
+      const params = props.departmentId
+        ? { search: query, per_page: 15, department_id: props.departmentId, include_ceo: 1 as const }
+        : { search: query, per_page: 15 }
+      const res = await fetchEmployees(params)
+      options.value = res.data.map((e) => ({
+        id: e.id,
+        full_name: e.full_name,
+        employee_id: e.employee_id,
+      }))
+    }
   } catch {
     options.value = []
   } finally {
@@ -86,7 +118,12 @@ async function ensureSelectedOption() {
 
     try {
       const res = await fetchEmployee(id)
-      resolved.push({ id: res.data.id, full_name: res.data.full_name, employee_id: res.data.employee_id })
+      resolved.push({
+        id: res.data.id,
+        full_name: res.data.full_name,
+        employee_id: res.data.employee_id,
+        department_name: res.data.department?.name ?? null,
+      })
     } catch {
       // existing employee could not be resolved, leave id-only
     }
@@ -119,7 +156,7 @@ watch(() => props.modelValue, ensureSelectedOption)
     <el-option
       v-for="emp in options"
       :key="emp.id"
-      :label="`${emp.full_name} (${emp.employee_id})`"
+      :label="optionLabel(emp)"
       :value="emp.id"
     />
   </el-select>

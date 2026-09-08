@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { TrendingUp, FileText } from '@lucide/vue'
 import { EMPLOYMENT_STATUS, EMPLOYMENT_STATUS_LABELS } from '../types/employee'
 import type { Employee, EmploymentStatus } from '../types/employee'
+import { formatPositionLabel } from '@/features/positions/types/job-level'
 import { fetchEmployee } from '../services/employee.api'
 import { StatusBadge, BaseButton } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
@@ -119,7 +120,7 @@ function empStatusType(status: EmploymentStatus): 'success' | 'warning' | 'dange
             <div class="p-4 bg-gray-50 rounded-xl space-y-2.5">
               <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Employment</p>
               <div class="flex justify-between"><span class="text-slate-500">Department</span><span class="text-slate-800">{{ detail.department?.name ?? '—' }}</span></div>
-              <div class="flex justify-between"><span class="text-slate-500">Position</span><span class="text-slate-800">{{ detail.position?.name ?? '—' }}</span></div>
+              <div class="flex justify-between"><span class="text-slate-500">Position</span><span class="text-slate-800">{{ detail.position ? formatPositionLabel(detail.position.name, detail.position.job_level) : '—' }}</span></div>
               <div class="flex justify-between">
                 <span class="text-slate-500">Manager</span>
                 <span class="text-slate-800">

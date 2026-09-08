@@ -1,3 +1,5 @@
+import type { JobLevel } from './job-level'
+
 export interface PositionDepartment {
   id: number
   name: string
@@ -7,6 +9,7 @@ export interface PositionDepartment {
 export interface Position {
   id: number
   name: string
+  job_level: JobLevel
   status: 'active' | 'inactive'
   department: PositionDepartment | null
   employees_count: number
@@ -22,6 +25,7 @@ export interface DepartmentOption {
 export interface PositionListParams {
   search?: string
   department_id?: number | null
+  job_level?: JobLevel | ''
   status?: string
   per_page?: number
   page?: number
@@ -37,5 +41,6 @@ export interface PaginationMeta {
 export interface PositionPayload {
   name: string
   department_id: number | null
+  job_level: JobLevel
   status: 'active' | 'inactive'
 }

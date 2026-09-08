@@ -6,6 +6,7 @@ export interface EmployeeHierarchyDepartment {
 export interface EmployeeHierarchyPosition {
   id: number
   name: string
+  job_level?: string | null
 }
 
 export interface EmployeeHierarchyNode {
