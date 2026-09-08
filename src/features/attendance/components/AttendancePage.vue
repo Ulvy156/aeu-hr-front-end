@@ -15,6 +15,7 @@ import MarkAbsentDialog from './MarkAbsentDialog.vue'
 const { can } = usePermission()
 const { attendances, meta, loading, loadAttendance, applyFilters, onPageChange, onPageSizeChange } =
   useAttendance()
+const summaryCards = ref<{ load: () => Promise<void> } | null>(null)
 
 const correctionOpen = ref(false)
 const markAbsentOpen = ref(false)
@@ -24,6 +25,11 @@ const canViewAny = computed(() => can('attendance.view_any'))
 const showClockCard = computed(() => can('attendance.clock_in') || can('attendance.clock_out'))
 
 onMounted(loadAttendance)
+
+function handleClocked() {
+  void loadAttendance()
+  void summaryCards.value?.load()
+}
 
 function handleCorrect(attendance: Attendance) {
   selectedAttendance.value = attendance
@@ -54,10 +60,10 @@ function handleCorrect(attendance: Attendance) {
     </div>
 
     <!-- Clock In/Out card -->
-    <ClockInOutCard v-if="showClockCard" @clocked="loadAttendance" />
+    <ClockInOutCard v-if="showClockCard" @clocked="handleClocked" />
 
     <!-- Monthly summary cards -->
-    <AttendanceSummaryCards />
+    <AttendanceSummaryCards ref="summaryCards" />
 
     <!-- Filters -->
     <AttendanceFilters @apply="applyFilters" />

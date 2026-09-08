@@ -1,24 +1,27 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { Clock, CheckCircle2, MapPin } from '@lucide/vue'
-import { clockIn, clockOut, fetchAttendance } from '../services/attendance.api'
-import type { Attendance } from '../types/attendance'
+import { clockIn, clockOut, fetchAttendance, fetchAttendanceSummary } from '../services/attendance.api'
+import type { AttendanceTodayData } from '../types/attendance'
+import { useAuthStore } from '@/features/auth/stores/auth.store'
 import { usePermission } from '@/composables/usePermissions'
 import { useNotify } from '@/composables/useNotify'
 import { getCurrentLocation } from '@/utils/getCurrentLocation'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { BaseButton } from '@/components/common'
+import { formatAttendanceTime, localAttendanceDate } from '../utils/formatAttendance'
 
 const emit = defineEmits<{ clocked: [] }>()
 
+const auth = useAuthStore()
 const { can } = usePermission()
 const notify = useNotify()
 const gpsLoading = ref(false)
 const submitting = ref(false)
 const loadingToday = ref(true)
-const todayRecord = ref<Attendance | null>(null)
+const todayRecord = ref<Pick<AttendanceTodayData, 'clock_in_time' | 'clock_out_time'> | null>(null)
 
-const today = new Date().toISOString().split('T')[0]
+const today = localAttendanceDate()
 const todayLabel = new Date().toLocaleDateString('en-US', {
   weekday: 'long',
   year: 'numeric',
@@ -26,22 +29,39 @@ const todayLabel = new Date().toLocaleDateString('en-US', {
   day: 'numeric',
 })
 
-const hasClockedIn = computed(() => !!todayRecord.value?.clock_in_time)
-const hasClockedOut = computed(() => !!todayRecord.value?.clock_out_time)
+const hasClockedIn = computed(() => Boolean(todayRecord.value?.clock_in_time))
+const hasClockedOut = computed(() => Boolean(todayRecord.value?.clock_out_time))
 const isComplete = computed(() => hasClockedIn.value && hasClockedOut.value)
 
-function fmt(isoStr: string | null): string {
-  if (!isoStr) return '—'
-  return new Date(isoStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+function applyTodayState(record: { clock_in_time: string | null; clock_out_time: string | null } | null) {
+  todayRecord.value = record
+    ? { clock_in_time: record.clock_in_time, clock_out_time: record.clock_out_time }
+    : null
+}
+
+async function loadTodayFromList() {
+  const params: Record<string, unknown> = {
+    attendance_date: today,
+    per_page: 1,
+  }
+  const employeeCode = auth.user?.employee?.employee_id
+  if (employeeCode) params.employee_id = employeeCode
+
+  const res = await fetchAttendance(params)
+  applyTodayState(res.data[0] ?? null)
 }
 
 async function loadToday() {
   loadingToday.value = true
   try {
-    const res = await fetchAttendance({ attendance_date: today, per_page: 1 })
-    todayRecord.value = res.data[0] ?? null
+    const res = await fetchAttendanceSummary()
+    applyTodayState(res.data.today)
   } catch {
-    // silent — user can still try to clock in/out
+    try {
+      await loadTodayFromList()
+    } catch {
+      // silent — user can still try to clock in/out
+    }
   } finally {
     loadingToday.value = false
   }
@@ -53,7 +73,6 @@ async function handleAction(action: 'clock-in' | 'clock-out') {
   try {
     coords = await getCurrentLocation()
   } catch {
-    // error already shown by getCurrentLocation via useNotify
     gpsLoading.value = false
     return
   }
@@ -62,7 +81,7 @@ async function handleAction(action: 'clock-in' | 'clock-out') {
   submitting.value = true
   try {
     const res = action === 'clock-in' ? await clockIn(coords) : await clockOut(coords)
-    todayRecord.value = res.data
+    applyTodayState(res.data)
     notify.success(res.message)
     emit('clocked')
   } catch (err) {
@@ -87,34 +106,29 @@ onMounted(loadToday)
       </div>
     </div>
 
-    <!-- Loading skeleton -->
     <div v-if="loadingToday" class="space-y-3">
       <el-skeleton :rows="2" animated />
     </div>
 
-    <!-- Content -->
     <div v-else>
-      <!-- Completed state -->
       <div v-if="isComplete" class="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-100 mb-4">
         <CheckCircle2 class="w-5 h-5 text-green-600 shrink-0" />
         <div class="text-sm">
           <p class="font-medium text-green-800">Attendance complete for today</p>
           <p class="text-green-600 mt-0.5">
-            Clock in: {{ fmt(todayRecord!.clock_in_time) }} · Clock out: {{ fmt(todayRecord!.clock_out_time) }}
+            Clock in: {{ formatAttendanceTime(todayRecord!.clock_in_time) }} · Clock out: {{ formatAttendanceTime(todayRecord!.clock_out_time) }}
           </p>
         </div>
       </div>
 
-      <!-- Partial: clocked in only -->
       <div v-else-if="hasClockedIn" class="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-100 mb-4">
         <Clock class="w-4 h-4 text-blue-600 shrink-0" />
         <div class="text-sm">
-          <p class="font-medium text-blue-800">Clocked in at {{ fmt(todayRecord!.clock_in_time) }}</p>
+          <p class="font-medium text-blue-800">Clocked in at {{ formatAttendanceTime(todayRecord!.clock_in_time) }}</p>
           <p class="text-blue-500 mt-0.5">Don't forget to clock out when you leave.</p>
         </div>
       </div>
 
-      <!-- Action buttons -->
       <div class="flex items-center gap-3">
         <BaseButton
           v-if="can('attendance.clock_in') && !hasClockedIn"
@@ -129,6 +143,7 @@ onMounted(loadToday)
 
         <BaseButton
           v-if="can('attendance.clock_out') && hasClockedIn && !hasClockedOut"
+          type="primary"
           :loading="gpsLoading || submitting"
           @click="handleAction('clock-out')"
         >

@@ -88,6 +88,38 @@ export interface AttendanceListFilters {
   per_page: number
 }
 
+export type CorrectionQueue = 'needs_review' | 'late' | 'absent' | 'all'
+
+export const ATTENDANCE_STATUS_LABELS: Record<AttendanceStatus, string> = {
+  present: 'Present',
+  late: 'Late',
+  absent: 'Absent',
+  missing_clock_out: 'Missing clock-out',
+}
+
+export const CORRECTION_QUEUE_STATUS: Record<CorrectionQueue, AttendanceStatus | ''> = {
+  needs_review: 'missing_clock_out',
+  late: 'late',
+  absent: 'absent',
+  all: '',
+}
+
+export interface CorrectionQueueCounts {
+  needs_review: number
+  late: number
+  absent: number
+  all: number
+}
+
+export interface AttendanceCorrectionFilters {
+  queue: CorrectionQueue
+  employee_id: number | null
+  date_from: string
+  date_to: string
+  page: number
+  per_page: number
+}
+
 export interface PaginationMeta {
   current_page: number
   last_page: number

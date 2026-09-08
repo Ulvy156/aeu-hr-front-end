@@ -84,6 +84,7 @@ const router = createRouter({
           path: 'attendance/correction',
           name: 'attendance-correction',
           component: () => import('@/features/attendance/views/AttendanceCorrectionView.vue'),
+          meta: { permission: 'attendance.view_correction' },
         },
         {
           path: 'attendance/proxy',

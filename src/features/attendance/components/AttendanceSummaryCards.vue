@@ -7,6 +7,8 @@ const { month, year, summary, loading, error, isCurrentMonth, todayLabel, attend
 
 onMounted(load)
 
+defineExpose({ load })
+
 watch([month, year], load)
 
 const MONTH_NAMES = [
