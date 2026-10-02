@@ -10,6 +10,7 @@ defineProps<{
   loading: boolean
   canViewAny: boolean
   allowCorrections: boolean
+  showLateColumn: boolean
   currentPage: number
   pageSize: number
   total: number
@@ -114,7 +115,7 @@ const statusLabelMap: Record<string, string> = {
           </template>
         </el-table-column>
 
-        <el-table-column label="Late"  align="center">
+        <el-table-column v-if="showLateColumn" label="Late" align="center">
           <template #default="{ row }">
             <el-tag v-if="row.is_late" type="warning" size="small" round disable-transitions>
               Yes

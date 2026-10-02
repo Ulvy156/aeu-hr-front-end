@@ -58,7 +58,7 @@ function handleQueue(queue: CorrectionQueue) {
   setQueue(queue)
 }
 
-function handleApply(employeeId: number | null, dateFrom: string, dateTo: string) {
+function handleApply(employeeId: string | null, dateFrom: string, dateTo: string) {
   selectedAttendance.value = null
   applyFilters(employeeId, dateFrom, dateTo)
 }
@@ -79,7 +79,7 @@ function handleClosePanel() {
 function queueMatches(row: Attendance, queue: CorrectionQueue): boolean {
   const status = CORRECTION_QUEUE_STATUS[queue]
   if (!status) return true
-  return row.status === status
+  return queue === 'late' ? row.status === 'late' || row.is_late : row.status === status
 }
 
 function handleSaved(updated: Attendance) {

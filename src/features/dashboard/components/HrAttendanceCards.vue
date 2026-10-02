@@ -71,7 +71,7 @@ defineProps<{
           >
             {{ summary.absent_count }}
           </p>
-          <p class="text-sm text-slate-500">Absent</p>
+          <p class="text-sm text-slate-500">Absent so far</p>
         </div>
       </div>
     </div>

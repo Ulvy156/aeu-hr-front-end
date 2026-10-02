@@ -58,6 +58,7 @@ function handleAttendanceChanged() {
         :loading="loading"
         :can-view-any="false"
         :allow-corrections="false"
+        :show-late-column="false"
         :current-page="meta.current_page"
         :page-size="meta.per_page"
         :total="meta.total"

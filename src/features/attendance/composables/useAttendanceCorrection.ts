@@ -94,7 +94,7 @@ export function useAttendanceCorrection() {
     loadAttendance()
   }
 
-  function applyFilters(employeeId: number | null, dateFrom: string, dateTo: string) {
+  function applyFilters(employeeId: string | null, dateFrom: string, dateTo: string) {
     filters.employee_id = employeeId
     filters.date_from = dateFrom
     filters.date_to = dateTo

@@ -117,7 +117,7 @@ export interface CorrectionQueueCounts {
 
 export interface AttendanceCorrectionFilters {
   queue: CorrectionQueue
-  employee_id: number | null
+  employee_id: string | null
   date_from: string
   date_to: string
   page: number

@@ -166,7 +166,7 @@ async function confirmReject(reason: string) {
       </div>
 
       <!-- Totals summary -->
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <AppCard>
           <p class="text-xs text-slate-400 mb-1">Gross Salary</p>
           <p class="text-lg font-semibold text-slate-800">{{ formatMoney(payroll.totals?.gross_salary) }}</p>
@@ -180,8 +180,20 @@ async function confirmReject(reason: string) {
           <p class="text-lg font-semibold text-red-600">{{ formatMoney(payroll.totals?.absence_deduction) }}</p>
         </AppCard>
         <AppCard>
+          <p class="text-xs text-slate-400 mb-1">Maternity Deduction</p>
+          <p class="text-lg font-semibold text-red-600">{{ formatMoney(payroll.totals?.maternity_deduction) }}</p>
+        </AppCard>
+        <AppCard>
+          <p class="text-xs text-slate-400 mb-1">Special Sick Deduction</p>
+          <p class="text-lg font-semibold text-red-600">{{ formatMoney(payroll.totals?.special_sick_deduction) }}</p>
+        </AppCard>
+        <AppCard>
           <p class="text-xs text-slate-400 mb-1">Tax Amount</p>
           <p class="text-lg font-semibold text-amber-600">{{ formatMoney(payroll.totals?.tax_amount) }}</p>
+        </AppCard>
+        <AppCard>
+          <p class="text-xs text-slate-400 mb-1">NSSF Deduction</p>
+          <p class="text-lg font-semibold text-red-600">{{ formatMoney(payroll.totals?.nssf_deduction) }}</p>
         </AppCard>
         <AppCard>
           <p class="text-xs text-slate-400 mb-1">Net Salary</p>

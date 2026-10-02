@@ -178,9 +178,45 @@ const headerCellStyle = {
         </template>
       </el-table-column>
 
+      <el-table-column label="Maternity Leave" width="115" align="right">
+        <template #default="{ row }">
+          <span class="text-xs text-slate-700">{{ formatNumber(row.maternity_leave_days) }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="Special Sick Leave" width="125" align="right">
+        <template #default="{ row }">
+          <span class="text-xs text-slate-700">{{ formatNumber(row.special_sick_leave_days) }}</span>
+        </template>
+      </el-table-column>
+
       <el-table-column label="Gross Salary" width="120" align="right">
         <template #default="{ row }">
           <span class="text-xs font-medium text-slate-800">{{ formatMoney(row.gross_salary) }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="Unpaid Deduction" width="130" align="right">
+        <template #default="{ row }">
+          <span class="text-xs text-slate-700">{{ formatMoney(row.unpaid_deduction) }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="Absence Deduction" width="135" align="right">
+        <template #default="{ row }">
+          <span class="text-xs text-slate-700">{{ formatMoney(row.absence_deduction) }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="Maternity Deduction" width="145" align="right">
+        <template #default="{ row }">
+          <span class="text-xs text-slate-700">{{ formatMoney(row.maternity_deduction) }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="Special Sick Deduction" width="155" align="right">
+        <template #default="{ row }">
+          <span class="text-xs text-slate-700">{{ formatMoney(row.special_sick_deduction) }}</span>
         </template>
       </el-table-column>
 
@@ -196,6 +232,12 @@ const headerCellStyle = {
             size="small"
           />
           <span v-else class="text-xs text-slate-700">{{ formatMoney(row.tax_amount) }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="NSSF Deduction" width="125" align="right">
+        <template #default="{ row }">
+          <span class="text-xs text-slate-700">{{ formatMoney(row.nssf_deduction) }}</span>
         </template>
       </el-table-column>
 

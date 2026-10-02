@@ -62,6 +62,7 @@ export function displayedDeductionTotal(totals?: PayrollTotals): string {
   const sum =
     Number(totals.unpaid_deduction ?? 0) +
     Number(totals.absence_deduction ?? 0) +
+    Number(totals.maternity_deduction ?? 0) +
     Number(totals.special_sick_deduction ?? 0) +
     Number(totals.tax_amount ?? 0) +
     Number(totals.nssf_deduction ?? 0)

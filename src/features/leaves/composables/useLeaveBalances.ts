@@ -8,22 +8,32 @@ export function useLeaveBalances() {
   const notify = useNotify()
   const balanceData = ref<LeaveBalanceData | null>(null)
   const loading = ref(false)
+  let requestId = 0
 
   async function loadBalances(params: Record<string, unknown> = {}) {
+    const currentRequest = ++requestId
     loading.value = true
+    balanceData.value = null
     try {
       const res = await fetchLeaveBalances(params)
-      balanceData.value = res.data
+      if (currentRequest === requestId) balanceData.value = res.data
     } catch (err) {
-      notify.error(getApiErrorMessage(err))
+      if (currentRequest === requestId) notify.error(getApiErrorMessage(err))
     } finally {
-      loading.value = false
+      if (currentRequest === requestId) loading.value = false
     }
+  }
+
+  function clearBalances() {
+    requestId++
+    balanceData.value = null
+    loading.value = false
   }
 
   return {
     balanceData,
     loading,
     loadBalances,
+    clearBalances,
   }
 }

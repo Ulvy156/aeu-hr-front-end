@@ -24,14 +24,15 @@ function handleCorrect(attendance: Attendance) {
 const attendances = ref<Attendance[]>([])
 const meta = ref<PaginationMeta>({ current_page: 1, last_page: 1, per_page: 10, total: 0 })
 const tableLoading = ref(false)
-const filterEmployeeId = ref<number | null>(null)
+const filterEmployeeId = ref<string | null>(null)
 const filterDate = ref('')
 const tablePage = ref(1)
+const pageSize = ref(10)
 
 async function loadTable() {
   tableLoading.value = true
   try {
-    const params: Record<string, unknown> = { page: tablePage.value, per_page: 10 }
+    const params: Record<string, unknown> = { page: tablePage.value, per_page: pageSize.value }
     if (filterEmployeeId.value) params.employee_id = filterEmployeeId.value
     if (filterDate.value) {
       params.date_from = filterDate.value
@@ -48,7 +49,7 @@ async function loadTable() {
 }
 
 function handleProxySuccess(attendance: Attendance) {
-  filterEmployeeId.value = attendance.employee.id
+  filterEmployeeId.value = attendance.employee.employee_id
   filterDate.value = attendance.attendance_date
   tablePage.value = 1
   loadTable()
@@ -60,7 +61,7 @@ function onPageChange(page: number) {
 }
 
 function onPageSizeChange(size: number) {
-  meta.value.per_page = size
+  pageSize.value = size
   tablePage.value = 1
   loadTable()
 }
@@ -117,6 +118,7 @@ onMounted(loadTable)
           :loading="tableLoading"
           :can-view-any="canViewAny"
           :allow-corrections="true"
+          :show-late-column="true"
           :current-page="meta.current_page"
           :page-size="meta.per_page"
           :total="meta.total"

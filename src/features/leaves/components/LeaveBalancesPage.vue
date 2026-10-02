@@ -11,7 +11,7 @@ import ResetButton from "@/components/resuable/ResetButton.vue";
 import { useAuthStore } from "@/features/auth/stores/auth.store";
 
 const { can } = usePermission();
-const { balanceData, loading, loadBalances } = useLeaveBalances();
+const { balanceData, loading, loadBalances, clearBalances } = useLeaveBalances();
 const { user } = useAuthStore();
 const filterYear = ref(new Date().getFullYear().toString());
 const filterEmployeeId = ref<string | null>(null);
@@ -67,7 +67,8 @@ function resetFilters() {
   filterYear.value = new Date().getFullYear().toString();
   filterEmployeeId.value = null;
   employeeOptions.value = [];
-  if (!can("leave_balances.view_any")) {
+  clearBalances();
+  if (!can("leave_balances.view_any") || (can("leave_balances.view_own") && user?.employee?.employee_id)) {
     loadBalances({ year: filterYear.value });
   }
 }

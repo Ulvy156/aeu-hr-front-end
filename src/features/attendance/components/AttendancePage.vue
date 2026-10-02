@@ -85,6 +85,7 @@ function handleCorrect(attendance: Attendance) {
         :loading="loading"
         :can-view-any="true"
         :allow-corrections="true"
+        :show-late-column="true"
         :current-page="meta.current_page"
         :page-size="meta.per_page"
         :total="meta.total"

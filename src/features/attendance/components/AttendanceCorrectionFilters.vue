@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { EmployeeSearchSelect } from '@/components/common'
+import { searchEmployees } from '@/features/employees/services/employee.api'
+import type { EmployeeSearchOption } from '@/features/employees/services/employee.api'
 import SearchButton from '@/components/resuable/SearchButton.vue'
 import ResetButton from '@/components/resuable/ResetButton.vue'
 import type { CorrectionQueue, CorrectionQueueCounts } from '../types/attendance'
@@ -14,7 +15,7 @@ const QUEUE_PILLS: { key: CorrectionQueue; label: string }[] = [
 
 const props = defineProps<{
   queue: CorrectionQueue
-  employeeId: number | null
+  employeeId: string | null
   dateFrom: string
   dateTo: string
   counts: CorrectionQueueCounts
@@ -23,11 +24,32 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:queue': [queue: CorrectionQueue]
-  apply: [employeeId: number | null, dateFrom: string, dateTo: string]
+  apply: [employeeId: string | null, dateFrom: string, dateTo: string]
   reset: []
 }>()
 
-const localEmployeeId = ref<number | null>(props.employeeId)
+const localEmployeeId = ref<string | null>(props.employeeId)
+const employeeOptions = ref<EmployeeSearchOption[]>([])
+const loadingEmployees = ref(false)
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+
+function searchEmployee(query: string) {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(async () => {
+    if (query.length < 2) {
+      employeeOptions.value = []
+      return
+    }
+    loadingEmployees.value = true
+    try {
+      employeeOptions.value = await searchEmployees(query)
+    } catch {
+      employeeOptions.value = []
+    } finally {
+      loadingEmployees.value = false
+    }
+  }, 300)
+}
 const localDateFrom = ref(props.dateFrom)
 const localDateTo = ref(props.dateTo)
 
@@ -52,6 +74,7 @@ function handleSearch() {
 
 function handleReset() {
   localEmployeeId.value = null
+  employeeOptions.value = []
   localDateFrom.value = ''
   localDateTo.value = ''
   emit('reset')
@@ -76,10 +99,23 @@ function handleReset() {
     <div class="flex flex-wrap items-end gap-3">
       <div v-if="canViewAny" class="w-[260px]">
         <label class="mb-1.5 block text-xs font-medium text-slate-500">Employee</label>
-        <EmployeeSearchSelect
+        <el-select
           v-model="localEmployeeId"
           placeholder="Name or employee code"
-        />
+          filterable
+          remote
+          clearable
+          :remote-method="searchEmployee"
+          :loading="loadingEmployees"
+          class="w-full"
+        >
+          <el-option
+            v-for="employee in employeeOptions"
+            :key="employee.employee_id"
+            :label="employee.display"
+            :value="employee.employee_id"
+          />
+        </el-select>
       </div>
       <div>
         <label class="mb-1.5 block text-xs font-medium text-slate-500">From</label>

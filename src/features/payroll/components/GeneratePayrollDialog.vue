@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { BaseButton } from '@/components/common'
 
 const props = defineProps<{
@@ -12,11 +12,12 @@ const emit = defineEmits<{
   generate: [month: number, year: number]
 }>()
 
-const currentYear = new Date().getFullYear()
+const now = new Date()
+const currentYear = ref(now.getFullYear())
 
 const form = reactive({
-  month: null as number | null,
-  year: currentYear,
+  month: now.getMonth() + 1,
+  year: currentYear.value,
 })
 
 const monthOptions = [
@@ -34,14 +35,23 @@ const monthOptions = [
   { label: 'December', value: 12 },
 ]
 
-const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
+const yearOptions = computed(() => Array.from({ length: 5 }, (_, i) => currentYear.value - 2 + i))
 
 const formRef = ref()
+
+watch(() => props.visible, (visible) => {
+  if (!visible) return
+  const today = new Date()
+  currentYear.value = today.getFullYear()
+  form.month = today.getMonth() + 1
+  form.year = currentYear.value
+  formRef.value?.clearValidate()
+})
 
 async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
-  emit('generate', form.month!, form.year)
+  emit('generate', form.month, form.year)
 }
 
 function handleClose() {

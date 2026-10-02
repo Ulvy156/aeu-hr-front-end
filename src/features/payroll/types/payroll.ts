@@ -1,5 +1,5 @@
 export type PayrollStatus = 'draft' | 'pending_approval' | 'approved' | 'rejected'
-export type PayrollItemStatus = 'pending' | 'locked'
+export type PayrollItemStatus = 'draft' | 'locked'
 
 export interface PayrollEmployee {
   id: number
@@ -11,9 +11,10 @@ export interface PayrollTotals {
   gross_salary: string
   unpaid_deduction: string
   absence_deduction: string
-  special_sick_deduction?: string
+  maternity_deduction: string
+  special_sick_deduction: string
   tax_amount: string
-  nssf_deduction?: string
+  nssf_deduction: string
   net_salary: string
 }
 
@@ -25,12 +26,17 @@ export interface PayrollItem {
   present_days: string
   absent_days: string
   unpaid_leave_days: string
+  maternity_leave_days: string
+  special_sick_leave_days: string
   gross_salary: string
   unpaid_deduction: string
   absence_deduction: string
+  maternity_deduction: string
+  special_sick_deduction: string
   taxable_salary: string
   tax_rate: string
   tax_amount: string
+  nssf_deduction: string
   net_salary: string
   status: PayrollItemStatus
   employee: PayrollEmployee
