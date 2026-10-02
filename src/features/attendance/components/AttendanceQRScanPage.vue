@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { CheckCircle, XCircle, LogIn, LogOut, Clock, AlertCircle } from '@lucide/vue'
 import { scanQRCode } from '../services/attendance.api'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
+import { getCurrentLocation } from '@/utils/getCurrentLocation'
 import type { QRScanResult } from '../types/attendance'
 
 type PageState = 'loading' | 'success' | 'error'
@@ -31,7 +32,8 @@ onMounted(async () => {
     return
   }
   try {
-    const res = await scanQRCode({ token })
+    const location = await getCurrentLocation()
+    const res = await scanQRCode({ token, ...location })
     result.value = res.data
     state.value = 'success'
   } catch (err) {
@@ -64,7 +66,7 @@ onMounted(async () => {
           <div class="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
           <div class="text-center">
             <p class="text-base font-semibold text-slate-900">Processing attendance…</p>
-            <p class="text-sm text-slate-500 mt-1">Please wait a moment.</p>
+            <p class="text-sm text-slate-500 mt-1">Checking your location and recording attendance…</p>
           </div>
         </div>
 

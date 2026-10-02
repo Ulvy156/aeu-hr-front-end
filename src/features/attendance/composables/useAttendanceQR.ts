@@ -51,7 +51,7 @@ export function useAttendanceQR() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'attendance-qr.png'
+      a.download = 'attendance-qr.svg'
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)

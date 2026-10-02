@@ -121,7 +121,7 @@ onMounted(load)
             @click="download"
           >
             <Download class="w-4 h-4 mr-2" />
-            Download PNG
+            Download SVG
           </el-button>
           <el-button
             :loading="deleting || generating"

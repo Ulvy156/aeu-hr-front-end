@@ -57,6 +57,8 @@ export interface QRToken {
 
 export interface QRScanPayload {
   token: string
+  latitude: number
+  longitude: number
 }
 
 export interface QRScanResult {
