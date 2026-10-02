@@ -116,6 +116,7 @@ onMounted(loadTable)
           :attendances="attendances"
           :loading="tableLoading"
           :can-view-any="canViewAny"
+          :allow-corrections="true"
           :current-page="meta.current_page"
           :page-size="meta.per_page"
           :total="meta.total"

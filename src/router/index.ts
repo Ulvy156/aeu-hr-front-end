@@ -79,6 +79,13 @@ const router = createRouter({
           path: 'attendance',
           name: 'attendance',
           component: () => import('@/features/attendance/views/AttendanceView.vue'),
+          meta: { permission: 'attendance.view_any' },
+        },
+        {
+          path: 'my-attendance',
+          name: 'my-attendance',
+          component: () => import('@/features/attendance/views/MyAttendanceView.vue'),
+          meta: { permission: 'attendance.view_own' },
         },
         {
           path: 'attendance/correction',
@@ -290,6 +297,10 @@ router.beforeEach(async (to) => {
 
   if (to.name === 'login' && authStore.isAuthenticated) {
     return { name: 'dashboard' }
+  }
+
+  if (to.name === 'attendance' && !authStore.permissions.includes('attendance.view_any') && authStore.permissions.includes('attendance.view_own')) {
+    return { name: 'my-attendance' }
   }
 
   // Permission guard

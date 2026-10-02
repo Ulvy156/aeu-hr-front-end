@@ -4,7 +4,7 @@ import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { fetchAttendance } from '../services/attendance.api'
 import type { Attendance, PaginationMeta } from '../types/attendance'
 
-export function useAttendance() {
+export function useAttendance(scope: 'own' | 'team') {
   const notify = useNotify()
   const attendances = ref<Attendance[]>([])
   const meta = ref<PaginationMeta>({
@@ -19,6 +19,8 @@ export function useAttendance() {
     date_from: '',
     date_to: '',
     status: '',
+    employee_name: '',
+    department_id: null as number | null,
     page: 1,
     per_page: 15,
   })
@@ -27,12 +29,15 @@ export function useAttendance() {
     loading.value = true
     try {
       const params: Record<string, unknown> = {
+        scope,
         page: filters.page,
         per_page: filters.per_page,
       }
       if (filters.date_from) params.date_from = filters.date_from
       if (filters.date_to) params.date_to = filters.date_to
       if (filters.status) params.status = filters.status
+      if (filters.employee_name) params.employee_name = filters.employee_name
+      if (filters.department_id !== null) params.department_id = filters.department_id
 
       const res = await fetchAttendance(params)
       attendances.value = res.data
@@ -44,10 +49,12 @@ export function useAttendance() {
     }
   }
 
-  function applyFilters(dateFrom: string, dateTo: string, status: string) {
+  function applyFilters(dateFrom: string, dateTo: string, status: string, employeeName: string, departmentId: number | null) {
     filters.date_from = dateFrom
     filters.date_to = dateTo
     filters.status = status
+    filters.employee_name = employeeName
+    filters.department_id = departmentId
     filters.page = 1
     loadAttendance()
   }

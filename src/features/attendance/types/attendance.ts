@@ -86,6 +86,8 @@ export interface AttendanceListFilters {
   date_from: string
   date_to: string
   status: string
+  employee_name: string
+  department_id: number | null
   page: number
   per_page: number
 }
@@ -156,4 +158,15 @@ export interface AttendanceSummary {
   }
   summary: AttendanceSummaryData
   today: AttendanceTodayData | null
+}
+
+export interface TeamAttendanceSummary {
+  period: AttendanceSummary['period']
+  summary: {
+    total_records: number
+    present: number
+    late: number
+    absent: number
+    missing_clock_out: number
+  }
 }

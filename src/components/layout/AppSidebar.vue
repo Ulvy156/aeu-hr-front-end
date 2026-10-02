@@ -106,7 +106,8 @@ const menuGroups = computed<MenuGroup[]>(() => [
   {
     label: "Attendance",
     items: [
-      { label: "Attendance", path: "/attendance", icon: Clock, permission: "attendance.view_own" },
+      { label: "My Attendance", path: "/my-attendance", icon: Clock, permission: "attendance.view_own" },
+      { label: "Employee Attendance", path: "/attendance", icon: Users, permission: "attendance.view_any" },
       {
         label: "Attendance Correction",
         path: "/attendance/correction",

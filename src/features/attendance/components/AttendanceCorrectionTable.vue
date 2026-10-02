@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Pencil, UserCheck } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
+import { useAuthStore } from '@/features/auth/stores/auth.store'
 import { StatusBadge, EmptyState, BasePagination, BaseButton } from '@/components/common'
 import type { Attendance } from '../types/attendance'
 import { ATTENDANCE_STATUS_LABELS } from '../types/attendance'
@@ -29,6 +30,7 @@ const emit = defineEmits<{
 }>()
 
 const { can } = usePermission()
+const auth = useAuthStore()
 
 const headerCellStyle = {
   background: '#f9fafb',
@@ -143,6 +145,7 @@ function statusLabel(status: Attendance['status']): string {
         <el-table-column v-if="can('attendance.correct')" label="" width="110" align="right" fixed="right">
           <template #default="{ row }">
             <BaseButton
+              v-if="auth.user?.employee?.id !== row.employee.id"
               size="small"
               :type="selectedId === row.id ? 'primary' : 'default'"
               :icon="Pencil"

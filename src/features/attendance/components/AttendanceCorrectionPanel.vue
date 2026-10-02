@@ -5,6 +5,7 @@ import { ClipboardPen } from '@lucide/vue'
 import { BaseButton, BaseInput } from '@/components/common'
 import { useNotify } from '@/composables/useNotify'
 import { usePermission } from '@/composables/usePermissions'
+import { useAuthStore } from '@/features/auth/stores/auth.store'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { correctAttendance } from '../services/attendance.api'
 import type { Attendance, AttendanceStatus, CorrectionPayload } from '../types/attendance'
@@ -26,10 +27,12 @@ const emit = defineEmits<{
 }>()
 
 const { can } = usePermission()
+const auth = useAuthStore()
 const notify = useNotify()
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
-const canCorrect = computed(() => can('attendance.correct'))
+const isOwnRecord = computed(() => props.attendance !== null && auth.user?.employee?.id === props.attendance.employee.id)
+const canCorrect = computed(() => can('attendance.correct') && !isOwnRecord.value)
 
 const form = reactive({
   clock_in_time: '',
@@ -56,6 +59,7 @@ watch(
 )
 
 async function handleSubmit() {
+  if (!canCorrect.value) return
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid || !props.attendance) return
 
@@ -92,6 +96,9 @@ async function handleSubmit() {
     </div>
 
     <div v-else class="space-y-4">
+      <p v-if="isOwnRecord" class="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        You cannot correct your own attendance.
+      </p>
       <div class="flex items-start gap-3">
         <div
           class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-sm font-semibold text-emerald-700"

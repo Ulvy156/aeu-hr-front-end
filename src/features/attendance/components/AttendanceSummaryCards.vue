@@ -93,7 +93,7 @@ const todayBadgeClass: Record<string, string> = {
       <div class="rounded-xl border border-red-100 bg-red-50 p-4">
         <p class="text-xs font-medium text-red-700 uppercase tracking-wide">Absent</p>
         <p class="mt-1 text-2xl font-bold text-red-700">{{ summary.summary.absent }}</p>
-        <p class="mt-0.5 text-xs text-red-600">days</p>
+        <p class="mt-0.5 text-xs text-red-600">completed workdays</p>
       </div>
 
       <!-- Missing Clock-Out -->

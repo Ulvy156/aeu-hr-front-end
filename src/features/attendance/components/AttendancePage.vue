@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Clock, UserX } from '@lucide/vue'
 import { AppCard, BaseButton } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
 import { useAttendance } from '../composables/useAttendance'
+import { fetchDepartments } from '@/features/departments/services/department.api'
 import type { Attendance } from '../types/attendance'
-import ClockInOutCard from './ClockInOutCard.vue'
-import AttendanceSummaryCards from './AttendanceSummaryCards.vue'
+import TeamAttendanceSummaryCards from './TeamAttendanceSummaryCards.vue'
 import AttendanceFilters from './AttendanceFilters.vue'
 import AttendanceTable from './AttendanceTable.vue'
 import AttendanceCorrectionDialog from './AttendanceCorrectionDialog.vue'
@@ -14,19 +14,24 @@ import MarkAbsentDialog from './MarkAbsentDialog.vue'
 
 const { can } = usePermission()
 const { attendances, meta, loading, loadAttendance, applyFilters, onPageChange, onPageSizeChange } =
-  useAttendance()
+  useAttendance('team')
 const summaryCards = ref<{ load: () => Promise<void> } | null>(null)
+const departments = ref<{ id: number; name: string }[]>([])
 
 const correctionOpen = ref(false)
 const markAbsentOpen = ref(false)
 const selectedAttendance = ref<Attendance | null>(null)
 
-const canViewAny = computed(() => can('attendance.view_any'))
-const showClockCard = computed(() => can('attendance.clock_in') || can('attendance.clock_out'))
+onMounted(() => {
+  void loadAttendance()
+  void fetchDepartments({ per_page: 100 }).then((response) => {
+    departments.value = response.data.map(({ id, name }) => ({ id, name }))
+  }).catch(() => {
+    departments.value = []
+  })
+})
 
-onMounted(loadAttendance)
-
-function handleClocked() {
+function handleAttendanceChanged() {
   void loadAttendance()
   void summaryCards.value?.load()
 }
@@ -46,7 +51,7 @@ function handleCorrect(attendance: Attendance) {
           <Clock class="w-5 h-5 text-emerald-600" />
         </div>
         <div>
-          <h1 class="text-2xl font-semibold text-slate-900">Attendance</h1>
+          <h1 class="text-2xl font-semibold text-slate-900">Employee Attendance</h1>
           <p class="mt-0.5 text-sm text-slate-500">View and manage employee attendance records.</p>
         </div>
       </div>
@@ -59,14 +64,11 @@ function handleCorrect(attendance: Attendance) {
       </BaseButton>
     </div>
 
-    <!-- Clock In/Out card -->
-    <ClockInOutCard v-if="showClockCard" @clocked="handleClocked" />
-
     <!-- Monthly summary cards -->
-    <AttendanceSummaryCards ref="summaryCards" />
+    <TeamAttendanceSummaryCards ref="summaryCards" />
 
     <!-- Filters -->
-    <AttendanceFilters @apply="applyFilters" />
+    <AttendanceFilters :can-view-any="true" :departments="departments" @apply="applyFilters" />
 
     <!-- Table card -->
     <AppCard no-padding>
@@ -81,7 +83,8 @@ function handleCorrect(attendance: Attendance) {
       <AttendanceTable
         :attendances="attendances"
         :loading="loading"
-        :can-view-any="canViewAny"
+        :can-view-any="true"
+        :allow-corrections="true"
         :current-page="meta.current_page"
         :page-size="meta.per_page"
         :total="meta.total"
@@ -94,12 +97,12 @@ function handleCorrect(attendance: Attendance) {
     <AttendanceCorrectionDialog
       v-model:visible="correctionOpen"
       :attendance="selectedAttendance"
-      @saved="loadAttendance"
+      @saved="handleAttendanceChanged"
     />
 
     <MarkAbsentDialog
       v-model:visible="markAbsentOpen"
-      @marked="loadAttendance"
+      @marked="handleAttendanceChanged"
     />
   </div>
 </template>
