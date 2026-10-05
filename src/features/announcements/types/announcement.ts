@@ -56,6 +56,8 @@ export interface Announcement {
   submitted_at: string | null
   approved_by_user: AnnouncementUserRef | null
   approved_at: string | null
+  published_by_user?: AnnouncementUserRef | null
+  published_at?: string | null
   rejected_by_user: AnnouncementUserRef | null
   rejected_at: string | null
   rejection_reason: string | null
@@ -86,10 +88,6 @@ export interface AnnouncementFormPayload {
   attachment: File | null
   remove_attachment?: boolean
   targets: AnnouncementTarget[]
-}
-
-export interface AnnouncementRejectPayload {
-  rejection_reason: string
 }
 
 export interface PaginationMeta {

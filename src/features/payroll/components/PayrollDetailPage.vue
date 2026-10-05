@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Banknote, Lock } from '@lucide/vue'
+import { ArrowLeft, Banknote, Lock, Trash2 } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
 import { usePayrollDetail } from '../composables/usePayrollDetail'
 import { AppCard, BaseButton, StatusBadge, ConfirmDialog } from '@/components/common'
@@ -11,7 +11,7 @@ import type { UpdatePayrollItemPayload } from '../types/payroll'
 
 const route = useRoute()
 const router = useRouter()
-const { can } = usePermission()
+const { can, hasRole } = usePermission()
 
 const {
   payroll,
@@ -20,6 +20,7 @@ const {
   saveLoading,
   loadPayroll,
   handleSave,
+  handleDelete,
   handleSubmit,
   handleApprove,
   handleReject,
@@ -29,14 +30,16 @@ const editMode = ref(false)
 const submitConfirmOpen = ref(false)
 const approveConfirmOpen = ref(false)
 const rejectDialogOpen = ref(false)
+const deleteConfirmOpen = ref(false)
 
 const payrollId = computed(() => Number(route.params.id))
 
 const isLocked = computed(() => payroll.value?.status === 'approved')
-const canEdit = computed(() => can('payrolls.update') && !isLocked.value)
+const canEdit = computed(() => can('payrolls.update') && ['draft', 'rejected'].includes(payroll.value?.status ?? ''))
 const canSubmit = computed(() => can('payrolls.submit') && payroll.value?.status === 'draft')
-const canApprove = computed(() => can('payrolls.approve') && payroll.value?.status === 'pending_approval')
-const canReject = computed(() => can('payrolls.reject') && payroll.value?.status === 'pending_approval')
+const canDelete = computed(() => can('payrolls.delete') && payroll.value?.status === 'draft')
+const canApprove = computed(() => hasRole('ceo') && can('payrolls.approve') && payroll.value?.status === 'pending_approval')
+const canReject = computed(() => hasRole('ceo') && can('payrolls.reject') && payroll.value?.status === 'pending_approval')
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -72,6 +75,14 @@ async function confirmApprove() {
 async function confirmReject(reason: string) {
   const ok = await handleReject(payrollId.value, { rejection_reason: reason })
   if (ok) rejectDialogOpen.value = false
+}
+
+async function confirmDelete() {
+  const ok = await handleDelete(payrollId.value)
+  if (ok) {
+    deleteConfirmOpen.value = false
+    router.push({ name: 'payrolls' })
+  }
 }
 </script>
 
@@ -145,6 +156,15 @@ async function confirmReject(reason: string) {
           @click="rejectDialogOpen = true"
         >
           Reject
+        </BaseButton>
+        <BaseButton
+          v-if="canDelete"
+          type="danger"
+          :loading="actionLoading"
+          @click="deleteConfirmOpen = true"
+        >
+          <Trash2 class="mr-1.5 h-4 w-4" />
+          Delete Draft
         </BaseButton>
       </div>
     </div>
@@ -235,7 +255,7 @@ async function confirmReject(reason: string) {
     <ConfirmDialog
       v-model="submitConfirmOpen"
       title="Submit Payroll"
-      message="Are you sure you want to submit this payroll for CEO approval? After submission, editing will be restricted until it is rejected."
+      message="Are you sure you want to submit this payroll for CEO approval? It cannot be edited until the CEO rejects it."
       confirm-text="Submit"
       type="info"
       :loading="actionLoading"
@@ -260,6 +280,17 @@ async function confirmReject(reason: string) {
       v-model:visible="rejectDialogOpen"
       :loading="actionLoading"
       @reject="confirmReject"
+    />
+
+    <ConfirmDialog
+      v-model="deleteConfirmOpen"
+      title="Delete Draft Payroll"
+      message="Permanently delete this draft payroll and all its items? This cannot be undone."
+      confirm-text="Delete Permanently"
+      type="danger"
+      :loading="actionLoading"
+      @confirm="confirmDelete"
+      @cancel="deleteConfirmOpen = false"
     />
   </div>
 </template>

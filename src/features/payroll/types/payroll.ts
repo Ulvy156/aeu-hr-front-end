@@ -66,7 +66,6 @@ export interface GeneratePayrollPayload {
 
 export interface UpdatePayrollItemPayload {
   id: number
-  base_salary?: number
   working_days?: number
   present_days?: number
   absent_days?: number

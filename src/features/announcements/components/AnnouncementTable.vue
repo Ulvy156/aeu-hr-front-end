@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { Archive, CheckCircle, Eye, Send, XCircle } from '@lucide/vue'
+import { Archive, Eye, Send } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
-import { useAuthStore } from '@/features/auth/stores/auth.store'
 import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
 import type { Announcement } from '../types/announcement'
 import {
@@ -20,31 +19,20 @@ defineProps<{
 
 const emit = defineEmits<{
   view: [announcement: Announcement]
-  submit: [announcement: Announcement]
-  approve: [announcement: Announcement]
-  reject: [announcement: Announcement]
+  publish: [announcement: Announcement]
   archive: [announcement: Announcement]
   'page-change': [page: number]
   'size-change': [size: number]
 }>()
 
 const { can } = usePermission()
-const auth = useAuthStore()
-
-function canSubmit(row: Announcement): boolean {
-  return (row.status === 'draft' || row.status === 'rejected') && can('announcements.submit')
-}
-
-function canApprove(row: Announcement): boolean {
-  return (
-    row.status === 'pending_approval' &&
-    can('announcements.approve') &&
-    row.creator?.id !== auth.user?.id
-  )
-}
 
 function canArchive(row: Announcement): boolean {
   return row.status === 'published' && can('announcements.archive')
+}
+
+function canPublish(row: Announcement): boolean {
+  return ['draft', 'pending_approval', 'rejected'].includes(row.status) && can('announcements.publish')
 }
 </script>
 
@@ -94,7 +82,7 @@ function canArchive(row: Announcement): boolean {
           </template>
         </el-table-column>
 
-        <el-table-column label="Actions" width="150" fixed="right" align="center">
+        <el-table-column label="Actions" width="140" fixed="right" align="center">
           <template #default="{ row }">
             <div class="flex items-center justify-center gap-1">
               <el-tooltip content="View Detail" placement="top">
@@ -106,30 +94,12 @@ function canArchive(row: Announcement): boolean {
                 </button>
               </el-tooltip>
 
-              <el-tooltip v-if="canSubmit(row)" content="Submit for Approval" placement="top">
-                <button
-                  class="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-600"
-                  @click="emit('submit', row)"
-                >
-                  <Send class="h-4 w-4" />
-                </button>
-              </el-tooltip>
-
-              <el-tooltip v-if="canApprove(row)" content="Approve" placement="top">
+              <el-tooltip v-if="canPublish(row)" content="Preview & Publish" placement="top">
                 <button
                   class="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-emerald-50 hover:text-emerald-600"
-                  @click="emit('approve', row)"
+                  @click="emit('publish', row)"
                 >
-                  <CheckCircle class="h-4 w-4" />
-                </button>
-              </el-tooltip>
-
-              <el-tooltip v-if="canApprove(row)" content="Reject" placement="top">
-                <button
-                  class="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                  @click="emit('reject', row)"
-                >
-                  <XCircle class="h-4 w-4" />
+                  <Send class="h-4 w-4" />
                 </button>
               </el-tooltip>
 

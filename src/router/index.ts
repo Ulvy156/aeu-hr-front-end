@@ -126,6 +126,12 @@ const router = createRouter({
           meta: { permission: 'payrolls.view_any' },
         },
         {
+          path: 'my-payroll',
+          name: 'my-payroll',
+          component: () => import('@/features/payroll/views/MyPayrollView.vue'),
+          meta: { permission: 'payrolls.view_own' },
+        },
+        {
           path: 'payrolls/:id',
           name: 'payroll-detail',
           component: () => import('@/features/payroll/views/PayrollDetailView.vue'),

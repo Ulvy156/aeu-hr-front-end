@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Paperclip } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
-import { useAuthStore } from '@/features/auth/stores/auth.store'
 import { StatusBadge, BaseButton } from '@/components/common'
 import { sanitizeHtml } from '@/utils/sanitizeHtml'
 import AnnouncementReadSummary from './AnnouncementReadSummary.vue'
@@ -18,50 +17,21 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:visible': [value: boolean]
-  submit: [announcement: Announcement]
-  'cancel-submission': [announcement: Announcement]
-  approve: [announcement: Announcement]
-  reject: [announcement: Announcement]
+  publish: [announcement: Announcement]
   archive: [announcement: Announcement]
 }>()
 
 const router = useRouter()
 const { can } = usePermission()
-const auth = useAuthStore()
-
-const isOwnAnnouncement = computed(() => {
-  if (!props.announcement) return false
-  return props.announcement.creator.id === auth.user?.id
-})
 
 const canEdit = computed(() => {
   const a = props.announcement
-  return !!a && (a.status === 'draft' || a.status === 'rejected') && can('announcements.update')
+  return !!a && ['draft', 'pending_approval', 'rejected'].includes(a.status) && can('announcements.update')
 })
 
-const canSubmit = computed(() => {
+const canPublish = computed(() => {
   const a = props.announcement
-  return !!a && (a.status === 'draft' || a.status === 'rejected') && can('announcements.submit')
-})
-
-const canCancelSubmission = computed(() => {
-  const a = props.announcement
-  return (
-    !!a &&
-    a.status === 'pending_approval' &&
-    isOwnAnnouncement.value &&
-    can('announcements.cancel_submission')
-  )
-})
-
-const canApproveOrReject = computed(() => {
-  const a = props.announcement
-  return (
-    !!a &&
-    a.status === 'pending_approval' &&
-    can('announcements.approve') &&
-    !isOwnAnnouncement.value
-  )
+  return !!a && ['draft', 'pending_approval', 'rejected'].includes(a.status) && can('announcements.publish')
 })
 
 const canArchive = computed(() => {
@@ -69,14 +39,7 @@ const canArchive = computed(() => {
   return !!a && a.status === 'published' && can('announcements.archive')
 })
 
-const hasActions = computed(
-  () =>
-    canEdit.value ||
-    canSubmit.value ||
-    canCancelSubmission.value ||
-    canApproveOrReject.value ||
-    canArchive.value,
-)
+const hasActions = computed(() => canEdit.value || canPublish.value || canArchive.value)
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -205,28 +168,21 @@ function handleEdit() {
             <p class="text-slate-400 text-xs mb-0.5">Created At</p>
             <p class="font-medium text-slate-800">{{ formatDateTime(announcement.created_at) }}</p>
           </div>
-          <div v-if="announcement.submitted_by_user">
-            <p class="text-slate-400 text-xs mb-0.5">Submitted By</p>
-            <p class="font-medium text-slate-800">{{ announcement.submitted_by_user.name }}</p>
+          <div v-if="announcement.published_by_user">
+            <p class="text-slate-400 text-xs mb-0.5">Published By</p>
+            <p class="font-medium text-slate-800">{{ announcement.published_by_user.name }}</p>
           </div>
-          <div v-if="announcement.submitted_at">
-            <p class="text-slate-400 text-xs mb-0.5">Submitted At</p>
-            <p class="font-medium text-slate-800">
-              {{ formatDateTime(announcement.submitted_at) }}
-            </p>
-          </div>
-          <div v-if="announcement.approved_by_user">
-            <p class="text-slate-400 text-xs mb-0.5">Approved By</p>
-            <p class="font-medium text-slate-800">{{ announcement.approved_by_user.name }}</p>
-          </div>
-          <div v-if="announcement.approved_at">
-            <p class="text-slate-400 text-xs mb-0.5">Approved At</p>
-            <p class="font-medium text-slate-800">{{ formatDateTime(announcement.approved_at) }}</p>
+          <div v-if="announcement.published_at || announcement.approved_at">
+            <p class="text-slate-400 text-xs mb-0.5">Published At</p>
+            <p class="font-medium text-slate-800">{{ formatDateTime(announcement.published_at ?? announcement.approved_at ?? '') }}</p>
           </div>
         </div>
       </div>
 
       <!-- Actions -->
+      <p v-if="canPublish" class="text-xs text-slate-500">
+        Preview the announcement above, then publish it when it is ready.
+      </p>
       <div v-if="hasActions" class="flex flex-wrap gap-2 pt-2">
         <BaseButton
           v-if="canEdit"
@@ -237,36 +193,13 @@ function handleEdit() {
           Edit
         </BaseButton>
         <BaseButton
-          v-if="canSubmit"
-          type="primary"
-          :loading="actionLoading"
-          @click="emit('submit', announcement)"
-        >
-          Submit for Approval
-        </BaseButton>
-        <BaseButton
-          v-if="canCancelSubmission"
-          :loading="actionLoading"
-          @click="emit('cancel-submission', announcement)"
-        >
-          Cancel Submission
-        </BaseButton>
-        <BaseButton
-          v-if="canApproveOrReject"
+          v-if="canPublish"
           type="primary"
           class="!bg-emerald-600 !border-emerald-600 hover:!bg-emerald-700"
           :loading="actionLoading"
-          @click="emit('approve', announcement)"
+          @click="emit('publish', announcement)"
         >
-          Approve
-        </BaseButton>
-        <BaseButton
-          v-if="canApproveOrReject"
-          type="danger"
-          :loading="actionLoading"
-          @click="emit('reject', announcement)"
-        >
-          Reject
+          Publish Now
         </BaseButton>
         <BaseButton
           v-if="canArchive"

@@ -3,7 +3,6 @@ import type {
   Announcement,
   AnnouncementFormPayload,
   AnnouncementListParams,
-  AnnouncementRejectPayload,
   PaginationMeta,
 } from '../types/announcement'
 
@@ -92,26 +91,8 @@ export async function updateAnnouncement(
   return data
 }
 
-export async function submitAnnouncement(id: number): Promise<ApiResponse<Announcement>> {
-  const { data } = await api.post(`/announcements/${id}/submit`)
-  return data
-}
-
-export async function cancelAnnouncementSubmission(id: number): Promise<ApiResponse<Announcement>> {
-  const { data } = await api.post(`/announcements/${id}/cancel-submission`)
-  return data
-}
-
-export async function approveAnnouncement(id: number): Promise<ApiResponse<Announcement>> {
-  const { data } = await api.post(`/announcements/${id}/approve`)
-  return data
-}
-
-export async function rejectAnnouncement(
-  id: number,
-  payload: AnnouncementRejectPayload,
-): Promise<ApiResponse<Announcement>> {
-  const { data } = await api.post(`/announcements/${id}/reject`, payload)
+export async function publishAnnouncement(id: number): Promise<ApiResponse<Announcement>> {
+  const { data } = await api.post(`/announcements/${id}/publish`)
   return data
 }
 

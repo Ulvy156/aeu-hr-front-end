@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { Eye, Send, CheckCircle, XCircle } from '@lucide/vue'
+import { Download, Eye, Send, CheckCircle, XCircle, Trash2 } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
+import { useNotify } from '@/composables/useNotify'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
+import { downloadPayrollExcel } from '../services/payroll.api'
+import { ref } from 'vue'
 import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
 import type { PayrollBatch } from '../types/payroll'
 import {
@@ -24,15 +28,30 @@ const emit = defineEmits<{
   submit: [payroll: PayrollBatch]
   approve: [payroll: PayrollBatch]
   reject: [payroll: PayrollBatch]
+  delete: [payroll: PayrollBatch]
   'page-change': [page: number]
   'size-change': [size: number]
 }>()
 
 const router = useRouter()
-const { can } = usePermission()
+const { can, hasRole } = usePermission()
+const notify = useNotify()
+const exportingPayrollId = ref<number | null>(null)
 
 function viewDetail(payroll: PayrollBatch) {
   router.push({ name: 'payroll-detail', params: { id: payroll.id } })
+}
+
+async function exportPayroll(payroll: PayrollBatch) {
+  exportingPayrollId.value = payroll.id
+  try {
+    await downloadPayrollExcel(payroll.id)
+    notify.success('Payroll exported successfully.')
+  } catch (error) {
+    notify.error(getApiErrorMessage(error))
+  } finally {
+    exportingPayrollId.value = null
+  }
 }
 </script>
 
@@ -98,7 +117,7 @@ function viewDetail(payroll: PayrollBatch) {
           </template>
         </el-table-column>
 
-        <el-table-column label="Actions" width="140" fixed="right" align="center">
+        <el-table-column label="Actions" width="205" fixed="right" align="center">
           <template #default="{ row }">
             <div class="flex items-center justify-center gap-1" @click.stop>
               <el-tooltip content="View Detail" placement="top">
@@ -107,6 +126,17 @@ function viewDetail(payroll: PayrollBatch) {
                   @click="viewDetail(row)"
                 >
                   <Eye class="h-4 w-4" />
+                </button>
+              </el-tooltip>
+
+              <el-tooltip v-if="can('payrolls.export') || hasRole('hr') || hasRole('ceo')" content="Export Excel" placement="top">
+                <button
+                  :disabled="exportingPayrollId === row.id"
+                  class="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-wait disabled:opacity-50"
+                  @click="exportPayroll(row)"
+                >
+                  <span v-if="exportingPayrollId === row.id" class="block h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+                  <Download v-else class="h-4 w-4" />
                 </button>
               </el-tooltip>
 
@@ -124,7 +154,7 @@ function viewDetail(payroll: PayrollBatch) {
               </el-tooltip>
 
               <el-tooltip
-                v-if="can('payrolls.approve') && row.status === 'pending_approval'"
+                v-if="hasRole('ceo') && can('payrolls.approve') && row.status === 'pending_approval'"
                 content="Approve"
                 placement="top"
               >
@@ -137,7 +167,7 @@ function viewDetail(payroll: PayrollBatch) {
               </el-tooltip>
 
               <el-tooltip
-                v-if="can('payrolls.reject') && row.status === 'pending_approval'"
+                v-if="hasRole('ceo') && can('payrolls.reject') && row.status === 'pending_approval'"
                 content="Reject"
                 placement="top"
               >
@@ -146,6 +176,19 @@ function viewDetail(payroll: PayrollBatch) {
                   @click="emit('reject', row)"
                 >
                   <XCircle class="h-4 w-4" />
+                </button>
+              </el-tooltip>
+
+              <el-tooltip
+                v-if="can('payrolls.delete') && row.status === 'draft'"
+                content="Delete Draft Permanently"
+                placement="top"
+              >
+                <button
+                  class="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                  @click="emit('delete', row)"
+                >
+                  <Trash2 class="h-4 w-4" />
                 </button>
               </el-tooltip>
             </div>

@@ -19,7 +19,7 @@ const emit = defineEmits<{
   reject: [payroll: PayrollBatch]
 }>()
 
-const { can } = usePermission()
+const { can, hasRole } = usePermission()
 </script>
 
 <template>
@@ -46,7 +46,7 @@ const { can } = usePermission()
     <div class="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
       <div class="flex flex-wrap gap-2">
         <BaseButton
-          v-if="can('payrolls.approve')"
+          v-if="hasRole('ceo') && can('payrolls.approve')"
           type="primary"
           class="!bg-emerald-600 !border-emerald-600 hover:!bg-emerald-700"
           @click="emit('approve', payroll)"
@@ -54,7 +54,7 @@ const { can } = usePermission()
           Approve
         </BaseButton>
         <BaseButton
-          v-if="can('payrolls.reject')"
+          v-if="hasRole('ceo') && can('payrolls.reject')"
           type="danger"
           plain
           @click="emit('reject', payroll)"

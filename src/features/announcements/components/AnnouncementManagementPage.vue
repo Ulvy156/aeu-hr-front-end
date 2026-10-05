@@ -12,10 +12,8 @@ import { needsAttention } from '../utils/announcementDisplay'
 import AnnouncementFilters from './AnnouncementFilters.vue'
 import AnnouncementTable from './AnnouncementTable.vue'
 import AnnouncementSummaryCards from './AnnouncementSummaryCards.vue'
-import AnnouncementPendingCard from './AnnouncementPendingCard.vue'
 import AnnouncementNeedsAttention from './AnnouncementNeedsAttention.vue'
 import AnnouncementDetailDrawer from './AnnouncementDetailDrawer.vue'
-import RejectAnnouncementDialog from './RejectAnnouncementDialog.vue'
 import type { Announcement } from '../types/announcement'
 
 const router = useRouter()
@@ -24,7 +22,6 @@ const notify = useNotify()
 const {
   announcements,
   statusCounts,
-  pendingAnnouncement,
   latestRejected,
   meta,
   loading,
@@ -34,10 +31,7 @@ const {
   applyFilters,
   onPageChange,
   onPageSizeChange,
-  handleSubmit,
-  handleCancelSubmission,
-  handleApprove,
-  handleReject,
+  handlePublish,
   handleArchive,
 } = useAnnouncements()
 
@@ -45,10 +39,7 @@ const drawerOpen = ref(false)
 const detailLoading = ref(false)
 const selectedAnnouncement = ref<Announcement | null>(null)
 
-const submitConfirmOpen = ref(false)
-const cancelSubmissionConfirmOpen = ref(false)
-const approveConfirmOpen = ref(false)
-const rejectDialogOpen = ref(false)
+const publishConfirmOpen = ref(false)
 const archiveConfirmOpen = ref(false)
 
 const showNeedsAttention = computed(() => announcements.value.some(needsAttention))
@@ -90,24 +81,9 @@ async function refreshDetail() {
   }
 }
 
-function openSubmitConfirm(announcement?: Announcement) {
+function openPublishConfirm(announcement: Announcement) {
   if (announcement) selectedAnnouncement.value = announcement
-  submitConfirmOpen.value = true
-}
-
-function openCancelSubmissionConfirm(announcement?: Announcement) {
-  if (announcement) selectedAnnouncement.value = announcement
-  cancelSubmissionConfirmOpen.value = true
-}
-
-function openApproveConfirm(announcement?: Announcement) {
-  if (announcement) selectedAnnouncement.value = announcement
-  approveConfirmOpen.value = true
-}
-
-function openRejectDialog(announcement?: Announcement) {
-  if (announcement) selectedAnnouncement.value = announcement
-  rejectDialogOpen.value = true
+  publishConfirmOpen.value = true
 }
 
 function openArchiveConfirm(announcement?: Announcement) {
@@ -115,38 +91,11 @@ function openArchiveConfirm(announcement?: Announcement) {
   archiveConfirmOpen.value = true
 }
 
-async function confirmSubmit() {
+async function confirmPublish() {
   if (!selectedAnnouncement.value) return
-  const ok = await handleSubmit(selectedAnnouncement.value.id)
+  const ok = await handlePublish(selectedAnnouncement.value.id)
   if (ok) {
-    submitConfirmOpen.value = false
-    await refreshDetail()
-  }
-}
-
-async function confirmCancelSubmission() {
-  if (!selectedAnnouncement.value) return
-  const ok = await handleCancelSubmission(selectedAnnouncement.value.id)
-  if (ok) {
-    cancelSubmissionConfirmOpen.value = false
-    await refreshDetail()
-  }
-}
-
-async function confirmApprove() {
-  if (!selectedAnnouncement.value) return
-  const ok = await handleApprove(selectedAnnouncement.value.id)
-  if (ok) {
-    approveConfirmOpen.value = false
-    await refreshDetail()
-  }
-}
-
-async function confirmReject(reason: string) {
-  if (!selectedAnnouncement.value) return
-  const ok = await handleReject(selectedAnnouncement.value.id, { rejection_reason: reason })
-  if (ok) {
-    rejectDialogOpen.value = false
+    publishConfirmOpen.value = false
     await refreshDetail()
   }
 }
@@ -171,7 +120,7 @@ async function confirmArchive() {
         <div>
           <h1 class="text-2xl font-semibold text-slate-900">Announcements</h1>
           <p class="mt-0.5 text-sm text-slate-500">
-            Create, review, and publish company announcements.
+            Save a draft, preview it, and publish it when ready.
           </p>
         </div>
       </div>
@@ -191,19 +140,11 @@ async function confirmArchive() {
       :loading="loading && announcements.length === 0"
     />
 
-    <AnnouncementPendingCard
-      v-if="pendingAnnouncement"
-      :announcement="pendingAnnouncement"
-      @view="handleView"
-      @approve="openApproveConfirm"
-      @reject="openRejectDialog"
-    />
-
     <div
       v-if="rejectedMessage"
       class="rounded-lg border border-amber-100 bg-amber-50 p-3 text-sm text-amber-700"
     >
-      {{ rejectedMessage }} Edit and resubmit when ready.
+      {{ rejectedMessage }} Edit the draft and preview it before publishing.
     </div>
 
     <AppCard no-padding>
@@ -227,9 +168,7 @@ async function confirmArchive() {
           :page-size="meta.per_page"
           :total="meta.total"
           @view="handleView"
-          @submit="openSubmitConfirm"
-          @approve="openApproveConfirm"
-          @reject="openRejectDialog"
+          @publish="handleView"
           @archive="openArchiveConfirm"
           @page-change="onPageChange"
           @size-change="onPageSizeChange"
@@ -244,50 +183,19 @@ async function confirmArchive() {
       :announcement="selectedAnnouncement"
       :loading="detailLoading"
       :action-loading="actionLoading"
-      @submit="openSubmitConfirm"
-      @cancel-submission="openCancelSubmissionConfirm"
-      @approve="openApproveConfirm"
-      @reject="openRejectDialog"
+      @publish="openPublishConfirm"
       @archive="openArchiveConfirm"
     />
 
     <ConfirmDialog
-      v-model="submitConfirmOpen"
-      title="Submit for Approval"
-      message="Are you sure you want to submit this announcement for approval?"
-      confirm-text="Submit"
+      v-model="publishConfirmOpen"
+      title="Publish Announcement"
+      message="This announcement will become visible to its selected audience immediately."
+      confirm-text="Publish Now"
       type="info"
       :loading="actionLoading"
-      @confirm="confirmSubmit"
-      @cancel="submitConfirmOpen = false"
-    />
-
-    <ConfirmDialog
-      v-model="cancelSubmissionConfirmOpen"
-      title="Cancel Submission"
-      message="Are you sure you want to cancel this submission? The announcement will return to draft."
-      confirm-text="Cancel Submission"
-      type="warning"
-      :loading="actionLoading"
-      @confirm="confirmCancelSubmission"
-      @cancel="cancelSubmissionConfirmOpen = false"
-    />
-
-    <ConfirmDialog
-      v-model="approveConfirmOpen"
-      title="Approve Announcement"
-      message="Are you sure you want to approve and publish this announcement?"
-      confirm-text="Approve"
-      type="info"
-      :loading="actionLoading"
-      @confirm="confirmApprove"
-      @cancel="approveConfirmOpen = false"
-    />
-
-    <RejectAnnouncementDialog
-      v-model:visible="rejectDialogOpen"
-      :loading="actionLoading"
-      @reject="confirmReject"
+      @confirm="confirmPublish"
+      @cancel="publishConfirmOpen = false"
     />
 
     <ConfirmDialog

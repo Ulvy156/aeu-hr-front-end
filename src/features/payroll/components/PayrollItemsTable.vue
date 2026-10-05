@@ -14,7 +14,6 @@ const emit = defineEmits<{
 }>()
 
 interface EditableItem extends PayrollItem {
-  _base_salary: number
   _working_days: number
   _present_days: number
   _absent_days: number
@@ -29,7 +28,6 @@ watch(
   (items) => {
     editableItems.value = items.map((item) => ({
       ...item,
-      _base_salary: Number(item.base_salary),
       _working_days: Number(item.working_days),
       _present_days: Number(item.present_days),
       _absent_days: Number(item.absent_days),
@@ -53,7 +51,6 @@ function formatNumber(value: string | number | undefined): string {
 function handleSave() {
   const payload: UpdatePayrollItemPayload[] = editableItems.value.map((item) => ({
     id: item.id,
-    base_salary: item._base_salary,
     working_days: item._working_days,
     present_days: item._present_days,
     absent_days: item._absent_days,
@@ -99,16 +96,7 @@ const headerCellStyle = {
 
       <el-table-column label="Base Salary" width="130" align="right">
         <template #default="{ row }">
-          <el-input-number
-            v-if="editable"
-            v-model="row._base_salary"
-            :min="0"
-            :precision="2"
-            :controls="false"
-            class="!w-full"
-            size="small"
-          />
-          <span v-else class="text-xs text-slate-700">{{ formatMoney(row.base_salary) }}</span>
+          <span class="text-xs text-slate-700">{{ formatMoney(row.base_salary) }}</span>
         </template>
       </el-table-column>
 
@@ -124,7 +112,9 @@ const headerCellStyle = {
             v-if="editable"
             v-model="row._working_days"
             :min="0"
-            :precision="2"
+            :step="0.5"
+            :step-strictly="true"
+            :precision="1"
             :controls="false"
             class="!w-full"
             size="small"

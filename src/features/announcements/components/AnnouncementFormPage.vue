@@ -185,7 +185,7 @@ async function handleSubmit() {
   <div>
     <PageHeader
       :title="isEdit ? 'Edit Announcement' : 'New Announcement'"
-      subtitle="Announcements are created as drafts and must be submitted for approval before publishing."
+      subtitle="Save your announcement as a draft, preview it, then publish it when it is ready."
     />
 
     <AppCard class="relative">
@@ -307,7 +307,7 @@ async function handleSubmit() {
 
       <FormActions
         :loading="submitting"
-        :submit-text="isEdit ? 'Save Changes' : 'Create Announcement'"
+        :submit-text="isEdit ? 'Save Changes' : 'Save Draft'"
         @submit="handleSubmit"
         @cancel="handleCancel"
       />

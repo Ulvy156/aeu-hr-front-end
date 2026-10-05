@@ -33,8 +33,8 @@ const selectedBatch = ref<DashboardPayrollBatch | null>(null)
 onMounted(load)
 
 const isGmOnly = computed(() => hasRole('gm') && !hasRole('ceo'))
-const canApprovePayroll = computed(() => can('payrolls.approve'))
-const canRejectPayroll = computed(() => can('payrolls.reject'))
+const canApprovePayroll = computed(() => hasRole('ceo') && can('payrolls.approve'))
+const canRejectPayroll = computed(() => hasRole('ceo') && can('payrolls.reject'))
 const canApproveLeave = computed(() => can('leaves.approve_ceo') || can('leaves.approve_hr'))
 
 const actionCount = computed(() => {
@@ -131,7 +131,6 @@ async function confirmReject(reason: string) {
     <template v-else-if="data">
       <div class="grid items-start gap-5 lg:grid-cols-2">
         <CeoPayrollApproval
-          v-if="canApprovePayroll"
           :pending-count="data.payroll_approval_summary.pending_approval_count"
           :latest-batch="data.payroll_approval_summary.latest_pending_approval_batch"
           :recent-batches="data.payroll_approval_summary.recent_pending_batches"
@@ -144,7 +143,6 @@ async function confirmReject(reason: string) {
         />
 
         <CeoPendingLeavesCard
-          v-if="canApproveLeave"
           :section="data.pending_leave_approvals"
         />
       </div>

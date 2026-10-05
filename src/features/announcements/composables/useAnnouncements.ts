@@ -4,10 +4,7 @@ import { usePermission } from '@/composables/usePermissions'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import {
   fetchAnnouncements,
-  submitAnnouncement,
-  cancelAnnouncementSubmission,
-  approveAnnouncement,
-  rejectAnnouncement,
+  publishAnnouncement,
   archiveAnnouncement,
 } from '../services/announcement.api'
 import {
@@ -17,7 +14,6 @@ import {
   type Announcement,
   type AnnouncementBoardCounts,
   type AnnouncementListParams,
-  type AnnouncementRejectPayload,
   type AnnouncementStatus,
   type AnnouncementStatusCounts,
   type PaginationMeta,
@@ -29,7 +25,6 @@ export function useAnnouncements() {
   const announcements = ref<Announcement[]>([])
   const statusCounts = ref<AnnouncementStatusCounts>({ ...EMPTY_ANNOUNCEMENT_STATUS_COUNTS })
   const boardCounts = ref<AnnouncementBoardCounts>({ ...EMPTY_ANNOUNCEMENT_BOARD_COUNTS })
-  const pendingAnnouncement = ref<Announcement | null>(null)
   const latestRejected = ref<Announcement | null>(null)
   const featuredAnnouncement = ref<Announcement | null>(null)
   const meta = ref<PaginationMeta>({
@@ -99,7 +94,6 @@ export function useAnnouncements() {
     counts.all =
       counts.draft + counts.pending_approval + counts.published + counts.rejected + counts.archived
     statusCounts.value = counts
-    pendingAnnouncement.value = byStatus.pending_approval?.data[0] ?? null
     latestRejected.value = byStatus.rejected?.data[0] ?? null
   }
 
@@ -191,56 +185,11 @@ export function useAnnouncements() {
     }
   }
 
-  async function handleSubmit(id: number): Promise<boolean> {
+  async function handlePublish(id: number): Promise<boolean> {
     actionLoading.value = true
     try {
-      await submitAnnouncement(id)
-      notify.success('Announcement submitted for approval.')
-      await loadAnnouncements()
-      return true
-    } catch (err) {
-      notify.error(getApiErrorMessage(err))
-      return false
-    } finally {
-      actionLoading.value = false
-    }
-  }
-
-  async function handleCancelSubmission(id: number): Promise<boolean> {
-    actionLoading.value = true
-    try {
-      await cancelAnnouncementSubmission(id)
-      notify.success('Submission cancelled. Announcement returned to draft.')
-      await loadAnnouncements()
-      return true
-    } catch (err) {
-      notify.error(getApiErrorMessage(err))
-      return false
-    } finally {
-      actionLoading.value = false
-    }
-  }
-
-  async function handleApprove(id: number): Promise<boolean> {
-    actionLoading.value = true
-    try {
-      await approveAnnouncement(id)
-      notify.success('Announcement approved and published.')
-      await loadAnnouncements()
-      return true
-    } catch (err) {
-      notify.error(getApiErrorMessage(err))
-      return false
-    } finally {
-      actionLoading.value = false
-    }
-  }
-
-  async function handleReject(id: number, payload: AnnouncementRejectPayload): Promise<boolean> {
-    actionLoading.value = true
-    try {
-      await rejectAnnouncement(id, payload)
-      notify.success('Announcement rejected.')
+      await publishAnnouncement(id)
+      notify.success('Announcement published successfully.')
       await loadAnnouncements()
       return true
     } catch (err) {
@@ -270,7 +219,6 @@ export function useAnnouncements() {
     announcements,
     statusCounts,
     boardCounts,
-    pendingAnnouncement,
     latestRejected,
     featuredAnnouncement,
     meta,
@@ -282,10 +230,7 @@ export function useAnnouncements() {
     onPageChange,
     onPageSizeChange,
     markLocalAsRead,
-    handleSubmit,
-    handleCancelSubmission,
-    handleApprove,
-    handleReject,
+    handlePublish,
     handleArchive,
   }
 }

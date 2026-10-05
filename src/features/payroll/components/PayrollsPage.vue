@@ -32,6 +32,7 @@ const {
   onPageChange,
   onPageSizeChange,
   handleGenerate,
+  handleDelete,
   handleSubmit,
   handleApprove,
   handleReject,
@@ -41,6 +42,7 @@ const generateOpen = ref(false)
 const submitConfirmOpen = ref(false)
 const approveConfirmOpen = ref(false)
 const rejectDialogOpen = ref(false)
+const deleteConfirmOpen = ref(false)
 const selectedPayroll = ref<PayrollBatch | null>(null)
 
 const canGenerate = computed(() => can('payrolls.generate'))
@@ -77,6 +79,11 @@ function openRejectDialog(payroll: PayrollBatch) {
   rejectDialogOpen.value = true
 }
 
+function openDeleteConfirm(payroll: PayrollBatch) {
+  selectedPayroll.value = payroll
+  deleteConfirmOpen.value = true
+}
+
 async function confirmGenerate(month: number, year: number) {
   const ok = await handleGenerate({ month, year })
   if (ok) generateOpen.value = false
@@ -98,6 +105,12 @@ async function confirmReject(reason: string) {
   if (!selectedPayroll.value) return
   const ok = await handleReject(selectedPayroll.value.id, { rejection_reason: reason })
   if (ok) rejectDialogOpen.value = false
+}
+
+async function confirmDelete() {
+  if (!selectedPayroll.value) return
+  const ok = await handleDelete(selectedPayroll.value.id)
+  if (ok) deleteConfirmOpen.value = false
 }
 </script>
 
@@ -173,6 +186,7 @@ async function confirmReject(reason: string) {
           @submit="openSubmitConfirm"
           @approve="openApproveConfirm"
           @reject="openRejectDialog"
+          @delete="openDeleteConfirm"
           @page-change="onPageChange"
           @size-change="onPageSizeChange"
         />
@@ -190,7 +204,7 @@ async function confirmReject(reason: string) {
     <ConfirmDialog
       v-model="submitConfirmOpen"
       title="Submit Payroll"
-      message="Are you sure you want to submit this payroll batch for CEO approval? After submission, editing will be restricted."
+      message="Are you sure you want to submit this payroll batch for CEO approval? It cannot be edited until the CEO rejects it."
       confirm-text="Submit"
       type="info"
       :loading="actionLoading"
@@ -213,6 +227,17 @@ async function confirmReject(reason: string) {
       v-model:visible="rejectDialogOpen"
       :loading="actionLoading"
       @reject="confirmReject"
+    />
+
+    <ConfirmDialog
+      v-model="deleteConfirmOpen"
+      title="Delete Draft Payroll"
+      message="Permanently delete this draft payroll and all its items? This cannot be undone."
+      confirm-text="Delete Permanently"
+      type="danger"
+      :loading="actionLoading"
+      @confirm="confirmDelete"
+      @cancel="deleteConfirmOpen = false"
     />
   </div>
 </template>

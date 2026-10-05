@@ -16,7 +16,7 @@ export function formatAnnouncementDate(iso: string | null | undefined): string {
 }
 
 export function announcementStatusLabel(status: AnnouncementStatus): string {
-  if (status === 'pending_approval') return 'Pending approval'
+  if (status === 'pending_approval') return 'Ready to publish'
   if (status === 'draft') return 'Draft'
   if (status === 'published') return 'Published'
   if (status === 'rejected') return 'Rejected'
@@ -42,17 +42,14 @@ export function audienceLabel(targets: AnnouncementTarget[] | undefined): string
 }
 
 export function announcementTimeline(announcement: Announcement): string {
-  if (announcement.status === 'published' && announcement.approved_at) {
-    return `Published ${formatAnnouncementDate(announcement.approved_at)}`
+  if (announcement.status === 'published' && (announcement.published_at || announcement.approved_at)) {
+    return `Published ${formatAnnouncementDate(announcement.published_at ?? announcement.approved_at)}`
   }
   if (announcement.status === 'rejected' && announcement.rejected_at) {
     return `Rejected ${formatAnnouncementDate(announcement.rejected_at)}`
   }
-  if (announcement.status === 'pending_approval' && announcement.submitted_at) {
-    return `Submitted ${formatAnnouncementDate(announcement.submitted_at)}`
-  }
-  if (announcement.status === 'archived' && announcement.approved_at) {
-    return `Archived · published ${formatAnnouncementDate(announcement.approved_at)}`
+  if (announcement.status === 'archived' && (announcement.published_at || announcement.approved_at)) {
+    return `Archived · published ${formatAnnouncementDate(announcement.published_at ?? announcement.approved_at)}`
   }
   return `Created ${formatAnnouncementDate(announcement.created_at)}`
 }
@@ -72,5 +69,5 @@ export function needsAttention(announcement: Announcement): boolean {
 }
 
 export function postedOn(announcement: Announcement): string {
-  return formatAnnouncementDate(announcement.approved_at ?? announcement.created_at)
+  return formatAnnouncementDate(announcement.published_at ?? announcement.approved_at ?? announcement.created_at)
 }

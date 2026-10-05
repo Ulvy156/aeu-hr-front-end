@@ -13,7 +13,7 @@ export const ANNOUNCEMENT_STATUS_PILLS: {
 }[] = [
   { value: '', label: 'All', countKey: 'all' },
   { value: 'draft', label: 'Draft', countKey: 'draft' },
-  { value: 'pending_approval', label: 'Pending', countKey: 'pending_approval' },
+  { value: 'pending_approval', label: 'Ready to publish', countKey: 'pending_approval' },
   { value: 'published', label: 'Published', countKey: 'published' },
   { value: 'rejected', label: 'Rejected', countKey: 'rejected' },
   { value: 'archived', label: 'Archived', countKey: 'archived' },

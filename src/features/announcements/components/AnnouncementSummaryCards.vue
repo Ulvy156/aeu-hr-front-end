@@ -37,7 +37,7 @@ defineProps<{
           >
             {{ counts.pending_approval }}
           </p>
-          <p class="text-sm text-slate-500">Awaiting approval</p>
+        <p class="text-sm text-slate-500">Ready to publish</p>
         </div>
       </div>
     </div>

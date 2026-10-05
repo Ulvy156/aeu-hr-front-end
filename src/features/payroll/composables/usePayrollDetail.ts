@@ -4,6 +4,7 @@ import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import {
   fetchPayroll,
   updatePayroll,
+  deletePayroll,
   submitPayroll,
   approvePayroll,
   rejectPayroll,
@@ -41,6 +42,20 @@ export function usePayrollDetail() {
       return false
     } finally {
       saveLoading.value = false
+    }
+  }
+
+  async function handleDelete(id: number): Promise<boolean> {
+    actionLoading.value = true
+    try {
+      await deletePayroll(id)
+      notify.success('Draft payroll permanently deleted.')
+      return true
+    } catch (err) {
+      notify.error(getApiErrorMessage(err))
+      return false
+    } finally {
+      actionLoading.value = false
     }
   }
 
@@ -96,6 +111,7 @@ export function usePayrollDetail() {
     saveLoading,
     loadPayroll,
     handleSave,
+    handleDelete,
     handleSubmit,
     handleApprove,
     handleReject,
