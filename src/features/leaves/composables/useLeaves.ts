@@ -1,10 +1,10 @@
 import { ref, reactive } from 'vue'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
-import { fetchLeaves, approveLeave, rejectLeave, cancelLeave } from '../services/leave.api'
+import { fetchLeaves, fetchMyLeaves, approveLeave, rejectLeave, cancelLeave } from '../services/leave.api'
 import type { Leave, PaginationMeta, LeaveRejectPayload } from '../types/leave'
 
-export function useLeaves() {
+export function useLeaves(ownOnly = false) {
   const notify = useNotify()
   const leaves = ref<Leave[]>([])
   const meta = ref<PaginationMeta>({
@@ -39,7 +39,7 @@ export function useLeaves() {
       if (filters.date_to) params.date_to = filters.date_to
       if (filters.employee_id) params.employee_id = filters.employee_id
 
-      const res = await fetchLeaves(params)
+      const res = ownOnly ? await fetchMyLeaves(params) : await fetchLeaves(params)
       leaves.value = res.data
       meta.value = res.meta
     } catch (err) {

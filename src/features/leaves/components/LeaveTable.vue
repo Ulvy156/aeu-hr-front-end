@@ -12,6 +12,7 @@ defineProps<{
   currentPage: number
   pageSize: number
   total: number
+  ownOnly?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -88,7 +89,7 @@ const headerCellStyle = {
         :header-cell-style="headerCellStyle"
         scroll-bar-always-on
       >
-        <el-table-column label="Employee" min-width="160">
+        <el-table-column v-if="!ownOnly" label="Employee" min-width="160">
           <template #default="{ row }">
             <div>
               <p class="text-sm font-medium text-slate-800">{{ row.employee.full_name }}</p>
@@ -146,7 +147,7 @@ const headerCellStyle = {
                 </button>
               </el-tooltip>
 
-              <el-tooltip v-if="canApprove && row.status === 'pending'" content="Approve" placement="top">
+              <el-tooltip v-if="!ownOnly && canApprove && row.status === 'pending'" content="Approve" placement="top">
                 <button
                   class="p-1.5 rounded-md hover:bg-emerald-50 transition-colors text-slate-400 hover:text-emerald-600"
                   @click="emit('approve', row)"
@@ -155,7 +156,7 @@ const headerCellStyle = {
                 </button>
               </el-tooltip>
 
-              <el-tooltip v-if="canReject && row.status === 'pending'" content="Reject" placement="top">
+              <el-tooltip v-if="!ownOnly && canReject && row.status === 'pending'" content="Reject" placement="top">
                 <button
                   class="p-1.5 rounded-md hover:bg-red-50 transition-colors text-slate-400 hover:text-red-600"
                   @click="emit('reject', row)"

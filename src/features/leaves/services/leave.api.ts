@@ -27,6 +27,13 @@ export async function fetchLeaves(
   return data
 }
 
+export async function fetchMyLeaves(
+  params: Record<string, unknown> = {},
+): Promise<PaginatedResponse<Leave>> {
+  const { data } = await api.get('/leaves/mine', { params })
+  return data
+}
+
 export async function fetchLeave(id: number): Promise<ApiResponse<Leave>> {
   const { data } = await api.get(`/leaves/${id}`)
   return data

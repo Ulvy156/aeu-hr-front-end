@@ -71,6 +71,7 @@ interface MenuItem {
   path: string;
   icon: unknown;
   permission?: string | string[];
+  requiresEmployeeProfile?: boolean;
 }
 
 interface MenuGroup {
@@ -131,7 +132,8 @@ const menuGroups = computed<MenuGroup[]>(() => [
   {
     label: "Leave",
     items: [
-      { label: "Leave Requests", path: "/leaves", icon: CalendarDays },
+      { label: "My Leave", path: "/my-leave", icon: CalendarDays, permission: "leaves.view_own", requiresEmployeeProfile: true },
+      { label: "Leave Requests", path: "/leaves", icon: CalendarDays, permission: "leaves.view_any" },
       { label: "Leave Balance", path: "/leave-balances", icon: Calendar },
     ],
   },
@@ -209,7 +211,7 @@ const visibleMenuGroups = computed<MenuGroup[]>(() =>
   menuGroups.value
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => canAccess(item.permission)),
+      items: group.items.filter((item) => canAccess(item.permission) && (!item.requiresEmployeeProfile || !!authStore.user?.employee)),
     }))
     .filter((group) => group.items.length > 0),
 );

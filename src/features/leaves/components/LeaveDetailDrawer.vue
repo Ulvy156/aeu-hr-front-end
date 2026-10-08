@@ -9,6 +9,7 @@ const props = defineProps<{
   visible: boolean
   leave: Leave | null
   actionLoading?: boolean
+  ownOnly?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -21,8 +22,8 @@ const emit = defineEmits<{
 const { can } = usePermission()
 const auth = useAuthStore()
 
-const canApprove = computed(() => can('leaves.approve') || can('leaves.approve_hr') || can('leaves.approve_ceo'))
-const canReject = computed(() => can('leaves.reject') || can('leaves.reject_hr') || can('leaves.reject_ceo'))
+const canApprove = computed(() => !props.ownOnly && (can('leaves.approve') || can('leaves.approve_hr') || can('leaves.approve_ceo')))
+const canReject = computed(() => !props.ownOnly && (can('leaves.reject') || can('leaves.reject_hr') || can('leaves.reject_ceo')))
 
 const isOwnLeave = computed(() => {
   if (!props.leave || !auth.user?.employee?.id) return false

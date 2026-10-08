@@ -108,9 +108,16 @@ const router = createRouter({
 
         // Leave
         {
+          path: 'my-leave',
+          name: 'my-leave',
+          component: () => import('@/features/leaves/views/MyLeavesView.vue'),
+          meta: { permission: 'leaves.view_own' },
+        },
+        {
           path: 'leaves',
           name: 'leaves',
           component: () => import('@/features/leaves/views/LeavesView.vue'),
+          meta: { permission: 'leaves.view_any' },
         },
         {
           path: 'leave-balances',

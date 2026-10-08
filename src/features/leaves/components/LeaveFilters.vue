@@ -9,6 +9,8 @@ const emit = defineEmits<{
   apply: [status: string, leaveType: string, dateFrom: string, dateTo: string, employeeId: string]
 }>()
 
+withDefaults(defineProps<{ ownOnly?: boolean }>(), { ownOnly: false })
+
 const { can } = usePermission()
 
 const localStatus = ref('')
@@ -103,7 +105,7 @@ function handleReset() {
       />
 
       <el-input
-        v-if="can('leaves.view_any')"
+        v-if="!ownOnly && can('leaves.view_any')"
         v-model="localEmployeeId"
         placeholder="Employee ID"
         clearable

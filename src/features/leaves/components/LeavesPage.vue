@@ -11,6 +11,8 @@ import LeaveDetailDrawer from './LeaveDetailDrawer.vue'
 import RejectLeaveDialog from './RejectLeaveDialog.vue'
 import type { Leave } from '../types/leave'
 
+const props = withDefaults(defineProps<{ ownOnly?: boolean }>(), { ownOnly: false })
+
 const { can } = usePermission()
 const {
   leaves,
@@ -24,7 +26,7 @@ const {
   handleApprove,
   handleReject,
   handleCancel,
-} = useLeaves()
+} = useLeaves(props.ownOnly)
 
 const createOpen = ref(false)
 const drawerOpen = ref(false)
@@ -94,8 +96,8 @@ async function confirmCancel() {
           <CalendarDays class="w-5 h-5 text-emerald-600" />
         </div>
         <div>
-          <h1 class="text-2xl font-semibold text-slate-900">Leave Requests</h1>
-          <p class="mt-0.5 text-sm text-slate-500">Manage and track employee leave requests.</p>
+          <h1 class="text-2xl font-semibold text-slate-900">{{ props.ownOnly ? 'My Leave' : 'Leave Requests' }}</h1>
+          <p class="mt-0.5 text-sm text-slate-500">{{ props.ownOnly ? 'View and track your leave requests.' : 'Manage and track employee leave requests.' }}</p>
         </div>
       </div>
       <BaseButton
@@ -109,14 +111,14 @@ async function confirmCancel() {
     </div>
 
     <!-- Filters -->
-    <LeaveFilters @apply="applyFilters" />
+    <LeaveFilters :own-only="props.ownOnly" @apply="applyFilters" />
 
     <!-- Table card -->
     <AppCard no-padding>
       <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
         <div>
-          <h3 class="text-sm font-semibold text-slate-800">Leave Requests</h3>
-          <p class="text-xs text-slate-400 mt-0.5">All leave requests you have access to view.</p>
+          <h3 class="text-sm font-semibold text-slate-800">{{ props.ownOnly ? 'Your Leave Requests' : 'Leave Requests' }}</h3>
+          <p class="text-xs text-slate-400 mt-0.5">{{ props.ownOnly ? 'Only your requests are shown here.' : 'All leave requests you have access to view.' }}</p>
         </div>
         <span class="text-xs text-slate-400 font-medium">{{ meta.total }} records</span>
       </div>
@@ -127,6 +129,7 @@ async function confirmCancel() {
         :current-page="meta.current_page"
         :page-size="meta.per_page"
         :total="meta.total"
+        :own-only="props.ownOnly"
         @view="handleViewLeave"
         @approve="openApproveConfirm"
         @reject="openRejectDialog"
@@ -147,6 +150,7 @@ async function confirmCancel() {
       v-model:visible="drawerOpen"
       :leave="selectedLeave"
       :action-loading="actionLoading"
+      :own-only="props.ownOnly"
       @approve="openApproveConfirm"
       @reject="openRejectDialog"
       @cancel="openCancelConfirm"
