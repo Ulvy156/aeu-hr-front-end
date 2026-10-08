@@ -126,7 +126,7 @@ async function submitStatusChange(status: Candidate['status'], outcomeReason: st
     </div>
 
     <template v-else-if="vacancy">
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
         <AppCard>
           <p class="text-xs text-slate-400 mb-1">Headcount</p>
           <p class="text-lg font-semibold text-slate-800">
@@ -134,8 +134,12 @@ async function submitStatusChange(status: Candidate['status'], outcomeReason: st
           </p>
         </AppCard>
         <AppCard>
-          <p class="text-xs text-slate-400 mb-1">Target Hiring Date</p>
+          <p class="text-xs text-slate-400 mb-1">Listing Opens</p>
           <p class="text-lg font-semibold text-slate-800">{{ formatDate(vacancy.target_hiring_date) }}</p>
+        </AppCard>
+        <AppCard>
+          <p class="text-xs text-slate-400 mb-1">Close Date</p>
+          <p class="text-lg font-semibold text-slate-800">{{ vacancy.close_date ? formatDate(vacancy.close_date) : 'Not scheduled' }}</p>
         </AppCard>
         <AppCard>
           <p class="text-xs text-slate-400 mb-1">Created By</p>

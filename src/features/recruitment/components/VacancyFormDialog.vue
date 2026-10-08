@@ -33,6 +33,7 @@ const form = reactive<VacancyPayload>({
   description: '',
   required_headcount: 1,
   target_hiring_date: '',
+  close_date: null,
 })
 
 const rules: FormRules = {
@@ -47,6 +48,33 @@ const rules: FormRules = {
     { type: 'number', min: 1, message: 'Required headcount must be at least 1', trigger: 'blur' },
   ],
   target_hiring_date: [{ required: true, message: 'Target hiring date is required', trigger: 'change' }],
+  close_date: [
+    {
+      validator: (_rule, value: string | null, callback) => {
+        if (value && value <= form.target_hiring_date) {
+          callback(new Error('Close date must be after the listing opens'))
+          return
+        }
+        callback()
+      },
+      trigger: 'change',
+    },
+  ],
+}
+
+function toLocalDateString(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+function disableInvalidCloseDate(date: Date): boolean {
+  const dateString = toLocalDateString(date)
+  const today = toLocalDateString(new Date())
+
+  return dateString <= today || dateString <= form.target_hiring_date
 }
 
 onMounted(async () => {
@@ -67,12 +95,14 @@ watch(
       form.description = vacancy.description
       form.required_headcount = vacancy.required_headcount
       form.target_hiring_date = vacancy.target_hiring_date
+      form.close_date = vacancy.close_date
     } else {
       form.title = ''
       form.department_id = null
       form.description = ''
       form.required_headcount = 1
       form.target_hiring_date = ''
+      form.close_date = null
     }
   },
 )
@@ -154,17 +184,33 @@ async function handleSubmit() {
         </p>
       </el-form-item>
 
-      <el-form-item label="Target Hiring Date" prop="target_hiring_date">
+      <el-form-item label="Listing Opens" prop="target_hiring_date">
         <el-date-picker
           v-model="form.target_hiring_date"
           type="date"
-          placeholder="Select date"
+          placeholder="Select listing opening date"
           value-format="YYYY-MM-DD"
           class="w-full!"
         />
         <p v-if="getFieldError(fieldErrors, 'target_hiring_date')" class="mt-1 text-xs text-red-500">
           {{ getFieldError(fieldErrors, 'target_hiring_date') }}
         </p>
+      </el-form-item>
+
+      <el-form-item label="Close Date (Optional)" prop="close_date">
+        <el-date-picker
+          v-model="form.close_date"
+          type="date"
+          placeholder="Select automatic close date"
+          value-format="YYYY-MM-DD"
+          clearable
+          :disabled-date="disableInvalidCloseDate"
+          class="w-full!"
+        />
+        <p v-if="getFieldError(fieldErrors, 'close_date')" class="mt-1 text-xs text-red-500">
+          {{ getFieldError(fieldErrors, 'close_date') }}
+        </p>
+        <p class="mt-1 text-xs text-slate-400">Must be after the listing opening date. The vacancy closes automatically on this date.</p>
       </el-form-item>
 
       <div v-if="isEdit && vacancy" class="grid grid-cols-2 gap-3 pt-3 mt-1 border-t border-gray-100">

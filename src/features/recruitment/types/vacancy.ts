@@ -18,6 +18,7 @@ export interface Vacancy {
   required_headcount: number
   filled_headcount: number
   target_hiring_date: string
+  close_date: string | null
   status: VacancyStatus
   creator: VacancyUserRef
   created_at: string
@@ -55,6 +56,7 @@ export interface VacancyPayload {
   description: string
   required_headcount: number
   target_hiring_date: string
+  close_date: string | null
 }
 
 export interface PaginationMeta {
