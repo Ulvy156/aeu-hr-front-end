@@ -131,6 +131,9 @@ async function handleSubmit() {
             <p class="font-medium text-slate-800">{{ formatAttendanceTime(attendance.clock_out_time) }}</p>
           </div>
         </div>
+        <p v-if="attendance.status === 'absent' && attendance.absent_periods?.length" class="mt-2 text-xs font-medium text-rose-700">
+          Counted absent: {{ attendance.absent_periods.map((period) => period === 'morning' ? 'morning' : 'afternoon').join(' and ') }}
+        </p>
         <p class="mt-2 text-xs text-slate-500">
           {{
             attendance.is_late

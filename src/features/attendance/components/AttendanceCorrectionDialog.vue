@@ -93,6 +93,9 @@ async function handleSubmit() {
       <span class="font-medium">{{ attendance.employee.full_name }}</span>
       <span class="mx-2 text-slate-300">·</span>
       <span>{{ new Date(attendance.attendance_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
+      <span v-if="attendance.status === 'absent' && attendance.absent_periods?.length" class="block mt-1 text-rose-700">
+        Counted absent: {{ attendance.absent_periods.join(' + ') }}
+      </span>
     </div>
 
     <el-form ref="formRef" :model="form" :rules="rules" label-position="top">

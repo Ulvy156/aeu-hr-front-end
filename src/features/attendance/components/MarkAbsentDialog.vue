@@ -36,7 +36,7 @@ async function handleSubmit() {
   try {
     const payload = selectedDate.value ? { attendance_date: selectedDate.value } : {}
     const res = await markAbsent(payload)
-    const msg = `${res.data.created_count} employee(s) marked absent for ${res.data.attendance_date}.`
+    const msg = `${res.data.created_count + res.data.updated_count} attendance record(s) marked or updated for ${res.data.attendance_date}.`
     resultMessage.value = msg
     notify.success(msg)
     emit('marked')
@@ -59,9 +59,8 @@ async function handleSubmit() {
     <div class="flex items-start gap-3 p-4 mb-4 bg-amber-50 rounded-lg border border-amber-100">
       <UserX class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
       <p class="text-sm text-amber-700">
-        This will mark absent all employees who have no attendance record, no approved leave,
-        and are within their employment period for the selected date. Non-working days and public
-        holidays are skipped automatically.
+        This calculates absent morning and afternoon periods from attendance and approved leave
+        for employees within their employment period. Non-working days and public holidays are skipped.
       </p>
     </div>
 

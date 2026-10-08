@@ -28,6 +28,7 @@ export interface Attendance {
   clock_in_time: string | null
   clock_out_time: string | null
   status: AttendanceStatus
+  absent_periods: ('morning' | 'afternoon')[] | null
   is_late: boolean
   qr_clock_in: boolean
   qr_clock_out: boolean
@@ -80,6 +81,7 @@ export interface MarkAbsentPayload {
 export interface MarkAbsentResult {
   attendance_date: string
   created_count: number
+  updated_count: number
 }
 
 export interface AttendanceListFilters {
