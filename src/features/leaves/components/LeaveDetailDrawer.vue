@@ -63,6 +63,11 @@ const leaveTypeLabels: Record<string, string> = {
 function formatLeaveType(type: string): string {
   return leaveTypeLabels[type] ?? type
 }
+
+function formatDurationType(type: string, period: string | null): string {
+  if (type === 'full_day') return 'Full Day'
+  return period === 'morning' ? 'Half Day Morning' : period === 'afternoon' ? 'Half Day Afternoon' : 'Half Day'
+}
 </script>
 
 <template>
@@ -101,7 +106,7 @@ function formatLeaveType(type: string): string {
           <div>
             <p class="text-slate-400 text-xs mb-0.5">Duration Type</p>
             <p class="font-medium text-slate-800">
-              {{ leave.duration_type === 'full_day' ? 'Full Day' : 'Half Day' }}
+              {{ formatDurationType(leave.duration_type, leave.half_day_period) }}
             </p>
           </div>
           <div>

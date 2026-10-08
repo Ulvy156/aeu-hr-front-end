@@ -58,8 +58,9 @@ function formatLeaveType(type: string): string {
   return leaveTypeLabels[type] ?? type
 }
 
-function formatDurationType(type: string): string {
-  return type === 'full_day' ? 'Full Day' : 'Half Day'
+function formatDurationType(type: string, period?: string | null): string {
+  if (type === 'full_day') return 'Full Day'
+  return period === 'morning' ? 'Half Day Morning' : period === 'afternoon' ? 'Half Day Afternoon' : 'Half Day'
 }
 
 const headerCellStyle = {
@@ -109,7 +110,7 @@ const headerCellStyle = {
                 {{ formatDate(row.start_date) }} → {{ formatDate(row.end_date) }}
               </p>
               <p class="text-xs text-slate-400">
-                {{ formatDurationType(row.duration_type) }} · {{ row.total_days }} days
+                {{ formatDurationType(row.duration_type, row.half_day_period) }} · {{ row.total_days }} days
               </p>
             </div>
           </template>

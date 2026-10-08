@@ -1,5 +1,6 @@
 export type LeaveType = 'annual' | 'sick' | 'special' | 'maternity' | 'unpaid' | 'special_sick'
 export type DurationType = 'full_day' | 'half_day'
+export type HalfDayPeriod = 'morning' | 'afternoon'
 export type LeaveStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected'
 
@@ -20,6 +21,7 @@ export interface Leave {
   start_date: string
   end_date: string
   duration_type: DurationType
+  half_day_period: HalfDayPeriod | null
   total_days: string
   reason: string
   status: LeaveStatus
@@ -39,6 +41,7 @@ export interface LeaveCreatePayload {
   start_date: string
   end_date: string
   duration_type: DurationType | ''
+  half_day_period: HalfDayPeriod | '' | null
   reason: string
 }
 

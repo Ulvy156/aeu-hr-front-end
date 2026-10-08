@@ -5,7 +5,7 @@ import { useNotify } from '@/composables/useNotify'
 import { parseApiError } from '@/utils/api-error'
 import { createLeave } from '../services/leave.api'
 import { BaseModal, BaseButton } from '@/components/common'
-import type { LeaveCreatePayload, LeaveType, DurationType } from '../types/leave'
+import type { LeaveType, DurationType, HalfDayPeriod } from '../types/leave'
 import { countWorkingDays } from '@/utils/countWorkingDays'
 import { usePublicHolidayDates } from '@/composables/usePublicHolidayDates'
 import { CalendarClock } from '@lucide/vue'
@@ -27,11 +27,15 @@ const formRef = ref<FormInstance>()
 const submitting = ref(false)
 const fieldErrors = ref<Record<string, string>>({})
 
-const form = reactive<LeaveCreatePayload>({
+type DurationChoice = 'full_day' | 'half_day_morning' | 'half_day_afternoon'
+
+const form = reactive({
   leave_type: '',
   start_date: '',
   end_date: '',
-  duration_type: '',
+  duration_choice: '' as DurationChoice | '',
+  duration_type: '' as DurationType | '',
+  half_day_period: '' as HalfDayPeriod | '',
   reason: '',
 })
 
@@ -50,8 +54,21 @@ const isMultiDay = computed(() =>
 
 const durationTypeOptions = computed(() => [
   { label: 'Full Day', value: 'full_day', disabled: false },
-  { label: 'Half Day', value: 'half_day', disabled: isMultiDay.value },
+  { label: 'Half Day Morning', value: 'half_day_morning', disabled: isMultiDay.value },
+  { label: 'Half Day Afternoon', value: 'half_day_afternoon', disabled: isMultiDay.value },
 ])
+
+function handleDurationChoiceChange(value: DurationChoice) {
+  form.duration_type = value === 'full_day' ? 'full_day' : 'half_day'
+  form.half_day_period = value === 'half_day_morning'
+    ? 'morning'
+    : value === 'half_day_afternoon'
+      ? 'afternoon'
+      : ''
+  clearFieldError('duration_choice')
+  clearFieldError('duration_type')
+  clearFieldError('half_day_period')
+}
 
 function toLocalDateString(date: Date): string {
   const y = date.getFullYear()
@@ -87,7 +104,9 @@ function handleStartDateChange(val: string) {
     form.end_date = ''
   }
   if (form.duration_type === 'half_day' && form.end_date && val !== form.end_date) {
+    form.duration_choice = ''
     form.duration_type = ''
+    form.half_day_period = ''
   }
 }
 
@@ -107,7 +126,7 @@ const rules: FormRules = {
       trigger: 'change',
     },
   ],
-  duration_type: [{ required: true, message: 'Duration type is required', trigger: 'change' }],
+  duration_choice: [{ required: true, message: 'Duration type is required', trigger: 'change' }],
   reason: [
     { required: true, message: 'Reason is required', trigger: 'blur' },
     { min: 3, message: 'Reason must be at least 3 characters', trigger: 'blur' },
@@ -122,7 +141,9 @@ function resetForm() {
   form.leave_type = ''
   form.start_date = ''
   form.end_date = ''
+  form.duration_choice = ''
   form.duration_type = ''
+  form.half_day_period = ''
   form.reason = ''
   fieldErrors.value = {}
   formRef.value?.clearValidate()
@@ -140,6 +161,7 @@ async function handleSubmit() {
       start_date: form.start_date,
       end_date: form.end_date,
       duration_type: form.duration_type as DurationType,
+      half_day_period: form.half_day_period || null,
       reason: form.reason,
     })
     notify.success('Leave request submitted successfully.')
@@ -173,7 +195,9 @@ const totalDays = computed(() =>
 )
 // clear if end date change
 watch(() => form.end_date, () => {
+  form.duration_choice = ''
   form.duration_type = '';
+  form.half_day_period = '';
 })
 </script>
 
@@ -249,12 +273,12 @@ watch(() => form.end_date, () => {
         <p>Total take leave: {{ totalDays }} {{ totalDays > 1 ? 'days' : 'day' }}</p>
       </div>
 
-      <el-form-item label="Duration Type" prop="duration_type">
+      <el-form-item label="Duration Type" prop="duration_choice">
         <el-select
-          v-model="form.duration_type"
+          v-model="form.duration_choice"
           placeholder="Select duration type"
           class="w-full!"
-          @change="clearFieldError('duration_type')"
+          @change="handleDurationChoiceChange"
         >
           <el-option
             v-for="opt in durationTypeOptions"
@@ -264,8 +288,8 @@ watch(() => form.end_date, () => {
             :disabled="opt.disabled"
           />
         </el-select>
-        <p v-if="fieldErrors.duration_type" class="mt-1 text-xs text-red-500">
-          {{ fieldErrors.duration_type }}
+        <p v-if="fieldErrors.duration_choice || fieldErrors.duration_type || fieldErrors.half_day_period" class="mt-1 text-xs text-red-500">
+          {{ fieldErrors.duration_choice || fieldErrors.duration_type || fieldErrors.half_day_period }}
         </p>
         <p class="mt-1 text-xs text-slate-400">Half day requires same start and end date.</p>
       </el-form-item>
