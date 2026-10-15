@@ -4,6 +4,7 @@ import { Eye, CheckCircle, XCircle, Ban } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
 import { useAuthStore } from '@/features/auth/stores/auth.store'
 import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
+import { canApproveLeave } from '../utils/canApproveLeave'
 import type { Leave } from '../types/leave'
 
 defineProps<{
@@ -27,7 +28,6 @@ const emit = defineEmits<{
 const { can } = usePermission()
 const auth = useAuthStore()
 
-const canApprove = computed(() => can('leaves.approve') || can('leaves.approve_hr') || can('leaves.approve_ceo'))
 const canReject = computed(() => can('leaves.reject') || can('leaves.reject_hr') || can('leaves.reject_ceo'))
 
 function isOwnLeave(leave: Leave): boolean {
@@ -147,7 +147,7 @@ const headerCellStyle = {
                 </button>
               </el-tooltip>
 
-              <el-tooltip v-if="!ownOnly && canApprove && row.status === 'pending'" content="Approve" placement="top">
+              <el-tooltip v-if="!ownOnly && canApproveLeave(row, can, auth.hasRole('ceo'))" content="Approve" placement="top">
                 <button
                   class="p-1.5 rounded-md hover:bg-emerald-50 transition-colors text-slate-400 hover:text-emerald-600"
                   @click="emit('approve', row)"

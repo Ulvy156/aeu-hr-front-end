@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { usePermission } from '@/composables/usePermissions'
 import { useAuthStore } from '@/features/auth/stores/auth.store'
 import { StatusBadge, BaseButton } from '@/components/common'
+import { canApproveLeave } from '../utils/canApproveLeave'
 import type { Leave } from '../types/leave'
 
 const props = defineProps<{
@@ -22,7 +23,7 @@ const emit = defineEmits<{
 const { can } = usePermission()
 const auth = useAuthStore()
 
-const canApprove = computed(() => !props.ownOnly && (can('leaves.approve') || can('leaves.approve_hr') || can('leaves.approve_ceo')))
+const canApprove = computed(() => !props.ownOnly && canApproveLeave(props.leave, can, auth.hasRole('ceo')))
 const canReject = computed(() => !props.ownOnly && (can('leaves.reject') || can('leaves.reject_hr') || can('leaves.reject_ceo')))
 
 const isOwnLeave = computed(() => {

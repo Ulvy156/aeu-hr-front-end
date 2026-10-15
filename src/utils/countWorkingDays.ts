@@ -7,8 +7,8 @@ export function countWorkingDays(
 ): number {
   if (!startDate || !endDate) return 0
 
-  const start = new Date(startDate)
-  const end = new Date(endDate)
+  const start = new Date(`${startDate}T00:00:00`)
+  const end = new Date(`${endDate}T00:00:00`)
 
   if (start > end) return 0
 
@@ -25,5 +25,5 @@ export function countWorkingDays(
     current.setDate(current.getDate() + 1)
   }
 
-  return isDurationHalfDay ? 0.5 : count
+  return isDurationHalfDay && count > 0 ? 0.5 : count
 }
