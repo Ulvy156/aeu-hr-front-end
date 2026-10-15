@@ -12,11 +12,24 @@ const emit = defineEmits<{
   generate: [month: number, year: number]
 }>()
 
-const now = new Date()
-const currentYear = ref(now.getFullYear())
+function currentPeriod() {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Phnom_Penh',
+    year: 'numeric',
+    month: 'numeric',
+  }).formatToParts(new Date())
+  return {
+    year: Number(parts.find((part) => part.type === 'year')?.value),
+    month: Number(parts.find((part) => part.type === 'month')?.value),
+  }
+}
+
+const now = currentPeriod()
+const currentYear = ref(now.year)
+const currentMonth = ref(now.month)
 
 const form = reactive({
-  month: now.getMonth() + 1,
+  month: now.month,
   year: currentYear.value,
 })
 
@@ -35,18 +48,30 @@ const monthOptions = [
   { label: 'December', value: 12 },
 ]
 
-const yearOptions = computed(() => Array.from({ length: 5 }, (_, i) => currentYear.value - 2 + i))
+const yearOptions = computed(() => Array.from({ length: 3 }, (_, i) => currentYear.value - 2 + i))
 
 const formRef = ref()
 
-watch(() => props.visible, (visible) => {
-  if (!visible) return
-  const today = new Date()
-  currentYear.value = today.getFullYear()
-  form.month = today.getMonth() + 1
-  form.year = currentYear.value
-  formRef.value?.clearValidate()
-})
+watch(
+  () => props.visible,
+  (visible) => {
+    if (!visible) return
+    const today = currentPeriod()
+    currentYear.value = today.year
+    currentMonth.value = today.month
+    form.month = today.month
+    form.year = currentYear.value
+    formRef.value?.clearValidate()
+  },
+)
+
+watch(
+  () => form.year,
+  (year) => {
+    if (year === currentYear.value && form.month > currentMonth.value)
+      form.month = currentMonth.value
+  },
+)
 
 async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
@@ -77,16 +102,11 @@ const rules = {
   >
     <div class="mb-1 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-700">
       Payroll will be generated for all eligible active employees for the selected month and year.
-      Duplicate payroll for the same period will be rejected by the system.
+      The salary effective for that payroll month is used, even when generating it later. Future
+      periods and duplicate payroll are not allowed.
     </div>
 
-    <el-form
-      ref="formRef"
-      :model="form"
-      :rules="rules"
-      label-position="top"
-      class="mt-4 space-y-1"
-    >
+    <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="mt-4 space-y-1">
       <el-form-item label="Month" prop="month">
         <el-select v-model="form.month" placeholder="Select month" class="w-full">
           <el-option
@@ -94,6 +114,7 @@ const rules = {
             :key="opt.value"
             :label="opt.label"
             :value="opt.value"
+            :disabled="form.year === currentYear && opt.value > currentMonth"
           />
         </el-select>
       </el-form-item>

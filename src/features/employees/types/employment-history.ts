@@ -25,6 +25,7 @@ export interface EmploymentHistoryChangedBy {
 export interface EmploymentHistoryEntry {
   id: number
   field: EmploymentHistoryField
+  source: 'promotion' | 'correction' | null
   old_value: EmploymentHistoryValue
   new_value: EmploymentHistoryValue
   effective_date: string

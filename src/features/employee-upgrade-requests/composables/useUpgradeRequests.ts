@@ -114,7 +114,7 @@ export function useUpgradeRequests() {
     try {
       await approveUpgradeRequest(id)
       notify.success(
-        'Upgrade request approved. The employee record was updated and the change was recorded in their employment history.',
+        'Promotion approved and scheduled for its effective month. Employee details remain unchanged until application.',
       )
       await loadRequests()
       return true

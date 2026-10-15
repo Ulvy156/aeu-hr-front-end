@@ -253,6 +253,7 @@ function onSubmit() {
           <BaseInput v-model="form.base_salary" type="number" placeholder="0.00">
             <template #prepend>$</template>
           </BaseInput>
+          <p v-if="isEdit" class="mt-1 text-xs text-slate-500">Correct mistyped salary here for the current month. Actual pay changes require a promotion request. Existing payroll may block a correction.</p>
         </el-form-item>
       </div>
 

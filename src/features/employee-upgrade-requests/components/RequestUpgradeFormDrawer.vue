@@ -5,6 +5,7 @@ import { useNotify } from '@/composables/useNotify'
 import { parseApiError, getFieldError, type ApiValidationErrors } from '@/utils/api-error'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { BaseInput, BaseSelect, BaseButton, EmployeeSearchSelect } from '@/components/common'
+import { nextEffectiveMonth } from '../utils/upgradeRequestDisplay'
 import { createUpgradeRequest } from '../services/employee-upgrade-request.api'
 import { fetchEmployee } from '@/features/employees/services/employee.api'
 import {
@@ -52,7 +53,7 @@ const form = reactive({
   last_working_date: null as string | null,
   manager_id: null as number | null,
   clear_manager: false,
-  effective_date: null as string | null,
+  effective_date: nextEffectiveMonth(),
 })
 
 const requiresLastWorkingDate = computed(() =>
@@ -133,7 +134,7 @@ function resetForm() {
   form.last_working_date = null
   form.manager_id = null
   form.clear_manager = false
-  form.effective_date = null
+  form.effective_date = nextEffectiveMonth()
   attachments.value = []
   fieldErrors.value = {}
   uploadRef.value?.clearFiles()
@@ -346,14 +347,30 @@ function handleClose() {
                 {{ getFieldError(fieldErrors, 'proposed_values.last_working_date') }}
               </p>
             </el-form-item>
-            <el-form-item label="Effective Date">
+            <el-form-item label="Effective Month" required>
               <el-date-picker
                 v-model="form.effective_date"
-                type="date"
-                placeholder="Defaults to today"
+                type="month"
+                placeholder="Select next month"
+                format="MMMM YYYY"
                 value-format="YYYY-MM-DD"
+                :clearable="false"
+                :disabled-date="
+                  (date: Date) =>
+                    date.getFullYear() !== Number(nextEffectiveMonth().slice(0, 4)) ||
+                    date.getMonth() + 1 !== Number(nextEffectiveMonth().slice(5, 7))
+                "
                 class="w-full"
               />
+              <p class="mt-1 text-xs text-slate-500">
+                Next month only. Approved changes apply at 1:00 AM Cambodia time on the first day.
+              </p>
+              <p
+                v-if="getFieldError(fieldErrors, 'effective_date')"
+                class="mt-1 text-xs text-red-500"
+              >
+                {{ getFieldError(fieldErrors, 'effective_date') }}
+              </p>
             </el-form-item>
             <el-form-item label="Manager" class="col-span-2">
               <EmployeeSearchSelect

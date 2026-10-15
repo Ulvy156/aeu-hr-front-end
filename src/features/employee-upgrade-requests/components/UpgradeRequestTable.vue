@@ -3,6 +3,7 @@ import { Eye } from '@lucide/vue'
 import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
 import type { EmployeeUpgradeRequest } from '../types/employee-upgrade-request'
 import {
+  applicationLabel,
   formatUpgradeDate,
   relativeEffectiveLabel,
   upgradeChangeChips,
@@ -72,16 +73,23 @@ const emit = defineEmits<{
           </template>
         </el-table-column>
 
-        <el-table-column label="Effective" width="140">
+        <el-table-column label="Effective Month" width="140">
           <template #default="{ row }">
             <p class="text-sm text-slate-600">{{ formatUpgradeDate(row.effective_date) }}</p>
             <p class="text-xs text-slate-400">{{ relativeEffectiveLabel(row.effective_date) }}</p>
           </template>
         </el-table-column>
 
-        <el-table-column label="Status" width="120">
+        <el-table-column label="Status" width="150">
           <template #default="{ row }">
             <StatusBadge :status="row.status" />
+            <p
+              v-if="row.status === 'approved'"
+              class="mt-1 text-xs"
+              :class="row.application_state === 'failed' ? 'text-red-600' : 'text-slate-500'"
+            >
+              {{ applicationLabel(row) }}
+            </p>
           </template>
         </el-table-column>
 

@@ -4,6 +4,11 @@ import { Paperclip } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
 import { useAuthStore } from '@/features/auth/stores/auth.store'
 import { StatusBadge, BaseButton } from '@/components/common'
+import {
+  applicationLabel,
+  formatUpgradeDate,
+  nextEffectiveMonth,
+} from '../utils/upgradeRequestDisplay'
 import { buildUpgradeDiff } from '../utils/buildUpgradeDiff'
 import type { EmployeeUpgradeRequest } from '../types/employee-upgrade-request'
 
@@ -31,7 +36,12 @@ const diffRows = computed(() => {
 
 const canApprove = computed(() => {
   const r = props.request
-  return !!r && r.status === 'pending' && can('employee_upgrade_requests.approve')
+  return (
+    !!r &&
+    r.status === 'pending' &&
+    r.effective_date === nextEffectiveMonth() &&
+    can('employee_upgrade_requests.approve')
+  )
 })
 
 const canReject = computed(() => {
@@ -43,9 +53,10 @@ const canCancel = computed(() => {
   const r = props.request
   return (
     !!r &&
-    r.status === 'pending' &&
-    can('employee_upgrade_requests.cancel') &&
-    r.requested_by.id === auth.user?.id
+    ((r.status === 'pending' &&
+      can('employee_upgrade_requests.cancel') &&
+      r.requested_by.id === auth.user?.id) ||
+      (r.status === 'approved' && !r.applied_at && can('employee_upgrade_requests.approve')))
   )
 })
 
@@ -59,15 +70,6 @@ function formatDateTime(iso: string | null): string {
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  })
-}
-
-function formatDate(iso: string | null): string {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
   })
 }
 </script>
@@ -93,10 +95,30 @@ function formatDate(iso: string | null): string {
             <h3 class="text-base font-semibold text-slate-900">{{ request.employee.full_name }}</h3>
             <p class="text-xs text-slate-500 font-mono">{{ request.employee.employee_id }}</p>
           </div>
-          <StatusBadge :status="request.status" />
+          <div>
+            <StatusBadge :status="request.status" />
+            <p v-if="request.status === 'approved'" class="mt-1 text-xs text-slate-500">
+              {{ applicationLabel(request) }}
+            </p>
+          </div>
         </div>
       </div>
 
+      <p
+        v-if="request.status === 'pending' && request.effective_date !== nextEffectiveMonth()"
+        class="text-sm text-amber-700"
+      >
+        This request can no longer be approved. Cancel it and submit a new request for next month.
+      </p>
+      <div
+        v-if="request.application_error && request.status === 'approved'"
+        class="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+      >
+        {{ request.application_error }}
+      </div>
+      <p v-if="request.applied_at" class="text-sm text-slate-500">
+        Applied: {{ formatDateTime(request.applied_at) }}
+      </p>
       <!-- Rejection reason -->
       <div
         v-if="request.status === 'rejected' && request.rejection_reason"
@@ -156,8 +178,10 @@ function formatDate(iso: string | null): string {
             <p class="font-medium text-slate-800">{{ formatDateTime(request.created_at) }}</p>
           </div>
           <div>
-            <p class="text-slate-400 text-xs mb-0.5">Effective Date</p>
-            <p class="font-medium text-slate-800">{{ formatDate(request.effective_date) }}</p>
+            <p class="text-slate-400 text-xs mb-0.5">Effective Month</p>
+            <p class="font-medium text-slate-800">
+              {{ formatUpgradeDate(request.effective_date) }}
+            </p>
           </div>
           <div v-if="request.reviewed_by">
             <p class="text-slate-400 text-xs mb-0.5">Reviewed By</p>

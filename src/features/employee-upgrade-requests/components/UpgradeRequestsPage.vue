@@ -204,7 +204,7 @@ async function confirmCancel() {
     <ConfirmDialog
       v-model="approveConfirmOpen"
       title="Approve Upgrade Request"
-      message="Are you sure you want to approve this request? The employee record will be updated and the change will be recorded in their employment history."
+      message="Approve and schedule this promotion? Changes normally apply at 1:00 AM Cambodia time on the first day of the effective month."
       confirm-text="Approve"
       type="info"
       :loading="actionLoading"

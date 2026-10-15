@@ -109,6 +109,12 @@ watch(() => props.employeeId, (id) => {
           </template>
         </el-table-column>
 
+        <el-table-column label="Source" width="110">
+          <template #default="{ row }: { row: EmploymentHistoryEntry }">
+            <span class="text-sm text-slate-500">{{ row.source === 'correction' ? 'Correction' : row.source === 'promotion' ? 'Promotion' : 'Legacy' }}</span>
+          </template>
+        </el-table-column>
+
         <el-table-column label="Changed By" width="140">
           <template #default="{ row }: { row: EmploymentHistoryEntry }">
             <span class="text-sm text-slate-600">{{ row.changed_by?.name ?? '—' }}</span>
@@ -124,7 +130,7 @@ watch(() => props.employeeId, (id) => {
         <template #empty>
           <EmptyState
             title="No employment history"
-            description="Career changes recorded from approved upgrade requests will appear here."
+            description="Applied promotions and direct salary corrections will appear here."
           />
         </template>
       </el-table>

@@ -74,6 +74,10 @@ export interface EmployeeUpgradeRequest {
   current_values: UpgradeRequestValueSnapshot
   proposed_values: UpgradeRequestValueSnapshot
   effective_date: string | null
+  applied_at: string | null
+  application_failed_at: string | null
+  application_error: string | null
+  application_state: 'scheduled' | 'applied' | 'failed' | null
   rejection_reason: string | null
   attachments: UpgradeRequestAttachment[]
   employee: UpgradeRequestEmployeeRef
@@ -93,7 +97,7 @@ export interface EmployeeUpgradeRequestListParams {
 
 export interface EmployeeUpgradeRequestPayload {
   employee_id: number
-  effective_date?: string | null
+  effective_date: string
   proposed_values: UpgradeRequestValues
   attachments: File[]
 }

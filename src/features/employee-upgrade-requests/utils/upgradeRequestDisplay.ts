@@ -43,7 +43,6 @@ export function formatUpgradeDate(value: string | null): string {
   return parseDateOnly(value).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric',
   })
 }
 
@@ -82,4 +81,24 @@ export function upgradeChangeHeadline(request: EmployeeUpgradeRequest): string {
       : primary.after
 
   return `${primary.before} → ${after}`
+}
+
+export function nextEffectiveMonth(): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Phnom_Penh',
+    year: 'numeric',
+    month: 'numeric',
+  }).formatToParts(new Date())
+  const year = Number(parts.find((part) => part.type === 'year')?.value)
+  const month = Number(parts.find((part) => part.type === 'month')?.value)
+  return `${year + (month === 12 ? 1 : 0)}-${String(month === 12 ? 1 : month + 1).padStart(2, '0')}-01`
+}
+
+export function applicationLabel(request: EmployeeUpgradeRequest): string {
+  if (request.status !== 'approved') return ''
+  return request.application_state === 'applied'
+    ? 'Applied'
+    : request.application_state === 'failed'
+      ? 'Failed'
+      : 'Scheduled'
 }
