@@ -6,6 +6,7 @@ import type { EmployeeSearchOption } from '@/features/employees/services/employe
 import { proxyClockIn, proxyClockOut } from '../services/attendance.api'
 import type { Attendance } from '../types/attendance'
 import { BaseButton } from '@/components/common'
+import { localAttendanceDate } from '../utils/formatAttendance'
 
 const props = defineProps<{
   type: 'clock_in' | 'clock_out'
@@ -16,7 +17,7 @@ const emit = defineEmits<{
 }>()
 
 const employeeId = ref<number | null>(null)
-const date = ref(new Date().toISOString().split('T')[0])
+const date = ref(localAttendanceDate())
 const employees = ref<EmployeeSearchOption[]>([])
 const loadingEmployees = ref(false)
 const submitting = ref(false)

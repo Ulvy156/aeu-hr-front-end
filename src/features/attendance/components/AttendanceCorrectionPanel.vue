@@ -67,8 +67,8 @@ async function handleSubmit() {
     status: form.status as AttendanceStatus,
     correction_reason: form.correction_reason,
   }
-  if (form.clock_in_time) payload.clock_in_time = `${props.attendance.attendance_date} ${form.clock_in_time}`
-  if (form.clock_out_time) payload.clock_out_time = `${props.attendance.attendance_date} ${form.clock_out_time}`
+  payload.clock_in_time = form.clock_in_time ? `${props.attendance.attendance_date} ${form.clock_in_time}` : null
+  payload.clock_out_time = form.clock_out_time ? `${props.attendance.attendance_date} ${form.clock_out_time}` : null
 
   submitting.value = true
   try {

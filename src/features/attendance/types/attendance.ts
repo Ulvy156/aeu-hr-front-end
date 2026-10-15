@@ -68,8 +68,8 @@ export interface QRScanResult {
 }
 
 export interface CorrectionPayload {
-  clock_in_time?: string
-  clock_out_time?: string
+  clock_in_time?: string | null
+  clock_out_time?: string | null
   status: AttendanceStatus
   correction_reason: string
 }
