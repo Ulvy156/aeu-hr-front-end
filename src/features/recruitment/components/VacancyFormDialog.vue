@@ -42,7 +42,16 @@ const rules: FormRules = {
     { max: 255, message: 'Title must be at most 255 characters', trigger: 'blur' },
   ],
   department_id: [{ required: true, message: 'Department is required', trigger: 'change' }],
-  description: [{ required: true, message: 'Description is required', trigger: 'blur' }],
+  description: [
+    {
+      validator: (_rule, value: string, callback) => {
+        const content = document.createElement('div')
+        content.innerHTML = value || ''
+        callback(content.textContent?.trim() ? undefined : new Error('Description is required'))
+      },
+      trigger: 'blur',
+    },
+  ],
   required_headcount: [
     { required: true, message: 'Required headcount is required', trigger: 'blur' },
     { type: 'number', min: 1, message: 'Required headcount must be at least 1', trigger: 'blur' },
@@ -87,8 +96,10 @@ onMounted(async () => {
 })
 
 watch(
-  () => props.vacancy,
-  (vacancy) => {
+  () => [props.visible, props.vacancy] as const,
+  ([visible, vacancy]) => {
+    if (!visible) return
+
     if (vacancy) {
       form.title = vacancy.title
       form.department_id = vacancy.department?.id ?? null

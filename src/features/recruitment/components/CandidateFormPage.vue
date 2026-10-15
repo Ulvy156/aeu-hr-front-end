@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { FormInstance, FormRules, UploadFile } from 'element-plus'
+import type { FormInstance, FormRules, UploadFile, UploadInstance } from 'element-plus'
 import { FileText, X } from '@lucide/vue'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
@@ -40,6 +40,7 @@ const vacancyTitle = ref('')
 const candidateStatus = ref('new')
 const existingCv = ref<CandidateCv | null>(null)
 const cvFile = ref<File | null>(null)
+const uploadRef = ref<UploadInstance>()
 const interviewers = ref<CandidateInterviewer[]>([])
 
 const isHired = computed(() => isEdit.value && candidateStatus.value === 'hired')
@@ -124,10 +125,12 @@ function onFileChange(file: UploadFile) {
   if (!(file.raw instanceof File)) return
 
   if (file.raw.type !== 'application/pdf') {
+    uploadRef.value?.clearFiles()
     notify.error('Only PDF files are allowed.')
     return
   }
   if (file.raw.size > 2048 * 1024) {
+    uploadRef.value?.clearFiles()
     notify.error('CV size must not exceed 2048 KB.')
     return
   }
@@ -144,6 +147,8 @@ function handleCancel() {
 }
 
 async function handleSubmit() {
+  if (isHired.value) return
+
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
 
@@ -225,14 +230,14 @@ async function handleSubmit() {
 
         <div class="grid grid-cols-2 gap-4">
           <el-form-item label="Full Name" prop="full_name">
-            <BaseInput v-model="form.full_name" placeholder="Candidate full name" maxlength="255" />
+            <BaseInput :disabled="isHired" v-model="form.full_name" placeholder="Candidate full name" maxlength="255" />
             <p v-if="getFieldError(fieldErrors, 'full_name')" class="mt-1 text-xs text-red-500">
               {{ getFieldError(fieldErrors, 'full_name') }}
             </p>
           </el-form-item>
 
           <el-form-item label="Phone" prop="phone">
-            <BaseInput v-model="form.phone" placeholder="0xx xxx xxxx" maxlength="10" @input="filterPhoneInput" />
+            <BaseInput :disabled="isHired" v-model="form.phone" placeholder="0xx xxx xxxx" maxlength="10" @input="filterPhoneInput" />
             <p v-if="getFieldError(fieldErrors, 'phone')" class="mt-1 text-xs text-red-500">
               {{ getFieldError(fieldErrors, 'phone') }}
             </p>
@@ -241,14 +246,14 @@ async function handleSubmit() {
 
         <div class="grid grid-cols-2 gap-4">
           <el-form-item label="Email" prop="email">
-            <BaseInput v-model="form.email" placeholder="Email address (optional)" maxlength="255" />
+            <BaseInput :disabled="isHired" v-model="form.email" placeholder="Email address (optional)" maxlength="255" />
             <p v-if="getFieldError(fieldErrors, 'email')" class="mt-1 text-xs text-red-500">
               {{ getFieldError(fieldErrors, 'email') }}
             </p>
           </el-form-item>
 
           <el-form-item label="Source" prop="source">
-            <BaseSelect v-model="form.source" :options="sourceOptions" placeholder="Select source" />
+            <BaseSelect :disabled="isHired" v-model="form.source" :options="sourceOptions" placeholder="Select source" />
             <p v-if="getFieldError(fieldErrors, 'source')" class="mt-1 text-xs text-red-500">
               {{ getFieldError(fieldErrors, 'source') }}
             </p>
@@ -284,6 +289,7 @@ async function handleSubmit() {
 
             <el-upload
               v-if="!cvFile"
+              ref="uploadRef"
               :disabled="isHired"
               :auto-upload="false"
               :show-file-list="false"
@@ -322,6 +328,7 @@ async function handleSubmit() {
           <el-form-item label="Interviewers">
             <EmployeeSearchSelect
               v-model="form.interviewer_ids"
+              :disabled="isHired"
               multiple
               :initial-option="interviewers"
               placeholder="Search employees (optional)"
@@ -333,7 +340,7 @@ async function handleSubmit() {
         </div>
 
         <el-form-item label="Notes">
-          <BaseInput v-model="form.notes" type="textarea" :rows="3" placeholder="Additional notes (optional)" />
+          <BaseInput :disabled="isHired" v-model="form.notes" type="textarea" :rows="3" placeholder="Additional notes (optional)" />
           <p v-if="getFieldError(fieldErrors, 'notes')" class="mt-1 text-xs text-red-500">
             {{ getFieldError(fieldErrors, 'notes') }}
           </p>

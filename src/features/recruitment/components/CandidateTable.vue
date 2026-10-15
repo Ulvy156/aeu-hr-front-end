@@ -39,7 +39,7 @@ const sourceLabels: Record<string, string> = {
 
 function formatDate(value: string | null): string {
   if (!value) return '—'
-  return new Date(value).toLocaleDateString('en-US', {
+  return new Date(`${value}T00:00:00`).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
