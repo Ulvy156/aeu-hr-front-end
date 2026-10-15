@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { FormInstance, FormRules, UploadFile } from 'element-plus'
+import type { FormInstance, FormRules, UploadFile, UploadInstance } from 'element-plus'
 import { Paperclip, X } from '@lucide/vue'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
@@ -45,6 +45,7 @@ const categoryInactive = ref(false)
 const existingAttachment = ref<AnnouncementAttachment | null>(null)
 const removeAttachment = ref(false)
 const attachmentFile = ref<File | null>(null)
+const uploadRef = ref<UploadInstance>()
 
 const form = reactive({
   category_id: null as number | null,
@@ -121,10 +122,12 @@ function onFileChange(file: UploadFile) {
 
   const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png']
   if (!allowedTypes.includes(file.raw.type)) {
+    uploadRef.value?.clearFiles()
     notify.error('Only PDF, JPG, JPEG, or PNG files are allowed.')
     return
   }
   if (file.raw.size > 2048 * 1024) {
+    uploadRef.value?.clearFiles()
     notify.error('Attachment size must not exceed 2048 KB.')
     return
   }
@@ -280,6 +283,7 @@ async function handleSubmit() {
 
             <el-upload
               v-if="!attachmentFile"
+              ref="uploadRef"
               :auto-upload="false"
               :show-file-list="false"
               :limit="1"
