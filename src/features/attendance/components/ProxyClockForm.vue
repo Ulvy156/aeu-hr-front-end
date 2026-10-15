@@ -15,7 +15,7 @@ const emit = defineEmits<{
   success: [attendance: Attendance]
 }>()
 
-const employeeId = ref<string | null>(null)
+const employeeId = ref<number | null>(null)
 const date = ref(new Date().toISOString().split('T')[0])
 const employees = ref<EmployeeSearchOption[]>([])
 const loadingEmployees = ref(false)
@@ -134,7 +134,7 @@ async function handleSubmit() {
         <el-option
           v-for="emp in employees"
           :key="emp.employee_id"
-          :value="emp.employee_id"
+          :value="emp.id"
           :label="emp.display"
         />
       </el-select>

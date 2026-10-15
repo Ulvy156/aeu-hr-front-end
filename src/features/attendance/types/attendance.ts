@@ -13,7 +13,7 @@ export interface ProxiedByUser {
 }
 
 export interface ProxyClockPayload {
-  employee_id: string
+  employee_id: number
   attendance_date: string
 }
 
@@ -150,6 +150,13 @@ export interface AttendanceTodayData {
   is_late: boolean
 }
 
+export interface AttendanceActions {
+  available_action: 'clock_in' | 'clock_out' | null
+  message: string
+  complete: boolean
+  refresh_after_seconds: number
+}
+
 export interface AttendanceSummary {
   employee: AttendanceEmployee
   period: {
@@ -160,6 +167,7 @@ export interface AttendanceSummary {
   }
   summary: AttendanceSummaryData
   today: AttendanceTodayData | null
+  attendance_actions: AttendanceActions
 }
 
 export interface TeamAttendanceSummary {

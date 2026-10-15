@@ -65,9 +65,12 @@ function formatLeaveType(type: string): string {
   return leaveTypeLabels[type] ?? type
 }
 
-function formatDurationType(type: string, period: string | null): string {
-  if (type === 'full_day') return 'Full Day'
-  return period === 'morning' ? 'Half Day Morning' : period === 'afternoon' ? 'Half Day Afternoon' : 'Half Day'
+function formatDurationType(type: string): string {
+  return type === 'full_day' ? 'Full Day' : 'Half Day'
+}
+
+function formatShift(period: string | null): string {
+  return period === 'morning' ? 'Morning' : period === 'afternoon' ? 'Afternoon' : 'Not specified'
 }
 </script>
 
@@ -107,8 +110,12 @@ function formatDurationType(type: string, period: string | null): string {
           <div>
             <p class="text-slate-400 text-xs mb-0.5">Duration Type</p>
             <p class="font-medium text-slate-800">
-              {{ formatDurationType(leave.duration_type, leave.half_day_period) }}
+              {{ formatDurationType(leave.duration_type) }}
             </p>
+          </div>
+          <div v-if="leave.duration_type === 'half_day'">
+            <p class="text-slate-400 text-xs mb-0.5">Shift</p>
+            <p class="font-medium text-slate-800">{{ formatShift(leave.half_day_period) }}</p>
           </div>
           <div>
             <p class="text-slate-400 text-xs mb-0.5">Start Date</p>

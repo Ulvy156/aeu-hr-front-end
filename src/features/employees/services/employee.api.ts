@@ -47,6 +47,7 @@ export async function deleteEmployee(id: number): Promise<ApiResponse<null>> {
 }
 
 export interface EmployeeSearchOption {
+  id: number
   employee_id: string
   full_name: string
   display: string

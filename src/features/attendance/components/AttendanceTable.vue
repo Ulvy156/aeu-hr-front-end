@@ -114,7 +114,7 @@ const statusLabelMap: Record<string, string> = {
             <div class="flex flex-col items-start gap-1">
               <StatusBadge :status="row.status" :custom-label="statusLabelMap[row.status]" />
               <span v-if="row.status === 'absent' && row.absent_periods?.length" class="text-xs text-slate-500">
-                {{ row.absent_periods.map((period) => period === 'morning' ? 'Morning' : 'Afternoon').join(' + ') }}
+                {{ row.absent_periods.map((period: 'morning' | 'afternoon') => period === 'morning' ? 'Morning' : 'Afternoon').join(' + ') }}
               </span>
             </div>
           </template>
