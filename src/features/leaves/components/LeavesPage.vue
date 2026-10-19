@@ -10,6 +10,7 @@ import LeaveCreateDialog from './LeaveCreateDialog.vue'
 import LeaveDetailDrawer from './LeaveDetailDrawer.vue'
 import RejectLeaveDialog from './RejectLeaveDialog.vue'
 import MyLeaveBalanceCards from './MyLeaveBalanceCards.vue'
+import MonthlyLeaveSummaryCards from './MonthlyLeaveSummaryCards.vue'
 import type { Leave } from '../types/leave'
 
 const props = withDefaults(defineProps<{ ownOnly?: boolean }>(), { ownOnly: false })
@@ -36,6 +37,12 @@ const rejectDialogOpen = ref(false)
 const cancelConfirmOpen = ref(false)
 const selectedLeave = ref<Leave | null>(null)
 const balanceRefreshKey = ref(0)
+const filterControls = ref<InstanceType<typeof LeaveFilters> | null>(null)
+
+function filterSummaryRequests(status: string, dateFrom: string, dateTo: string) {
+  filterControls.value?.setFilters(status, '', dateFrom, dateTo, '')
+  applyFilters(status, '', dateFrom, dateTo, '')
+}
 
 const canCreate = computed(() => can('leaves.create'))
 
@@ -121,9 +128,10 @@ function onLeaveCreated() {
     </div>
 
     <MyLeaveBalanceCards v-if="props.ownOnly" :refresh-key="balanceRefreshKey" />
+    <MonthlyLeaveSummaryCards v-else :refresh-key="balanceRefreshKey" @filter="filterSummaryRequests" />
 
     <!-- Filters -->
-    <LeaveFilters :own-only="props.ownOnly" @apply="applyFilters" />
+    <LeaveFilters ref="filterControls" :own-only="props.ownOnly" @apply="applyFilters" />
 
     <!-- Table card -->
     <AppCard no-padding>

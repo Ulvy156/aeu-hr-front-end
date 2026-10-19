@@ -19,6 +19,16 @@ const localDateFrom = ref('')
 const localDateTo = ref('')
 const localEmployeeId = ref('')
 
+function setFilters(status: string, leaveType: string, dateFrom: string, dateTo: string, employeeId: string) {
+  localStatus.value = status
+  localLeaveType.value = leaveType
+  localDateFrom.value = dateFrom
+  localDateTo.value = dateTo
+  localEmployeeId.value = employeeId
+}
+
+defineExpose({ setFilters })
+
 const statusOptions = [
   { label: 'Pending', value: 'pending' },
   { label: 'Approved', value: 'approved' },

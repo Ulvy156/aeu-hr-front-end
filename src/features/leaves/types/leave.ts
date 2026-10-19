@@ -4,6 +4,17 @@ export type HalfDayPeriod = 'morning' | 'afternoon'
 export type LeaveStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected'
 
+export interface MonthlyLeaveSummary {
+  month: string
+  date_from: string
+  date_to: string
+  today: string
+  on_leave_today: number
+  employees_taking_leave: number
+  total_leave_days: number
+  awaiting_approval: number
+}
+
 export interface LeaveEmployee {
   id: number
   employee_id: string

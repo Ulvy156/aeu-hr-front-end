@@ -5,6 +5,7 @@ import type {
   LeaveRejectPayload,
   LeaveBalanceData,
   PaginationMeta,
+  MonthlyLeaveSummary,
 } from '../types/leave'
 
 interface ApiResponse<T> {
@@ -18,6 +19,11 @@ interface PaginatedResponse<T> {
   message: string
   data: T[]
   meta: PaginationMeta
+}
+
+export async function fetchMonthlyLeaveSummary(): Promise<ApiResponse<MonthlyLeaveSummary>> {
+  const { data } = await api.get('/leaves/summary')
+  return data
 }
 
 export async function fetchLeaves(
