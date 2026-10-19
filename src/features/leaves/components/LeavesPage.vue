@@ -9,6 +9,7 @@ import LeaveTable from './LeaveTable.vue'
 import LeaveCreateDialog from './LeaveCreateDialog.vue'
 import LeaveDetailDrawer from './LeaveDetailDrawer.vue'
 import RejectLeaveDialog from './RejectLeaveDialog.vue'
+import MyLeaveBalanceCards from './MyLeaveBalanceCards.vue'
 import type { Leave } from '../types/leave'
 
 const props = withDefaults(defineProps<{ ownOnly?: boolean }>(), { ownOnly: false })
@@ -34,6 +35,7 @@ const approveConfirmOpen = ref(false)
 const rejectDialogOpen = ref(false)
 const cancelConfirmOpen = ref(false)
 const selectedLeave = ref<Leave | null>(null)
+const balanceRefreshKey = ref(0)
 
 const canCreate = computed(() => can('leaves.create'))
 
@@ -63,6 +65,7 @@ async function confirmApprove() {
   if (!selectedLeave.value) return
   const ok = await handleApprove(selectedLeave.value.id)
   if (ok) {
+    balanceRefreshKey.value++
     approveConfirmOpen.value = false
     if (drawerOpen.value) drawerOpen.value = false
   }
@@ -72,6 +75,7 @@ async function confirmReject(reason: string) {
   if (!selectedLeave.value) return
   const ok = await handleReject(selectedLeave.value.id, { rejection_reason: reason })
   if (ok) {
+    balanceRefreshKey.value++
     rejectDialogOpen.value = false
     if (drawerOpen.value) drawerOpen.value = false
   }
@@ -81,9 +85,15 @@ async function confirmCancel() {
   if (!selectedLeave.value) return
   const ok = await handleCancel(selectedLeave.value.id)
   if (ok) {
+    balanceRefreshKey.value++
     cancelConfirmOpen.value = false
     if (drawerOpen.value) drawerOpen.value = false
   }
+}
+
+function onLeaveCreated() {
+  loadLeaves()
+  balanceRefreshKey.value++
 }
 </script>
 
@@ -109,6 +119,8 @@ async function confirmCancel() {
         + Request Leave
       </BaseButton>
     </div>
+
+    <MyLeaveBalanceCards v-if="props.ownOnly" :refresh-key="balanceRefreshKey" />
 
     <!-- Filters -->
     <LeaveFilters :own-only="props.ownOnly" @apply="applyFilters" />
@@ -142,7 +154,7 @@ async function confirmCancel() {
     <!-- Create dialog -->
     <LeaveCreateDialog
       v-model:visible="createOpen"
-      @created="loadLeaves"
+      @created="onLeaveCreated"
     />
 
     <!-- Detail drawer -->
