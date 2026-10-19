@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { Download, Eye, Send, CheckCircle, XCircle, Trash2 } from '@lucide/vue'
+import { FileSpreadsheet, Eye, Send, CheckCircle, XCircle, Trash2 } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
@@ -132,11 +132,12 @@ async function exportPayroll(payroll: PayrollBatch) {
               <el-tooltip v-if="can('payrolls.export') || hasRole('hr') || hasRole('ceo')" content="Export Excel" placement="top">
                 <button
                   :disabled="exportingPayrollId === row.id"
-                  class="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-wait disabled:opacity-50"
+                  aria-label="Export Excel"
+                  class="rounded-md p-1.5 text-emerald-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-wait disabled:opacity-50"
                   @click="exportPayroll(row)"
                 >
                   <span v-if="exportingPayrollId === row.id" class="block h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-                  <Download v-else class="h-4 w-4" />
+                  <FileSpreadsheet v-else class="h-4 w-4" />
                 </button>
               </el-tooltip>
 

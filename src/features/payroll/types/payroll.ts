@@ -44,6 +44,7 @@ export interface PayrollItem {
 
 export interface PayrollBatch {
   id: number
+  currency?: string
   month: number
   year: number
   status: PayrollStatus

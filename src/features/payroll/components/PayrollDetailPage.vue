@@ -6,6 +6,7 @@ import { usePermission } from '@/composables/usePermissions'
 import { usePayrollDetail } from '../composables/usePayrollDetail'
 import { AppCard, BaseButton, StatusBadge, ConfirmDialog } from '@/components/common'
 import PayrollItemsTable from './PayrollItemsTable.vue'
+import PayrollTotalsCards from './PayrollTotalsCards.vue'
 import RejectPayrollDialog from './RejectPayrollDialog.vue'
 import type { UpdatePayrollItemPayload } from '../types/payroll'
 
@@ -48,11 +49,6 @@ const MONTH_NAMES = [
 
 function formatMonth(month: number): string {
   return MONTH_NAMES[month - 1] ?? String(month)
-}
-
-function formatMoney(value: string | undefined): string {
-  if (!value) return '—'
-  return Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 onMounted(() => loadPayroll(payrollId.value))
@@ -185,41 +181,7 @@ async function confirmDelete() {
         <p>{{ payroll.rejection_reason }}</p>
       </div>
 
-      <!-- Totals summary -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <AppCard>
-          <p class="text-xs text-slate-400 mb-1">Gross Salary</p>
-          <p class="text-lg font-semibold text-slate-800">{{ formatMoney(payroll.totals?.gross_salary) }}</p>
-        </AppCard>
-        <AppCard>
-          <p class="text-xs text-slate-400 mb-1">Unpaid Deduction</p>
-          <p class="text-lg font-semibold text-red-600">{{ formatMoney(payroll.totals?.unpaid_deduction) }}</p>
-        </AppCard>
-        <AppCard>
-          <p class="text-xs text-slate-400 mb-1">Absence Deduction</p>
-          <p class="text-lg font-semibold text-red-600">{{ formatMoney(payroll.totals?.absence_deduction) }}</p>
-        </AppCard>
-        <AppCard>
-          <p class="text-xs text-slate-400 mb-1">Maternity Deduction</p>
-          <p class="text-lg font-semibold text-red-600">{{ formatMoney(payroll.totals?.maternity_deduction) }}</p>
-        </AppCard>
-        <AppCard>
-          <p class="text-xs text-slate-400 mb-1">Special Sick Deduction</p>
-          <p class="text-lg font-semibold text-red-600">{{ formatMoney(payroll.totals?.special_sick_deduction) }}</p>
-        </AppCard>
-        <AppCard>
-          <p class="text-xs text-slate-400 mb-1">Tax Amount</p>
-          <p class="text-lg font-semibold text-amber-600">{{ formatMoney(payroll.totals?.tax_amount) }}</p>
-        </AppCard>
-        <AppCard>
-          <p class="text-xs text-slate-400 mb-1">NSSF Deduction</p>
-          <p class="text-lg font-semibold text-red-600">{{ formatMoney(payroll.totals?.nssf_deduction) }}</p>
-        </AppCard>
-        <AppCard>
-          <p class="text-xs text-slate-400 mb-1">Net Salary</p>
-          <p class="text-lg font-semibold text-emerald-600">{{ formatMoney(payroll.totals?.net_salary) }}</p>
-        </AppCard>
-      </div>
+      <PayrollTotalsCards :payroll="payroll" />
 
       <!-- Approved locked notice -->
       <div
@@ -235,7 +197,8 @@ async function confirmDelete() {
         <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <div>
             <h3 class="text-sm font-semibold text-slate-800">Payroll Items</h3>
-            <p class="text-xs text-slate-400 mt-0.5">Individual employee payroll breakdown.</p>
+            <p class="text-xs text-slate-400 mt-0.5">Individual employee payroll breakdown.
+              <template v-if="payroll.currency"> Salary and deduction amounts are in {{ payroll.currency }}; day columns show days.</template></p>
           </div>
           <span class="text-xs text-slate-400 font-medium">{{ payroll.items?.length ?? 0 }} items</span>
         </div>
