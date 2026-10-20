@@ -27,12 +27,6 @@ export function useAttendanceSummary() {
     return null
   })
 
-  const attendanceRate = computed(() => {
-    if (!summary.value) return '—'
-    if (summary.value.summary.working_days_in_period === 0) return '—'
-    return `${summary.value.summary.attendance_rate}%`
-  })
-
   async function load() {
     loading.value = true
     error.value = null
@@ -51,5 +45,5 @@ export function useAttendanceSummary() {
     }
   }
 
-  return { month, year, summary, loading, error, isCurrentMonth, todayLabel, attendanceRate, load }
+  return { month, year, summary, loading, error, isCurrentMonth, todayLabel, load }
 }

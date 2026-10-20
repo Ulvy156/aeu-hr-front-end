@@ -2,7 +2,7 @@
 import { onMounted, watch } from 'vue'
 import { useAttendanceSummary } from '../composables/useAttendanceSummary'
 
-const { month, year, summary, loading, error, isCurrentMonth, todayLabel, attendanceRate, load } =
+const { month, year, summary, loading, error, isCurrentMonth, todayLabel, load } =
   useAttendanceSummary()
 
 onMounted(load)
@@ -62,9 +62,9 @@ const todayBadgeClass: Record<string, string> = {
     </div>
 
     <!-- Skeleton -->
-    <div v-else-if="loading" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+    <div v-else-if="loading" class="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <div
-        v-for="n in 5"
+        v-for="n in 4"
         :key="n"
         class="animate-pulse rounded-xl border border-gray-100 bg-white p-4 space-y-2"
       >
@@ -74,7 +74,7 @@ const todayBadgeClass: Record<string, string> = {
     </div>
 
     <!-- Cards -->
-    <div v-else-if="summary" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+    <div v-else-if="summary" class="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <!-- Present -->
       <div class="rounded-xl border border-emerald-100 bg-emerald-50 p-4">
         <p class="text-xs font-medium text-emerald-700 uppercase tracking-wide">Present</p>
@@ -103,14 +103,6 @@ const todayBadgeClass: Record<string, string> = {
         <p class="mt-0.5 text-xs text-orange-600">days</p>
       </div>
 
-      <!-- Attendance Rate -->
-      <div class="rounded-xl border border-blue-100 bg-blue-50 p-4">
-        <p class="text-xs font-medium text-blue-700 uppercase tracking-wide">Attendance Rate</p>
-        <p class="mt-1 text-2xl font-bold text-blue-700">{{ attendanceRate }}</p>
-        <p class="mt-0.5 text-xs text-blue-600">
-          {{ summary.summary.attended_days }} / {{ summary.summary.working_days_in_period }} days
-        </p>
-      </div>
     </div>
   </div>
 </template>
