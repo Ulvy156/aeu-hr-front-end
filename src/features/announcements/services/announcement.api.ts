@@ -105,3 +105,16 @@ export async function markAnnouncementRead(id: number): Promise<ApiResponse<null
   const { data } = await api.post(`/announcements/${id}/read`)
   return data
 }
+
+export interface AnnouncementTargetOptions {
+  roles: { id: number; name: string }[]
+  departments: { id: number; name: string }[]
+  employees: { id: number; employee_id: string; full_name: string }[]
+}
+
+export async function fetchAnnouncementTargetOptions(
+  params: { q?: string; employee_ids?: number[] } = {},
+): Promise<ApiResponse<AnnouncementTargetOptions>> {
+  const { data } = await api.get('/announcements/target-options', { params })
+  return data
+}

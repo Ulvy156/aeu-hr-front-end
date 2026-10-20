@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, onBeforeUnmount, watch } from 'vue'
 import { Plus, Trash2 } from '@lucide/vue'
 import { useAnnouncementTargetOptions } from '../composables/useAnnouncementTargetOptions'
-import { EmployeeSearchSelect, BaseSelect } from '@/components/common'
+import { BaseSelect } from '@/components/common'
 import { getFieldError, type ApiValidationErrors } from '@/utils/api-error'
 import type { AnnouncementTarget, AnnouncementTargetType } from '../types/announcement'
 
@@ -15,7 +15,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: AnnouncementTarget[]]
 }>()
 
-const { roleOptions, departmentOptions, loadRoleOptions, loadDepartmentOptions } =
+const { roleOptions, departmentOptions, employeeOptions, employeesLoading, loadOptions, loadEmployeeOptions } =
   useAnnouncementTargetOptions()
 
 const targetTypeOptions: { label: string; value: AnnouncementTargetType }[] = [
@@ -25,9 +25,22 @@ const targetTypeOptions: { label: string; value: AnnouncementTargetType }[] = [
   { label: 'Employee', value: 'employee' },
 ]
 
-onMounted(async () => {
-  await Promise.all([loadRoleOptions(), loadDepartmentOptions()])
-})
+onMounted(loadOptions)
+
+let employeeSearchTimer: ReturnType<typeof setTimeout> | undefined
+function searchEmployees(query: string) {
+  clearTimeout(employeeSearchTimer)
+  const selectedIds = props.modelValue.filter((target) => target.target_type === 'employee' && target.target_id !== null)
+    .map((target) => target.target_id as number)
+  employeeSearchTimer = setTimeout(() => loadEmployeeOptions(query, selectedIds), 300)
+}
+onBeforeUnmount(() => clearTimeout(employeeSearchTimer))
+watch(
+  () => props.modelValue.filter((target) => target.target_type === 'employee' && target.target_id !== null)
+    .map((target) => target.target_id as number).join(','),
+  (ids) => { if (ids) void loadEmployeeOptions('', ids.split(',').map(Number)) },
+  { immediate: true },
+)
 
 function addTarget() {
   emit('update:modelValue', [...props.modelValue, { target_type: 'all', target_id: null }])
@@ -85,9 +98,16 @@ function targetError(index: number): string | undefined {
           @update:model-value="updateTarget(index, { target_id: $event })"
         />
 
-        <EmployeeSearchSelect
+        <BaseSelect
           v-else-if="target.target_type === 'employee'"
           :model-value="target.target_id"
+          :options="employeeOptions.map((employee) => ({
+            value: employee.id, label: `${employee.full_name} (${employee.employee_id})`,
+          }))"
+          filterable
+          remote
+          :remote-method="searchEmployees"
+          :loading="employeesLoading"
           placeholder="Search employee..."
           @update:model-value="updateTarget(index, { target_id: $event as number | null })"
         />
