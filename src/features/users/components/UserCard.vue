@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-5">
+  <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
     <div
       v-for="card in summaryCards"
       :key="card.label"
@@ -20,18 +20,7 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  Briefcase,
-  BriefcaseBusiness,
-  Building2,
-  Crown,
-  Network,
-  ShieldAlert,
-  ShieldCheck,
-  ShieldUser,
-  UserCog,
-  Users,
-} from '@lucide/vue'
+import { BriefcaseBusiness, Crown, ShieldUser, UserCog } from '@lucide/vue'
 import { computed, onBeforeMount, shallowRef, watch } from 'vue'
 import { fetchUserSummary } from '../services/user.api'
 import type { UserSummary } from '../types/user'
@@ -64,27 +53,6 @@ const summaryCards = computed(() => {
 
   return [
     {
-      label: 'Total Users',
-      value: userSummary.value?.total_users ?? 0,
-      icon: Users,
-      iconBg: 'bg-blue-50',
-      iconColor: 'text-blue-600',
-    },
-    {
-      label: 'Active Users',
-      value: userSummary.value?.active_users ?? 0,
-      icon: ShieldCheck,
-      iconBg: 'bg-emerald-50',
-      iconColor: 'text-emerald-600',
-    },
-    {
-      label: 'Inactive Users',
-      value: userSummary.value?.inactive_users ?? 0,
-      icon: ShieldAlert,
-      iconBg: 'bg-amber-50',
-      iconColor: 'text-amber-600',
-    },
-    {
       label: 'Admin Users',
       value: roles?.admin ?? 0,
       icon: ShieldUser,
@@ -104,27 +72,6 @@ const summaryCards = computed(() => {
       icon: Crown,
       iconBg: 'bg-amber-50',
       iconColor: 'text-amber-600',
-    },
-    {
-      label: 'GM Users',
-      value: roles?.gm ?? 0,
-      icon: Network,
-      iconBg: 'bg-sky-50',
-      iconColor: 'text-sky-600',
-    },
-    {
-      label: 'Head Users',
-      value: roles?.head ?? 0,
-      icon: Building2,
-      iconBg: 'bg-violet-50',
-      iconColor: 'text-violet-600',
-    },
-    {
-      label: 'Manager Users',
-      value: roles?.manager ?? 0,
-      icon: Briefcase,
-      iconBg: 'bg-teal-50',
-      iconColor: 'text-teal-600',
     },
     {
       label: 'Employee Users',

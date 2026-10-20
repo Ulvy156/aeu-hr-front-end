@@ -28,9 +28,9 @@ const DEFAULT_ROLE_BY_LEVEL: Record<JobLevel, string> = {
   [JOB_LEVEL.JUNIOR]: 'employee',
   [JOB_LEVEL.SENIOR]: 'employee',
   [JOB_LEVEL.SUPERVISOR]: 'employee',
-  [JOB_LEVEL.MANAGER]: 'manager',
-  [JOB_LEVEL.HEAD]: 'head',
-  [JOB_LEVEL.GM]: 'gm',
+  [JOB_LEVEL.MANAGER]: 'employee',
+  [JOB_LEVEL.HEAD]: 'employee',
+  [JOB_LEVEL.GM]: 'employee',
   [JOB_LEVEL.CEO]: 'ceo',
 }
 

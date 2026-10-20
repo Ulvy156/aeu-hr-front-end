@@ -16,7 +16,7 @@ import RejectPayrollDialog from './RejectPayrollDialog.vue'
 import type { PayrollBatch } from '../types/payroll'
 
 const router = useRouter()
-const { can, hasRole } = usePermission()
+const { can } = usePermission()
 const {
   payrolls,
   statusCounts,
@@ -46,9 +46,6 @@ const deleteConfirmOpen = ref(false)
 const selectedPayroll = ref<PayrollBatch | null>(null)
 
 const canGenerate = computed(() => can('payrolls.generate'))
-const showDepartmentScopeBanner = computed(
-  () => hasRole('head') && !hasRole('hr') && !hasRole('admin') && !hasRole('gm') && !hasRole('ceo'),
-)
 const showNeedsAttention = computed(() => payrolls.value.some(needsAttention))
 const rejectedMessage = computed(() => {
   const batch = latestRejected.value
@@ -135,13 +132,6 @@ async function confirmDelete() {
         <Plus class="mr-1.5 h-4 w-4" />
         Generate Payroll
       </BaseButton>
-    </div>
-
-    <div
-      v-if="showDepartmentScopeBanner"
-      class="rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-    >
-      Totals and payroll items are limited to your department.
     </div>
 
     <PayrollSummaryCards

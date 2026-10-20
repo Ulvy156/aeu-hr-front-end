@@ -32,7 +32,6 @@ const selectedBatch = ref<DashboardPayrollBatch | null>(null)
 
 onMounted(load)
 
-const isGmOnly = computed(() => hasRole('gm') && !hasRole('ceo'))
 const canApprovePayroll = computed(() => hasRole('ceo') && can('payrolls.approve'))
 const canRejectPayroll = computed(() => hasRole('ceo') && can('payrolls.reject'))
 const canApproveLeave = computed(() => can('leaves.approve_ceo') || can('leaves.approve_hr'))
@@ -99,7 +98,7 @@ async function confirmReject(reason: string) {
         </div>
         <div>
           <h1 class="text-2xl font-semibold text-slate-900">
-            {{ isGmOnly ? 'GM Dashboard' : 'CEO Dashboard' }}
+            CEO Dashboard
           </h1>
           <p class="mt-0.5 text-sm text-slate-500">
             Welcome back,

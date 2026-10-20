@@ -131,8 +131,5 @@ export interface UserSummary {
     hr: number,
     ceo: number,
     employee: number,
-    manager?: number,
-    head?: number,
-    gm?: number,
   }
 }

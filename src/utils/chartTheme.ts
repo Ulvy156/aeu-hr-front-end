@@ -26,7 +26,6 @@ export const CHART_ROLE_COLORS: Record<string, string> = {
   employee: CHART_COLORS.emerald,
   hr: CHART_COLORS.blue,
   ceo: CHART_COLORS.amber,
-  gm: '#fbbf24',
   admin: CHART_COLORS.violet,
 }
 

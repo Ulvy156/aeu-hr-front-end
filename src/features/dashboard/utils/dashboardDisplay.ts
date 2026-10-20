@@ -158,7 +158,6 @@ export function roleBarClass(role: string): string {
     employee: 'bg-emerald-500',
     hr: 'bg-blue-500',
     ceo: 'bg-amber-500',
-    gm: 'bg-amber-400',
     admin: 'bg-violet-500',
   }
   return map[role] ?? 'bg-slate-400'
