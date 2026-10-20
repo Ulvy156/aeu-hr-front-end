@@ -172,6 +172,8 @@ export const ATTENDANCE_STATUS_OPTIONS = [
   { label: 'Late', value: 'late' },
   { label: 'Absent', value: 'absent' },
   { label: 'Missing clock-out', value: 'missing_clock_out' },
+  { label: 'Missing clock in', value: 'missing_clock_in' },
+  { label: 'Missing both', value: 'missing_both' },
 ]
 
 export const LEAVE_STATUS_OPTIONS = [

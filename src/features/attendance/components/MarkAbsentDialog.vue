@@ -60,7 +60,9 @@ async function handleSubmit() {
       <UserX class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
       <p class="text-sm text-amber-700">
         This calculates absent morning and afternoon periods from attendance and approved leave
-        for employees within their employment period. Non-working days and public holidays are skipped.
+        for employees within their employment period. Today can only be finalized from 11 p.m.;
+        earlier dates can be processed anytime. For an early HR decision, correct the individual
+        record with a reason. Non-working days and public holidays are skipped.
       </p>
     </div>
 

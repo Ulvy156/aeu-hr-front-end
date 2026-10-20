@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { UserCheck, Clock, UserX, LogOut } from '@lucide/vue'
+import { UserCheck, Clock, UserX, LogOut, LogIn } from '@lucide/vue'
 import type { AttendanceSummary } from '../types/dashboard'
 
 defineProps<{
@@ -9,15 +9,15 @@ defineProps<{
 </script>
 
 <template>
-  <div v-if="loading" class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  <div v-if="loading" class="grid grid-cols-2 gap-4 lg:grid-cols-5">
     <div
-      v-for="n in 4"
+      v-for="n in 5"
       :key="n"
       class="h-24 animate-pulse rounded-xl border border-gray-200 bg-white"
     />
   </div>
 
-  <div v-else class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  <div v-else class="grid grid-cols-2 gap-4 lg:grid-cols-5">
     <div class="rounded-xl border border-gray-200 bg-white p-5">
       <div class="flex items-start gap-3">
         <div
@@ -72,6 +72,32 @@ defineProps<{
             {{ summary.absent_count }}
           </p>
           <p class="text-sm text-slate-500">Absent so far</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-gray-200 bg-white p-5">
+      <div class="flex items-start gap-3">
+        <div
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+          :class="
+            summary.missing_clock_in_count > 0
+              ? 'bg-blue-50 text-blue-600'
+              : 'bg-slate-100 text-slate-600'
+          "
+        >
+          <LogIn class="h-5 w-5" />
+        </div>
+        <div>
+          <p
+            class="text-2xl font-semibold"
+            :class="
+              summary.missing_clock_in_count > 0 ? 'text-blue-600' : 'text-slate-900'
+            "
+          >
+            {{ summary.missing_clock_in_count }}
+          </p>
+          <p class="text-sm text-slate-500">Missing clock in</p>
         </div>
       </div>
     </div>

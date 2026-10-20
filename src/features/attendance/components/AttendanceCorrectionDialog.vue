@@ -126,6 +126,8 @@ async function handleSubmit() {
           <el-option label="Late" value="late" />
           <el-option label="Absent" value="absent" />
           <el-option label="Missing Clock-out" value="missing_clock_out" />
+          <el-option label="Missing clock in" value="missing_clock_in" />
+          <el-option label="Missing both" value="missing_both" />
         </el-select>
       </el-form-item>
 

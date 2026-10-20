@@ -71,7 +71,7 @@ export function useAttendanceCorrection() {
     try {
       const shared = { ...sharedParams(), page: 1, per_page: 1 }
       const [needsReview, late, absent, all] = await Promise.all([
-        fetchAttendance({ ...shared, status: 'missing_clock_out' }),
+        fetchAttendance({ ...shared, status: 'needs_review' }),
         fetchAttendance({ ...shared, status: 'late' }),
         fetchAttendance({ ...shared, status: 'absent' }),
         fetchAttendance(shared),

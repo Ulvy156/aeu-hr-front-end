@@ -1,4 +1,4 @@
-export type AttendanceStatus = 'present' | 'late' | 'absent' | 'missing_clock_out'
+export type AttendanceStatus = 'present' | 'late' | 'absent' | 'missing_clock_out' | 'missing_clock_in' | 'missing_both'
 
 export interface AttendanceEmployee {
   id: number
@@ -101,10 +101,12 @@ export const ATTENDANCE_STATUS_LABELS: Record<AttendanceStatus, string> = {
   late: 'Late',
   absent: 'Absent',
   missing_clock_out: 'Missing clock-out',
+  missing_clock_in: 'Missing clock in',
+  missing_both: 'Missing both',
 }
 
-export const CORRECTION_QUEUE_STATUS: Record<CorrectionQueue, AttendanceStatus | ''> = {
-  needs_review: 'missing_clock_out',
+export const CORRECTION_QUEUE_STATUS: Record<CorrectionQueue, AttendanceStatus | 'needs_review' | ''> = {
+  needs_review: 'needs_review',
   late: 'late',
   absent: 'absent',
   all: '',
@@ -138,6 +140,7 @@ export interface AttendanceSummaryData {
   late: number
   absent: number
   missing_clock_out: number
+  missing_clock_in: number
   attended_days: number
   working_days_in_period: number
   attendance_rate: string
@@ -178,5 +181,6 @@ export interface TeamAttendanceSummary {
     late: number
     absent: number
     missing_clock_out: number
+    missing_clock_in: number
   }
 }

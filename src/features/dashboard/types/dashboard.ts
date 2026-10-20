@@ -58,6 +58,7 @@ export interface AttendanceSummary {
   late_count: number
   absent_count: number
   missing_clock_out_count: number
+  missing_clock_in_count: number
 }
 
 export interface DashboardLeaveItem {

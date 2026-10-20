@@ -46,6 +46,11 @@ defineProps<{
         <span class="text-xs font-medium text-red-600">{{ row.absent_count ?? '—' }}</span>
       </template>
     </el-table-column>
+    <el-table-column label="Missing clock in" width="110" align="center">
+      <template #default="{ row }">
+        <span class="text-xs text-slate-500">{{ row.missing_clock_in_count ?? '—' }}</span>
+      </template>
+    </el-table-column>
     <el-table-column label="Missing C/O" width="110" align="center">
       <template #default="{ row }">
         <span class="text-xs text-slate-500">{{ row.missing_clock_out_count ?? '—' }}</span>

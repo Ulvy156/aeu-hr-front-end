@@ -29,6 +29,9 @@ const todayBadgeClass: Record<string, string> = {
   'Clocked in': 'bg-emerald-100 text-emerald-700',
   'Completed': 'bg-blue-100 text-blue-700',
   'Late': 'bg-amber-100 text-amber-700',
+  'Absent': 'bg-red-100 text-red-700',
+  'Missing clock in': 'bg-orange-100 text-orange-700',
+  'Missing both': 'bg-orange-100 text-orange-700',
   'Missing clock-out': 'bg-orange-100 text-orange-700',
 }
 </script>
@@ -62,7 +65,7 @@ const todayBadgeClass: Record<string, string> = {
     </div>
 
     <!-- Skeleton -->
-    <div v-else-if="loading" class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div v-else-if="loading" class="grid grid-cols-2 gap-3 lg:grid-cols-5">
       <div
         v-for="n in 4"
         :key="n"
@@ -74,7 +77,7 @@ const todayBadgeClass: Record<string, string> = {
     </div>
 
     <!-- Cards -->
-    <div v-else-if="summary" class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div v-else-if="summary" class="grid grid-cols-2 gap-3 lg:grid-cols-5">
       <!-- Present -->
       <div class="rounded-xl border border-emerald-100 bg-emerald-50 p-4">
         <p class="text-xs font-medium text-emerald-700 uppercase tracking-wide">Present</p>
@@ -96,7 +99,12 @@ const todayBadgeClass: Record<string, string> = {
         <p class="mt-0.5 text-xs text-red-600">completed workdays</p>
       </div>
 
-      <!-- Missing Clock-Out -->
+      <!-- Missing attendance -->
+      <div class="rounded-xl border border-orange-100 bg-orange-50 p-4">
+        <p class="text-xs font-medium text-orange-700 uppercase tracking-wide">Missing clock in</p>
+        <p class="mt-1 text-2xl font-bold text-orange-700">{{ summary.summary.missing_clock_in }}</p>
+        <p class="mt-0.5 text-xs text-orange-600">days</p>
+      </div>
       <div class="rounded-xl border border-orange-100 bg-orange-50 p-4">
         <p class="text-xs font-medium text-orange-700 uppercase tracking-wide">Missing Clock-Out</p>
         <p class="mt-1 text-2xl font-bold text-orange-700">{{ summary.summary.missing_clock_out }}</p>

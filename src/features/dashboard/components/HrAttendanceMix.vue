@@ -13,7 +13,9 @@ const props = defineProps<{
   summary: AttendanceSummary
 }>()
 
-const categories = ['Present', 'Late', 'Absent', 'Missing out'] as const
+const attendanceColors = [...CHART_STATUS_PALETTE, CHART_COLORS.violet]
+
+const categories = ['Present', 'Late', 'Absent', 'Missing out', 'Missing in'] as const
 
 const chartOption = computed(() => {
   const values = [
@@ -21,10 +23,11 @@ const chartOption = computed(() => {
     props.summary.late_count,
     props.summary.absent_count,
     props.summary.missing_clock_out_count,
+    props.summary.missing_clock_in_count,
   ]
 
   return {
-    color: [...CHART_STATUS_PALETTE],
+    color: attendanceColors,
     grid: { left: 8, right: 8, top: 16, bottom: 28, containLabel: true },
     tooltip: {
       trigger: 'axis',
@@ -51,7 +54,7 @@ const chartOption = computed(() => {
         data: values.map((value, index) => ({
           value,
           itemStyle: {
-            color: CHART_STATUS_PALETTE[index],
+            color: attendanceColors[index],
             borderRadius: [6, 6, 0, 0],
           },
         })),
@@ -70,8 +73,10 @@ const legend = computed(() =>
           ? props.summary.late_count
           : index === 2
             ? props.summary.absent_count
-            : props.summary.missing_clock_out_count,
-    color: CHART_STATUS_PALETTE[index]!,
+            : index === 3
+              ? props.summary.missing_clock_out_count
+              : props.summary.missing_clock_in_count,
+    color: attendanceColors[index]!,
   })),
 )
 </script>

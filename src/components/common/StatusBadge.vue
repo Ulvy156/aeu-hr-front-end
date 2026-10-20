@@ -28,6 +28,8 @@ const statusMap: Record<string, StatusConfig> = {
   absent: { type: 'danger', label: 'Absent' },
   late: { type: 'warning', label: 'Late' },
   missing_clock_out: { type: 'info', label: 'Missing Clock-Out' },
+  missing_clock_in: { type: 'info', label: 'Missing clock in' },
+  missing_both: { type: 'info', label: 'Missing both' },
   submitted: { type: 'info', label: 'Submitted' },
   locked: { type: 'info', label: 'Locked' },
   paid: { type: 'success', label: 'Paid' },

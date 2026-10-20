@@ -50,6 +50,8 @@ const statusLabelMap: Record<string, string> = {
   late: 'Late',
   absent: 'Absent',
   missing_clock_out: 'Missing Clock-out',
+  missing_clock_in: 'Missing clock in',
+  missing_both: 'Missing both',
 }
 </script>
 

@@ -85,6 +85,7 @@ const stats = computed<SummaryStat[]>(() => {
       { label: 'Late', value: count(summary.late_count), tone: 'amber' },
       { label: 'Absent', value: count(summary.absent_count), tone: 'red' },
       { label: 'Missing clock-out', value: count(summary.missing_clock_out_count) },
+      { label: 'Missing clock in', value: count(summary.missing_clock_in_count) },
     ]
   }
 

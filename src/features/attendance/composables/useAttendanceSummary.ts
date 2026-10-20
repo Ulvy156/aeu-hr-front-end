@@ -23,6 +23,9 @@ export function useAttendanceSummary() {
     if (today.status === 'present' && today.clock_out_time === null) return 'Clocked in'
     if (today.status === 'present' && today.clock_out_time !== null) return 'Completed'
     if (today.status === 'late') return 'Late'
+    if (today.status === 'absent') return 'Absent'
+    if (today.status === 'missing_clock_in') return 'Missing clock in'
+    if (today.status === 'missing_both') return 'Missing both'
     if (today.status === 'missing_clock_out') return 'Missing clock-out'
     return null
   })

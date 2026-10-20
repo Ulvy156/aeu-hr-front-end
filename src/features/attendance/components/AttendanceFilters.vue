@@ -24,6 +24,8 @@ const statusOptions = [
   { label: 'Late', value: 'late' },
   { label: 'Absent', value: 'absent' },
   { label: 'Missing Clock-out', value: 'missing_clock_out' },
+  { label: 'Missing clock in', value: 'missing_clock_in' },
+  { label: 'Missing both', value: 'missing_both' },
 ]
 
 function handleSearch() {

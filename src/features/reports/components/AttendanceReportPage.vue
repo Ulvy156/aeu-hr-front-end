@@ -31,6 +31,8 @@ const statusOptions = [
   { label: 'Late', value: 'late' },
   { label: 'Absent', value: 'absent' },
   { label: 'Missing Clock-Out', value: 'missing_clock_out' },
+  { label: 'Missing clock in', value: 'missing_clock_in' },
+  { label: 'Missing both', value: 'missing_both' },
 ]
 
 const monthOptions = Array.from({ length: 12 }, (_, i) => ({
@@ -229,6 +231,9 @@ const headerCellStyle = { background: '#f9fafb', fontSize: '11px', fontWeight: '
           </el-table-column>
           <el-table-column label="Absent" width="80" align="center">
             <template #default="{ row }"><span class="text-xs text-red-600 font-medium">{{ row.absent_count ?? '—' }}</span></template>
+          </el-table-column>
+          <el-table-column label="Missing clock in" width="100" align="center">
+            <template #default="{ row }"><span class="text-xs text-slate-500">{{ row.missing_clock_in_count ?? '—' }}</span></template>
           </el-table-column>
           <el-table-column label="Missing C/O" width="100" align="center">
             <template #default="{ row }"><span class="text-xs text-slate-500">{{ row.missing_clock_out_count ?? '—' }}</span></template>

@@ -90,6 +90,7 @@ export interface AttendanceMonthlySummaryItem {
   late_count: number
   absent_count: number
   missing_clock_out_count: number
+  missing_clock_in_count: number
   total_records: number
   employee?: ReportEmployee
 }
