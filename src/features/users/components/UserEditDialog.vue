@@ -23,12 +23,12 @@ const emit = defineEmits<{
 const notify = useNotify()
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
-const selectedRole = ref('')
 
-const form = reactive<Omit<UpdateUserPayload, 'roles'>>({
+const form = reactive<Omit<UpdateUserPayload, 'roles'> & { role: string }>({
   name: '',
   email: '',
   status: USER_STATUS.ACTIVE,
+  role: '',
 })
 
 const rules: FormRules = {
@@ -38,6 +38,7 @@ const rules: FormRules = {
     { type: 'email', message: 'Enter a valid email address', trigger: 'blur' },
   ],
   status: [{ required: true, message: 'Status is required', trigger: 'change' }],
+  role: [{ required: true, message: 'Please select a role.', trigger: 'change' }],
 }
 
 watch(() => props.user, (u) => {
@@ -45,7 +46,7 @@ watch(() => props.user, (u) => {
     form.name = u.name
     form.email = u.email
     form.status = u.status
-    selectedRole.value = u.roles[0] ?? ''
+    form.role = u.roles[0] ?? ''
   }
 })
 
@@ -57,14 +58,11 @@ async function handleSubmit() {
   if (!props.user) return
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
-  if (!selectedRole.value) {
-    notify.error('Please select a role.')
-    return
-  }
 
   submitting.value = true
   try {
-    await updateUser(props.user.id, { ...form, roles: [selectedRole.value] })
+    const { role, ...userData } = form
+    await updateUser(props.user.id, { ...userData, roles: [role] })
     notify.success('User updated successfully.')
     emit('update:visible', false)
     emit('updated')
@@ -99,8 +97,8 @@ async function handleSubmit() {
         </el-select>
       </el-form-item>
 
-      <el-form-item label="Role">
-        <el-select v-model="selectedRole" placeholder="Select a role" class="w-full">
+      <el-form-item label="Role" prop="role">
+        <el-select v-model="form.role" placeholder="Select a role" class="w-full">
           <el-option
             v-for="role in roles"
             :key="role.id"

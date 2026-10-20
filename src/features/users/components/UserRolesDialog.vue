@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
+import type { FormInstance, FormRules } from 'element-plus'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { assignUserRoles } from '../services/user.api'
@@ -19,21 +20,25 @@ const emit = defineEmits<{
 
 const notify = useNotify()
 const submitting = ref(false)
-const selectedRole = ref('')
+const formRef = ref<FormInstance>()
+const form = reactive({ role: '' })
+const rules: FormRules = {
+  role: [{ required: true, message: 'Please select a role.', trigger: 'change' }],
+}
 
-watch(() => props.user, (u) => {
-  selectedRole.value = u?.roles[0] ?? ''
-})
-
-watch(() => props.visible, (v) => {
-  if (!v) selectedRole.value = ''
-})
+watch([() => props.user, () => props.visible], ([user, visible]) => {
+  form.role = visible ? user?.roles[0] ?? '' : ''
+  if (!visible) formRef.value?.clearValidate()
+}, { immediate: true })
 
 async function handleSubmit() {
   if (!props.user) return
+  const valid = await formRef.value?.validate().catch(() => false)
+  if (!valid) return
+
   submitting.value = true
   try {
-    await assignUserRoles(props.user.id, { roles: selectedRole.value ? [selectedRole.value] : [] })
+    await assignUserRoles(props.user.id, { roles: [form.role] })
     notify.success('Roles updated successfully.')
     emit('update:visible', false)
     emit('updated')
@@ -57,10 +62,10 @@ async function handleSubmit() {
       Select the role to assign. The existing role will be replaced.
     </p>
 
-    <el-form label-position="top">
-      <el-form-item label="Role">
+    <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
+      <el-form-item label="Role" prop="role">
         <el-select
-          v-model="selectedRole"
+          v-model="form.role"
           placeholder="Select a role"
           class="w-full"
         >

@@ -25,13 +25,13 @@ const emit = defineEmits<{
 const notify = useNotify()
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
-const selectedRole = ref('')
 
-const form = reactive<Omit<CreateUserPayload, 'roles'>>({
+const form = reactive<Omit<CreateUserPayload, 'roles'> & { role: string }>({
   name: '',
   email: '',
   password: '',
   status: USER_STATUS.ACTIVE,
+  role: '',
 })
 
 const apiErrors = reactive<Record<string, string>>({
@@ -50,6 +50,7 @@ const rules: FormRules = {
     strongPasswordRule,
   ],
   status: [{ required: true, message: 'Status is required', trigger: 'change' }],
+  role: [{ required: true, message: 'Please select a role.', trigger: 'change' }],
 }
 
 watch(() => props.visible, (v) => {
@@ -61,7 +62,7 @@ function resetForm() {
   form.email = ''
   form.password = ''
   form.status = USER_STATUS.ACTIVE
-  selectedRole.value = ''
+  form.role = ''
   apiErrors.password = ''
   formRef.value?.clearValidate()
 }
@@ -69,15 +70,12 @@ function resetForm() {
 async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
-  if (!selectedRole.value) {
-    notify.error('Please select a role.')
-    return
-  }
 
   submitting.value = true
   apiErrors.password = ''
   try {
-    await createUser({ ...form, roles: [selectedRole.value] })
+    const { role, ...userData } = form
+    await createUser({ ...userData, roles: [role] })
     notify.success('User created successfully.')
     emit('update:visible', false)
     emit('created')
@@ -131,8 +129,8 @@ async function handleSubmit() {
         </el-select>
       </el-form-item>
 
-      <el-form-item label="Role">
-        <el-select v-model="selectedRole" placeholder="Select a role" class="w-full">
+      <el-form-item label="Role" prop="role">
+        <el-select v-model="form.role" placeholder="Select a role" class="w-full">
           <el-option
             v-for="role in roles"
             :key="role.id"
@@ -141,7 +139,7 @@ async function handleSubmit() {
           />
         </el-select>
         <p class="mt-1 text-xs text-slate-400">
-          Create users as employee (or hr/admin). Manager, Head, GM, and CEO are assigned from the employee's position. HR and Admin are never overwritten.
+          Select one access role: Admin, HR, CEO, or Employee.
         </p>
       </el-form-item>
     </el-form>
