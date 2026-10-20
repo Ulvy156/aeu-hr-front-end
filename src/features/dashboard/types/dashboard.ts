@@ -34,6 +34,7 @@ export interface LatestPayslip {
   id: number
   gross_salary: string
   tax_amount: string
+  nssf_deduction: string
   net_salary: string
   employee: DashboardEmployee
   payroll_batch: {

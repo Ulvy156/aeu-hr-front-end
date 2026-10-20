@@ -142,7 +142,7 @@ const menuGroups = computed<MenuGroup[]>(() => [
     items: [
       { label: "My Payroll", path: "/my-payroll", icon: Banknote, permission: "payrolls.view_own" },
       { label: "Payroll", path: "/payrolls", icon: Banknote, permission: "payrolls.view_any" },
-      { label: "Payslips", path: "/payslips", icon: FileText, permission: "payslips.view_own" },
+      { label: "Payslips", path: "/payslips", icon: FileText, permission: "payslips.view_any" },
     ],
   },
   {
@@ -231,7 +231,7 @@ const visibleMenuGroups = computed<MenuGroup[]>(() =>
         <div class="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0">
           <Users class="w-4 h-4 text-white" />
         </div>
-        <span class="text-sm font-semibold text-slate-900 truncate">PDM CARE</span>
+        <span class="text-sm font-semibold text-slate-900 truncate">PPDM CARE</span>
       </div>
       <!-- <div v-else class="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center">
         <Users class="w-4 h-4 text-white" />

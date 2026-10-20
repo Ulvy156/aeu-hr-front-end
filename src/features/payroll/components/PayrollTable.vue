@@ -101,7 +101,7 @@ async function exportPayroll(payroll: PayrollBatch) {
           <template #default="{ row }">
             <p class="text-sm text-slate-800">{{ displayedDeductionTotal(row.totals) }}</p>
             <p class="text-xs text-slate-400">
-              Tax {{ formatPayrollMoney(row.totals?.tax_amount) }}
+              NSSF {{ formatPayrollMoney(row.totals?.nssf_deduction) }}
             </p>
           </template>
         </el-table-column>
@@ -129,14 +129,21 @@ async function exportPayroll(payroll: PayrollBatch) {
                 </button>
               </el-tooltip>
 
-              <el-tooltip v-if="can('payrolls.export') || hasRole('hr') || hasRole('ceo')" content="Export Excel" placement="top">
+              <el-tooltip
+                v-if="can('payrolls.export') || hasRole('hr') || hasRole('ceo')"
+                content="Export Excel"
+                placement="top"
+              >
                 <button
                   :disabled="exportingPayrollId === row.id"
                   aria-label="Export Excel"
                   class="rounded-md p-1.5 text-emerald-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-wait disabled:opacity-50"
                   @click="exportPayroll(row)"
                 >
-                  <span v-if="exportingPayrollId === row.id" class="block h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+                  <span
+                    v-if="exportingPayrollId === row.id"
+                    class="block h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent"
+                  />
                   <FileSpreadsheet v-else class="h-4 w-4" />
                 </button>
               </el-tooltip>
@@ -155,7 +162,9 @@ async function exportPayroll(payroll: PayrollBatch) {
               </el-tooltip>
 
               <el-tooltip
-                v-if="hasRole('ceo') && can('payrolls.approve') && row.status === 'pending_approval'"
+                v-if="
+                  hasRole('ceo') && can('payrolls.approve') && row.status === 'pending_approval'
+                "
                 content="Approve"
                 placement="top"
               >

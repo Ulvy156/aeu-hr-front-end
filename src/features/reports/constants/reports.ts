@@ -32,7 +32,7 @@ export const REPORTS: ReportDefinition[] = [
     id: 'payroll_employee_list',
     group: 'payroll',
     title: 'Employee payroll list',
-    description: 'Gross, tax, and net salary by employee and payroll batch.',
+    description: 'Gross salary, NSSF, and net salary by employee and payroll batch.',
     apiType: 'employee_list',
     filters: ['month', 'year', 'status', 'employee_id'],
     viewPermission: 'reports.payroll_view',

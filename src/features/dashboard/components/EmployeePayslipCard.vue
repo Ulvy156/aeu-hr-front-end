@@ -50,8 +50,10 @@ const emit = defineEmits<{
           <p class="font-medium text-slate-800">{{ formatDashboardMoney(payslip.gross_salary) }}</p>
         </div>
         <div>
-          <p class="mb-0.5 text-xs text-slate-400">Tax</p>
-          <p class="font-medium text-amber-600">{{ formatDashboardMoney(payslip.tax_amount) }}</p>
+          <p class="mb-0.5 text-xs text-slate-400">NSSF</p>
+          <p class="font-medium text-amber-600">
+            {{ formatDashboardMoney(payslip.nssf_deduction) }}
+          </p>
         </div>
         <div>
           <p class="mb-0.5 text-xs text-slate-400">Net</p>

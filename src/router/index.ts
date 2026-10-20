@@ -148,7 +148,7 @@ const router = createRouter({
           path: 'payslips',
           name: 'payslips',
           component: () => import('@/features/payslips/views/PayslipsView.vue'),
-          meta: { permission: 'payslips.view_own' },
+          meta: { permission: 'payslips.view_any' },
         },
 
         // Communication

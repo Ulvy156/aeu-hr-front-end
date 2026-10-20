@@ -35,9 +35,9 @@ export function formatPayslipDays(value: string | number | undefined): string {
   return n.toFixed(1)
 }
 
-export function formatPayslipTaxRate(value: string | undefined): string {
+export function formatPayslipKhr(value: string | number | undefined): string {
   if (value === undefined || value === null || value === '') return '—'
-  return `${(Number(value) * 100).toFixed(2)}%`
+  return `${Math.round(Number(value) * 4000).toLocaleString('en-US')} ៛`
 }
 
 export function hasPayslipAmount(value: string | undefined): boolean {
@@ -49,7 +49,7 @@ export function displayedPayslipDeductions(payslip: Payslip): string {
     Number(payslip.unpaid_deduction ?? 0) +
     Number(payslip.absence_deduction ?? 0) +
     Number(payslip.maternity_deduction ?? 0) +
-    Number(payslip.tax_amount ?? 0) +
+    Number(payslip.special_sick_deduction ?? 0) +
     Number(payslip.nssf_deduction ?? 0)
   return formatPayslipMoney(sum)
 }

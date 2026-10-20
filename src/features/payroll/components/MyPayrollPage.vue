@@ -1,14 +1,22 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { Banknote } from '@lucide/vue'
-import { AppCard, BasePagination, EmptyState, StatusBadge } from '@/components/common'
+import { Banknote, Download } from '@lucide/vue'
+import { AppCard, BaseButton, BasePagination, EmptyState, StatusBadge } from '@/components/common'
+import { usePermission } from '@/composables/usePermissions'
+import { downloadPayslip } from '@/features/payslips/services/payslip.api'
 import { useNotify } from '@/composables/useNotify'
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import { fetchMyPayrolls } from '../services/payroll.api'
 import type { PaginationMeta, PayrollBatch } from '../types/payroll'
-import { displayedDeductionTotal, formatPayrollMoney, formatPayrollPeriod } from '../utils/payrollDisplay'
+import {
+  displayedDeductionTotal,
+  formatPayrollMoney,
+  formatPayrollPeriod,
+} from '../utils/payrollDisplay'
 
 const notify = useNotify()
+const { canAny } = usePermission()
+const downloadLoading = ref<Record<number, boolean>>({})
 const payrolls = ref<PayrollBatch[]>([])
 const loading = ref(false)
 const page = ref(1)
@@ -33,9 +41,30 @@ async function loadPayrolls() {
   }
 }
 
+async function handleDownload(payroll: PayrollBatch) {
+  // The own-payroll endpoint returns only the signed-in employee's item.
+  const itemId = payroll.items?.[0]?.id
+  if (!itemId || payroll.status !== 'approved' || downloadLoading.value[payroll.id]) return
+
+  downloadLoading.value[payroll.id] = true
+  try {
+    await downloadPayslip(itemId)
+  } catch (error) {
+    notify.error(getApiErrorMessage(error))
+  } finally {
+    downloadLoading.value[payroll.id] = false
+  }
+}
+
 function applyFilters() {
   page.value = 1
   void loadPayrolls()
+}
+
+function resetFilters() {
+  month.value = ''
+  year.value = ''
+  applyFilters()
 }
 
 function onPageChange(nextPage: number) {
@@ -60,7 +89,9 @@ onMounted(() => void loadPayrolls())
       </div>
       <div>
         <h1 class="text-2xl font-semibold text-slate-900">My Payroll</h1>
-        <p class="mt-0.5 text-sm text-slate-500">View your approved payroll history and take home pay.</p>
+        <p class="mt-0.5 text-sm text-slate-500">
+          View your approved payroll history and download your payslips.
+        </p>
       </div>
     </div>
 
@@ -68,16 +99,52 @@ onMounted(() => void loadPayrolls())
       <div class="flex flex-wrap items-end gap-3 border-b border-gray-100 px-5 py-4">
         <label class="text-xs font-medium text-slate-600">
           Month
-          <select v-model="month" class="mt-1 block rounded-lg border border-gray-200 px-3 py-2 text-sm" @change="applyFilters">
+          <select
+            v-model="month"
+            class="mt-1 block rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            @change="applyFilters"
+          >
             <option value="">All months</option>
-            <option v-for="(label, index) in ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']" :key="label" :value="String(index + 1)">{{ label }}</option>
+            <option
+              v-for="(label, index) in [
+                'January',
+                'February',
+                'March',
+                'April',
+                'May',
+                'June',
+                'July',
+                'August',
+                'September',
+                'October',
+                'November',
+                'December',
+              ]"
+              :key="label"
+              :value="String(index + 1)"
+            >
+              {{ label }}
+            </option>
           </select>
         </label>
         <label class="text-xs font-medium text-slate-600">
           Year
-          <input v-model="year" type="number" min="2000" max="2100" placeholder="All years" class="mt-1 block w-32 rounded-lg border border-gray-200 px-3 py-2 text-sm" @change="applyFilters" />
+          <input
+            v-model="year"
+            type="number"
+            min="2000"
+            max="2100"
+            placeholder="All years"
+            class="mt-1 block w-32 rounded-lg border border-gray-200 px-3 py-2 text-sm"
+            @change="applyFilters"
+          />
         </label>
-        <button class="rounded-lg border border-gray-200 px-3 py-2 text-sm text-slate-600 hover:bg-gray-50" @click="month = ''; year = ''; applyFilters()">Reset</button>
+        <button
+          class="rounded-lg border border-gray-200 px-3 py-2 text-sm text-slate-600 hover:bg-gray-50"
+          @click="resetFilters"
+        >
+          Reset
+        </button>
       </div>
 
       <div class="px-5 py-4">
@@ -90,34 +157,75 @@ onMounted(() => void loadPayrolls())
         </div>
 
         <div class="relative">
-          <div v-if="loading" class="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70">
-            <div class="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+          <div
+            v-if="loading"
+            class="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70"
+          >
+            <div
+              class="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent"
+            />
           </div>
           <el-table :data="payrolls" class="w-full">
             <el-table-column label="Period" min-width="160">
               <template #default="{ row }">{{ formatPayrollPeriod(row.month, row.year) }}</template>
             </el-table-column>
             <el-table-column label="Status" width="130">
-              <template #default="{ row }"><StatusBadge :status="row.status" custom-label="Approved" /></template>
+              <template #default="{ row }"
+                ><StatusBadge :status="row.status" custom-label="Approved"
+              /></template>
             </el-table-column>
             <el-table-column label="Paid Days" width="120" align="right">
               <template #default="{ row }">{{ row.items?.[0]?.working_days ?? '—' }}</template>
             </el-table-column>
             <el-table-column label="Gross Pay" width="150" align="right">
-              <template #default="{ row }">{{ formatPayrollMoney(row.totals?.gross_salary) }}</template>
+              <template #default="{ row }">{{
+                formatPayrollMoney(row.totals?.gross_salary)
+              }}</template>
             </el-table-column>
             <el-table-column label="Deductions" width="150" align="right">
               <template #default="{ row }">{{ displayedDeductionTotal(row.totals) }}</template>
             </el-table-column>
             <el-table-column label="Net Pay" width="150" align="right">
-              <template #default="{ row }"><span class="font-semibold text-emerald-700">{{ formatPayrollMoney(row.totals?.net_salary) }}</span></template>
+              <template #default="{ row }"
+                ><span class="font-semibold text-emerald-700">{{
+                  formatPayrollMoney(row.totals?.net_salary)
+                }}</span></template
+              >
+            </el-table-column>
+            <el-table-column
+              v-if="canAny(['payslips.download_own', 'payslips.download_any'])"
+              label="Payslip"
+              width="170"
+              fixed="right"
+              align="right"
+            >
+              <template #default="{ row }">
+                <BaseButton
+                  size="small"
+                  :loading="downloadLoading[row.id]"
+                  :disabled="!row.items?.[0]?.id || row.status !== 'approved'"
+                  @click="handleDownload(row)"
+                >
+                  <Download class="mr-1.5 h-4 w-4" />
+                  Download PDF
+                </BaseButton>
+              </template>
             </el-table-column>
             <template #empty>
-              <EmptyState title="No payroll records found." description="Approved payrolls will appear here." />
+              <EmptyState
+                title="No payroll records found."
+                description="Approved payrolls will appear here."
+              />
             </template>
           </el-table>
         </div>
-        <BasePagination :current-page="meta.current_page" :page-size="meta.per_page" :total="meta.total" @update:current-page="onPageChange" @update:page-size="onPageSizeChange" />
+        <BasePagination
+          :current-page="meta.current_page"
+          :page-size="meta.per_page"
+          :total="meta.total"
+          @update:current-page="onPageChange"
+          @update:page-size="onPageSizeChange"
+        />
       </div>
     </AppCard>
   </div>

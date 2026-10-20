@@ -55,7 +55,7 @@ onMounted(async () => {
             <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" />
           </svg>
         </div>
-        <span class="text-base font-semibold text-slate-900">PDM CARE</span>
+        <span class="text-base font-semibold text-slate-900">PPDM CARE</span>
       </div>
 
       <!-- Card -->
@@ -172,7 +172,7 @@ onMounted(async () => {
 
       </div>
 
-      <p class="mt-5 text-center text-xs text-slate-400">PDM CARE — Internal use only.</p>
+      <p class="mt-5 text-center text-xs text-slate-400">PPDM CARE — Internal use only.</p>
     </div>
   </div>
 </template>

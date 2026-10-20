@@ -9,7 +9,7 @@ import {
   formatPayslipDays,
   formatPayslipMoney,
   formatPayslipPeriod,
-  formatPayslipTaxRate,
+  formatPayslipKhr,
 } from '../utils/payslipDisplay'
 
 const props = defineProps<{
@@ -82,13 +82,13 @@ const bar = computed(() => attendanceBarPercents(props.payslip))
           <p class="text-2xl font-semibold text-slate-900">
             {{ formatPayslipMoney(payslip.net_salary) }}
           </p>
-          <p class="text-sm text-slate-500">Net salary</p>
+          <p class="text-sm text-slate-500">Net salary (USD)</p>
+          <p class="text-sm text-emerald-700">{{ formatPayslipKhr(payslip.net_salary) }}</p>
+          <p class="text-xs text-slate-400">1 USD = 4,000 KHR</p>
         </div>
         <p class="rounded-lg border border-gray-100 bg-slate-50 px-3 py-2 text-xs text-slate-500">
-          Gross {{ formatPayslipMoney(payslip.gross_salary) }} · tax
-          {{ formatPayslipMoney(payslip.tax_amount) }} ({{
-            formatPayslipTaxRate(payslip.tax_rate)
-          }}) · NSSF {{ formatPayslipMoney(payslip.nssf_deduction) }}
+          Gross {{ formatPayslipMoney(payslip.gross_salary) }} · NSSF
+          {{ formatPayslipMoney(payslip.nssf_deduction) }}
         </p>
       </div>
     </div>

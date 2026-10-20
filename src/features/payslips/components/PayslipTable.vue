@@ -23,8 +23,18 @@ const emit = defineEmits<{
 const { can } = usePermission()
 
 const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ]
 
 function formatMonth(month: number): string {
@@ -33,7 +43,10 @@ function formatMonth(month: number): string {
 
 function formatMoney(value: string | undefined): string {
   if (!value) return '—'
-  return Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return Number(value).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 }
 
 function canDownload(payslip: Payslip): boolean {
@@ -56,7 +69,9 @@ const headerCellStyle = {
         v-if="loading"
         class="absolute inset-0 bg-white/70 flex items-center justify-center z-10 rounded-b-xl"
       >
-        <div class="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <div
+          class="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"
+        />
       </div>
 
       <el-table :data="payslips" class="w-full" :header-cell-style="headerCellStyle">
@@ -89,15 +104,17 @@ const headerCellStyle = {
           </template>
         </el-table-column>
 
-        <el-table-column label="Tax Amount" width="120" align="right">
+        <el-table-column label="NSSF" width="120" align="right">
           <template #default="{ row }">
-            <span class="text-sm text-amber-600">{{ formatMoney(row.tax_amount) }}</span>
+            <span class="text-sm text-amber-600">{{ formatMoney(row.nssf_deduction) }}</span>
           </template>
         </el-table-column>
 
         <el-table-column label="Net Salary" width="130" align="right">
           <template #default="{ row }">
-            <span class="text-sm font-semibold text-emerald-700">{{ formatMoney(row.net_salary) }}</span>
+            <span class="text-sm font-semibold text-emerald-700">{{
+              formatMoney(row.net_salary)
+            }}</span>
           </template>
         </el-table-column>
 

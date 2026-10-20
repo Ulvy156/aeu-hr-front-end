@@ -23,7 +23,6 @@ const deductionCards = [
     label: 'Special sick leave',
     description: 'Pay deducted under the special sick leave policy.',
   },
-  { key: 'tax_amount', label: 'Salary tax', description: 'Tax withheld from employee pay.' },
   {
     key: 'nssf_deduction',
     label: 'NSSF contribution',
@@ -52,7 +51,7 @@ const overviewCards = computed(() => [
   {
     label: 'Total deductions',
     value: totalDeductions.value,
-    description: 'Leave, absence, tax and NSSF deductions combined.',
+    description: 'Leave, absence and NSSF deductions combined.',
     icon: Minus,
     tone: 'border-amber-100 bg-amber-50 text-amber-600',
     net: false,

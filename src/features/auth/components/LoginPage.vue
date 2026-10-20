@@ -17,7 +17,7 @@ import LoginForm from './LoginForm.vue'
               <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
           </div>
-          <span class="text-lg font-semibold tracking-tight">PDM CARE</span>
+          <span class="text-lg font-semibold tracking-tight">PPDM CARE</span>
         </div>
 
         <h1 class="text-3xl font-bold leading-snug mb-3">
@@ -61,7 +61,7 @@ import LoginForm from './LoginForm.vue'
               <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" />
             </svg>
           </div>
-          <span class="text-lg font-semibold text-slate-900">PDM CARE</span>
+          <span class="text-lg font-semibold text-slate-900">PPDM CARE</span>
         </div>
 
         <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-7">
@@ -71,7 +71,7 @@ import LoginForm from './LoginForm.vue'
         </div>
 
         <p class="mt-5 text-center text-xs text-slate-400">
-          PDM CARE &mdash; Internal use only.
+          PPDM CARE &mdash; Internal use only.
         </p>
 
       </div>

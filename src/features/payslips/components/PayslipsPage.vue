@@ -51,7 +51,7 @@ async function handleDownloadFromDrawer(payslip: Payslip) {
         </div>
         <div>
           <h1 class="text-2xl font-semibold text-slate-900">Payslips</h1>
-          <p class="mt-0.5 text-sm text-slate-500">View and download approved employee payslips.</p>
+          <p class="mt-0.5 text-sm text-slate-500">View and download employee payslips.</p>
         </div>
       </div>
     </div>
@@ -61,7 +61,7 @@ async function handleDownloadFromDrawer(payslip: Payslip) {
 
     <!-- Info note for employees -->
     <div class="rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-700">
-      Only approved payslips are visible. Payslips are generated after payroll is approved by management.
+      This page shows employee payslips within your access scope. Download your own approved payslips from My Payroll.
     </div>
 
     <!-- Table card -->

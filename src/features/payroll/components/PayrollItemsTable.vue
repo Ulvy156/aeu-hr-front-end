@@ -18,7 +18,6 @@ interface EditableItem extends PayrollItem {
   _present_days: number
   _absent_days: number
   _unpaid_leave_days: number
-  _tax_amount: number
 }
 
 const editableItems = ref<EditableItem[]>([])
@@ -32,7 +31,6 @@ watch(
       _present_days: Number(item.present_days),
       _absent_days: Number(item.absent_days),
       _unpaid_leave_days: Number(item.unpaid_leave_days),
-      _tax_amount: Number(item.tax_amount),
     }))
   },
   { immediate: true },
@@ -40,12 +38,18 @@ watch(
 
 function formatMoney(value: string | number | undefined): string {
   if (value === undefined || value === null || value === '') return '—'
-  return Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return Number(value).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 }
 
 function formatNumber(value: string | number | undefined): string {
   if (value === undefined || value === null || value === '') return '—'
-  return Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return Number(value).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 }
 
 function handleSave() {
@@ -55,7 +59,6 @@ function handleSave() {
     present_days: item._present_days,
     absent_days: item._absent_days,
     unpaid_leave_days: item._unpaid_leave_days,
-    tax_amount: item._tax_amount,
   }))
   emit('save', payload)
 }
@@ -71,9 +74,13 @@ const headerCellStyle = {
 
 <template>
   <div>
-    <div v-if="editable" class="px-5 py-3 bg-amber-50 border-b border-amber-100 flex items-center justify-between">
+    <div
+      v-if="editable"
+      class="px-5 py-3 bg-amber-50 border-b border-amber-100 flex items-center justify-between"
+    >
       <p class="text-sm text-amber-700">
-        <strong>Edit mode:</strong> Adjust editable fields then save. Computed values (gross, taxable, net) are recalculated by the backend.
+        <strong>Edit mode:</strong> Adjust editable fields then save. Computed values (gross salary,
+        NSSF, net salary) are recalculated by the backend.
       </p>
       <button
         class="px-4 py-1.5 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
@@ -84,7 +91,12 @@ const headerCellStyle = {
       </button>
     </div>
 
-    <el-table :data="editableItems" class="w-full text-xs" :header-cell-style="headerCellStyle" scroll-bar-always-on>
+    <el-table
+      :data="editableItems"
+      class="w-full text-xs"
+      :header-cell-style="headerCellStyle"
+      scroll-bar-always-on
+    >
       <el-table-column label="Employee" min-width="160" fixed="left">
         <template #default="{ row }">
           <div>
@@ -164,7 +176,9 @@ const headerCellStyle = {
             class="!w-full"
             size="small"
           />
-          <span v-else class="text-xs text-slate-700">{{ formatNumber(row.unpaid_leave_days) }}</span>
+          <span v-else class="text-xs text-slate-700">{{
+            formatNumber(row.unpaid_leave_days)
+          }}</span>
         </template>
       </el-table-column>
 
@@ -176,13 +190,17 @@ const headerCellStyle = {
 
       <el-table-column label="Special Sick Leave" width="125" align="right">
         <template #default="{ row }">
-          <span class="text-xs text-slate-700">{{ formatNumber(row.special_sick_leave_days) }}</span>
+          <span class="text-xs text-slate-700">{{
+            formatNumber(row.special_sick_leave_days)
+          }}</span>
         </template>
       </el-table-column>
 
       <el-table-column label="Gross Salary" width="120" align="right">
         <template #default="{ row }">
-          <span class="text-xs font-medium text-slate-800">{{ formatMoney(row.gross_salary) }}</span>
+          <span class="text-xs font-medium text-slate-800">{{
+            formatMoney(row.gross_salary)
+          }}</span>
         </template>
       </el-table-column>
 
@@ -210,21 +228,6 @@ const headerCellStyle = {
         </template>
       </el-table-column>
 
-      <el-table-column label="Tax Amount" width="110" align="right">
-        <template #default="{ row }">
-          <el-input-number
-            v-if="editable"
-            v-model="row._tax_amount"
-            :min="0"
-            :precision="2"
-            :controls="false"
-            class="!w-full"
-            size="small"
-          />
-          <span v-else class="text-xs text-slate-700">{{ formatMoney(row.tax_amount) }}</span>
-        </template>
-      </el-table-column>
-
       <el-table-column label="NSSF Deduction" width="125" align="right">
         <template #default="{ row }">
           <span class="text-xs text-slate-700">{{ formatMoney(row.nssf_deduction) }}</span>
@@ -233,7 +236,9 @@ const headerCellStyle = {
 
       <el-table-column label="Net Salary" width="120" align="right" fixed="right">
         <template #default="{ row }">
-          <span class="text-xs font-semibold text-emerald-700">{{ formatMoney(row.net_salary) }}</span>
+          <span class="text-xs font-semibold text-emerald-700">{{
+            formatMoney(row.net_salary)
+          }}</span>
         </template>
       </el-table-column>
 
@@ -244,7 +249,10 @@ const headerCellStyle = {
       </el-table-column>
 
       <template #empty>
-        <EmptyState title="No payroll items found." description="No employees were included in this payroll batch." />
+        <EmptyState
+          title="No payroll items found."
+          description="No employees were included in this payroll batch."
+        />
       </template>
     </el-table>
   </div>

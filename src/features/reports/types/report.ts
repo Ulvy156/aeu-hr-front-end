@@ -39,6 +39,7 @@ export interface PayrollEmployeeListItem {
   base_salary: string
   gross_salary: string
   tax_amount: string
+  nssf_deduction: string
   net_salary: string
   status: string
 }
@@ -52,6 +53,7 @@ export interface PayrollMonthlySummaryItem {
   totals: {
     gross_salary: string
     tax_amount: string
+    nssf_deduction: string
     net_salary: string
   }
 }

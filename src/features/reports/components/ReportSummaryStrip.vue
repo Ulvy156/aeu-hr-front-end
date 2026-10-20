@@ -32,7 +32,7 @@ const stats = computed<SummaryStat[]>(() => {
       return [
         { label: 'Employees', value: count(summary.item_count) },
         { label: 'Gross (USD)', value: money(summary.gross_salary) },
-        { label: 'Tax (USD)', value: money(summary.tax_amount) },
+        { label: 'NSSF (USD)', value: money(summary.nssf_deduction) },
         { label: 'Net (USD)', value: money(summary.net_salary), tone: 'emerald' },
       ]
     }

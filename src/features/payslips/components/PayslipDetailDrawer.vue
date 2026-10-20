@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { Download } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
 import { StatusBadge, BaseButton } from '@/components/common'
+import { formatPayslipKhr } from '../utils/payslipDisplay'
 import type { Payslip } from '../types/payslip'
 
 const props = defineProps<{
@@ -22,8 +23,18 @@ const { can } = usePermission()
 const canDownload = computed(() => can('payslips.download_any') || can('payslips.download_own'))
 
 const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ]
 
 function formatMonth(month: number): string {
@@ -32,17 +43,18 @@ function formatMonth(month: number): string {
 
 function formatMoney(value: string | undefined): string {
   if (!value) return '—'
-  return Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return Number(value).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 }
 
 function formatNumber(value: string | undefined): string {
   if (!value) return '—'
-  return Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
-function formatPercent(value: string | undefined): string {
-  if (!value) return '—'
-  return `${Number(value).toFixed(2)}%`
+  return Number(value).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 }
 </script>
 
@@ -57,13 +69,17 @@ function formatPercent(value: string | undefined): string {
   >
     <!-- Loading -->
     <div v-if="detailLoading" class="flex items-center justify-center py-20">
-      <div class="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+      <div
+        class="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"
+      />
     </div>
 
     <div v-else-if="payslip" class="space-y-5">
       <!-- Employee info -->
       <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
-        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-semibold text-sm shrink-0">
+        <div
+          class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-semibold text-sm shrink-0"
+        >
           {{ payslip.employee.full_name.charAt(0) }}
         </div>
         <div>
@@ -96,7 +112,9 @@ function formatPercent(value: string | undefined): string {
           </div>
           <div>
             <p class="text-xs text-slate-400 mb-0.5">Unpaid Leave</p>
-            <p class="font-semibold text-amber-600">{{ formatNumber(payslip.unpaid_leave_days) }}</p>
+            <p class="font-semibold text-amber-600">
+              {{ formatNumber(payslip.unpaid_leave_days) }}
+            </p>
           </div>
           <div>
             <p class="text-xs text-slate-400 mb-0.5">Daily Rate</p>
@@ -107,7 +125,9 @@ function formatPercent(value: string | undefined): string {
 
       <!-- Earnings & Deductions -->
       <div class="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
-        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Earnings & Deductions</h4>
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          Earnings & Deductions
+        </h4>
         <div class="space-y-2 text-sm">
           <div class="flex justify-between">
             <span class="text-slate-500">Base Salary</span>
@@ -119,31 +139,53 @@ function formatPercent(value: string | undefined): string {
           </div>
           <div class="border-t border-gray-100 pt-2 flex justify-between">
             <span class="text-slate-500">Unpaid Deduction</span>
-            <span class="font-medium text-red-600">− {{ formatMoney(payslip.unpaid_deduction) }}</span>
+            <span class="font-medium text-red-600"
+              >− {{ formatMoney(payslip.unpaid_deduction) }}</span
+            >
           </div>
           <div class="flex justify-between">
             <span class="text-slate-500">Absence Deduction</span>
-            <span class="font-medium text-red-600">− {{ formatMoney(payslip.absence_deduction) }}</span>
+            <span class="font-medium text-red-600"
+              >− {{ formatMoney(payslip.absence_deduction) }}</span
+            >
+          </div>
+          <div v-if="Number(payslip.maternity_deduction) > 0" class="flex justify-between">
+            <span class="text-slate-500">Maternity Leave Deduction</span>
+            <span class="font-medium text-red-600"
+              >− {{ formatMoney(payslip.maternity_deduction) }}</span
+            >
+          </div>
+          <div v-if="Number(payslip.special_sick_deduction) > 0" class="flex justify-between">
+            <span class="text-slate-500">Special Sick Leave Deduction</span>
+            <span class="font-medium text-red-600"
+              >− {{ formatMoney(payslip.special_sick_deduction) }}</span
+            >
           </div>
           <div class="border-t border-gray-100 pt-2 flex justify-between">
-            <span class="text-slate-500">Taxable Salary</span>
-            <span class="font-medium text-slate-800">{{ formatMoney(payslip.taxable_salary) }}</span>
+            <span class="text-slate-500">Salary after attendance and leave deductions</span>
+            <span class="font-medium text-slate-800">{{
+              formatMoney(payslip.taxable_salary)
+            }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-500">Tax Rate</span>
-            <span class="font-medium text-amber-600">{{ formatPercent(payslip.tax_rate) }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-slate-500">Tax Amount</span>
-            <span class="font-medium text-amber-600">− {{ formatMoney(payslip.tax_amount) }}</span>
+            <span class="text-slate-500">NSSF</span>
+            <span class="font-medium text-amber-600"
+              >− {{ formatMoney(payslip.nssf_deduction) }}</span
+            >
           </div>
         </div>
       </div>
 
       <!-- Net salary highlight -->
-      <div class="rounded-xl border border-emerald-100 bg-emerald-50 p-4 flex items-center justify-between">
-        <p class="text-sm font-semibold text-emerald-800">Net Salary</p>
-        <p class="text-2xl font-bold text-emerald-700">{{ formatMoney(payslip.net_salary) }}</p>
+      <div
+        class="rounded-xl border border-emerald-100 bg-emerald-50 p-4 flex items-center justify-between"
+      >
+        <p class="text-sm font-semibold text-emerald-800">Net Salary (USD)</p>
+        <div class="text-right">
+          <p class="text-2xl font-bold text-emerald-700">{{ formatMoney(payslip.net_salary) }}</p>
+          <p class="text-sm text-emerald-700">{{ formatPayslipKhr(payslip.net_salary) }}</p>
+          <p class="mt-1 text-xs text-emerald-600">1 USD = 4,000 KHR</p>
+        </div>
       </div>
 
       <!-- Batch status -->
@@ -154,11 +196,7 @@ function formatPercent(value: string | undefined): string {
 
       <!-- Download button -->
       <div v-if="canDownload" class="pt-2">
-        <BaseButton
-          class="w-full"
-          :loading="downloadLoading"
-          @click="emit('download', payslip)"
-        >
+        <BaseButton class="w-full" :loading="downloadLoading" @click="emit('download', payslip)">
           <Download class="w-4 h-4 mr-2" />
           Download PDF
         </BaseButton>

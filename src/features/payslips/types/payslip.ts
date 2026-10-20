@@ -32,6 +32,8 @@ export interface Payslip {
   gross_salary: string
   unpaid_deduction: string
   absence_deduction: string
+  special_sick_leave_days?: string
+  special_sick_deduction?: string
   maternity_deduction?: string
   taxable_salary: string
   tax_rate: string

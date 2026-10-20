@@ -71,7 +71,6 @@ export interface UpdatePayrollItemPayload {
   present_days?: number
   absent_days?: number
   unpaid_leave_days?: number
-  tax_amount?: number
 }
 
 export interface UpdatePayrollPayload {
