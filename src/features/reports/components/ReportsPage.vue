@@ -35,7 +35,7 @@ watch(
       return
     }
     if (!reports.some((report) => report.id === selectedId.value)) {
-      selectedId.value = reports[0].id
+      selectedId.value = reports[0]?.id ?? ''
     }
   },
   { immediate: true },
