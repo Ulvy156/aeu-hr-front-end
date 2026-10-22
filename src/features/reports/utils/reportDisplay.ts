@@ -50,6 +50,19 @@ export function formatLeaveType(value: string | undefined): string {
   return value.charAt(0).toUpperCase() + value.slice(1).replace(/_/g, ' ')
 }
 
+export function formatLeaveDuration(
+  durationType: string | undefined,
+  halfDayPeriod?: string | null,
+): string {
+  if (durationType === 'full_day') return 'Full day'
+  if (durationType === 'half_day') {
+    if (halfDayPeriod === 'morning') return 'Half day · Morning'
+    if (halfDayPeriod === 'afternoon') return 'Half day · Afternoon'
+    return 'Half day'
+  }
+  return durationType ? formatLeaveType(durationType) : '—'
+}
+
 export function reportEmployeeName(row: {
   employee?: ReportEmployee | null
   full_name?: string

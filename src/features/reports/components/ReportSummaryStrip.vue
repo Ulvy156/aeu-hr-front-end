@@ -122,14 +122,12 @@ function valueClass(tone?: SummaryStat['tone']): string {
 
 <template>
   <div v-if="stats.length" class="space-y-2">
-    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-      <div
-        v-for="stat in stats"
-        :key="stat.label"
-        class="rounded-xl border border-gray-200 bg-white p-4"
-      >
-        <p class="mb-1 text-xs text-slate-400">{{ stat.label }}</p>
-        <p class="text-lg font-semibold" :class="valueClass(stat.tone)">{{ stat.value }}</p>
+    <div class="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+      <div v-for="stat in stats" :key="stat.label">
+        <p class="mb-0.5 text-xs text-slate-400">{{ stat.label }}</p>
+        <p class="text-lg font-semibold tabular-nums" :class="valueClass(stat.tone)">
+          {{ stat.value }}
+        </p>
       </div>
     </div>
     <p v-if="periodCaption" class="text-xs text-slate-400">Period {{ periodCaption }}</p>

@@ -4,6 +4,7 @@ import { REPORT_TABLE_HEADER_STYLE } from '../constants/reports'
 import type { AttendanceMonthlySummaryItem, AttendanceReportItem } from '../types/report'
 import {
   formatReportDate,
+  formatReportMonth,
   formatReportTime,
   reportEmployeeCode,
   reportEmployeeName,
@@ -31,6 +32,13 @@ defineProps<{
         />
       </template>
     </el-table-column>
+    <el-table-column label="Period" width="110">
+      <template #default="{ row }">
+        <span class="text-xs text-slate-700"
+          >{{ formatReportMonth(row.month) }} {{ row.year }}</span
+        >
+      </template>
+    </el-table-column>
     <el-table-column label="Present" width="90" align="center">
       <template #default="{ row }">
         <span class="text-xs font-medium text-emerald-600">{{ row.present_count ?? '—' }}</span>
@@ -56,9 +64,9 @@ defineProps<{
         <span class="text-xs text-slate-500">{{ row.missing_clock_out_count ?? '—' }}</span>
       </template>
     </el-table-column>
-    <el-table-column label="Records" width="100" align="center">
+    <el-table-column label="Working Days" width="110" align="center">
       <template #default="{ row }">
-        <span class="text-xs text-slate-700">{{ row.total_records ?? '—' }}</span>
+        <span class="text-xs text-slate-700">{{ row.total_working_days ?? '—' }}</span>
       </template>
     </el-table-column>
     <template #empty>

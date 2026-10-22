@@ -101,6 +101,8 @@ export interface LeaveReportItem {
   leave_type: string
   start_date: string
   end_date: string
+  duration_type: string
+  half_day_period: 'morning' | 'afternoon' | null
   total_days: string
   status: string
   hr_approval_status: string
