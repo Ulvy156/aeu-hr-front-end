@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { BarChart2 } from '@lucide/vue'
+import { AppCard } from '@/components/common'
 import { usePermission } from '@/composables/usePermissions'
-import { REPORT_GROUPS, REPORTS, type ReportDefinition } from '../constants/reports'
+import { REPORTS, type ReportDefinition } from '../constants/reports'
 import ReportCatalog from './ReportCatalog.vue'
 import ReportWorkspace from './ReportWorkspace.vue'
 
@@ -13,13 +14,6 @@ const availableReports = computed(() =>
 )
 
 const hasAnyAccess = computed(() => availableReports.value.length > 0)
-
-const mobileGroups = computed(() =>
-  REPORT_GROUPS.map((group) => ({
-    ...group,
-    reports: availableReports.value.filter((report) => report.group === group.id),
-  })).filter((group) => group.reports.length > 0),
-)
 
 const selectedId = ref('')
 
@@ -67,43 +61,20 @@ function selectReport(id: string) {
       You do not have permission to view any reports.
     </div>
 
-    <div v-else class="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-      <aside class="hidden lg:block">
-        <div class="sticky top-6 rounded-xl border border-gray-200 bg-white p-3">
-          <ReportCatalog
-            :reports="availableReports"
-            :selected-id="selectedId"
-            @select="selectReport"
-          />
-        </div>
-      </aside>
+    <AppCard v-else no-padding>
+      <template #header>
+        <ReportCatalog
+          :reports="availableReports"
+          :selected-id="selectedId"
+          @select="selectReport"
+        />
+      </template>
 
-      <div class="space-y-4">
-        <div class="lg:hidden">
-          <label class="mb-1.5 block text-xs font-medium text-slate-500">Report</label>
-          <el-select :model-value="selectedId" class="w-full" @update:model-value="selectReport">
-            <el-option-group
-              v-for="group in mobileGroups"
-              :key="group.id"
-              :label="group.label"
-            >
-              <el-option
-                v-for="report in group.reports"
-                :key="report.id"
-                :label="report.title"
-                :value="report.id"
-              />
-            </el-option-group>
-          </el-select>
-        </div>
-
-        <div
-          v-if="selectedReport"
-          class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6"
-        >
-          <ReportWorkspace :key="selectedReport.id" :report="selectedReport" />
-        </div>
-      </div>
-    </div>
+      <ReportWorkspace
+        v-if="selectedReport"
+        :key="selectedReport.id"
+        :report="selectedReport"
+      />
+    </AppCard>
   </div>
 </template>

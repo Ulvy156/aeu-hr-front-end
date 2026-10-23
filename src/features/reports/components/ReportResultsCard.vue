@@ -19,7 +19,7 @@ const emit = defineEmits<{
     {{ error }}
   </div>
 
-  <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+  <div class="overflow-hidden rounded-lg border border-gray-200">
     <div class="relative">
       <div
         v-if="loading"

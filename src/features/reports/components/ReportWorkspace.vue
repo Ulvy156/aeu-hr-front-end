@@ -217,10 +217,7 @@ watch(
       <LeaveReportTables v-else :report-type="report.apiType" :items="items" />
     </ReportResultsCard>
 
-    <div
-      v-else
-      class="rounded-xl border border-dashed border-gray-200 bg-slate-50/60 px-6 py-14"
-    >
+    <div v-else class="border border-dashed border-gray-200 px-6 py-12">
       <EmptyState
         title="Choose filters and search"
         description="Pick the filters for this report, then run Search to load results."
