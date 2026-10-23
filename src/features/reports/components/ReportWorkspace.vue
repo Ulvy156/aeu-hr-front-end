@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { EmptyState } from '@/components/common'
+import { useNotify } from '@/composables/useNotify'
 import { usePermission } from '@/composables/usePermissions'
 import { useReport } from '@/composables/useReports'
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage'
 import {
+  currentMonthValue,
   currentYearValue,
   type ReportDefinition,
   type ReportFilterKey,
@@ -11,13 +14,17 @@ import {
 import {
   exportAttendanceReport,
   exportLeaveReport,
+  exportMonthlyLeaveReport,
+  exportMonthlyLeaveReportPdf,
   exportPayrollReport,
   getAttendanceReport,
   getLeaveReport,
+  getMonthlyLeaveReport,
   getPayrollReport,
 } from '../services/report.api'
 import AttendanceReportTables from './AttendanceReportTables.vue'
 import LeaveReportTables from './LeaveReportTables.vue'
+import MonthlyLeaveReportTable from './MonthlyLeaveReportTable.vue'
 import PayrollReportTables from './PayrollReportTables.vue'
 import ReportFilterBar from './ReportFilterBar.vue'
 import ReportResultsCard from './ReportResultsCard.vue'
@@ -29,9 +36,12 @@ const props = defineProps<{
 }>()
 
 const { can } = usePermission()
+const notify = useNotify()
+
+const isMonthlyLeave = computed(() => props.report.id === 'leave_monthly')
 
 const emptyFilters = (): Record<ReportFilterKey, string> => ({
-  month: '',
+  month: isMonthlyLeave.value ? currentMonthValue() : '',
   year: currentYearValue(),
   status: '',
   employee_id: '',
@@ -45,29 +55,41 @@ const filters = reactive(emptyFilters())
 const hasSearched = ref(false)
 const page = ref(1)
 const perPage = ref(15)
+const pdfExportLoading = ref(false)
 
 const { items, summary, meta, loading, exportLoading, error, loadReport, handleExport } =
   useReport(
     (params) => {
       if (props.report.group === 'payroll') return getPayrollReport(params as never)
       if (props.report.group === 'attendance') return getAttendanceReport(params as never)
+      if (isMonthlyLeave.value) return getMonthlyLeaveReport(params as never)
       return getLeaveReport(params as never)
     },
     (params) => {
       if (props.report.group === 'payroll') return exportPayrollReport(params as never)
       if (props.report.group === 'attendance') return exportAttendanceReport(params as never)
+      if (isMonthlyLeave.value) return exportMonthlyLeaveReport(params as never)
       return exportLeaveReport(params as never)
     },
   )
 
 const canExport = computed(() => can(props.report.exportPermission))
+const canExportPdf = computed(
+  () => Boolean(props.report.supportsPdf) && can(props.report.exportPermission),
+)
 const hasSummary = computed(() => Object.keys(summary.value).length > 0)
+const leaveColumnLabel = computed(() => {
+  const label = summary.value.leave_column_label
+  return typeof label === 'string' ? label : undefined
+})
 
 function buildParams(): Record<string, unknown> {
   const params: Record<string, unknown> = {
-    report_type: props.report.apiType,
     page: page.value,
     per_page: perPage.value,
+  }
+  if (!isMonthlyLeave.value) {
+    params.report_type = props.report.apiType
   }
   for (const key of props.report.filters) {
     const value = filters[key]
@@ -119,6 +141,18 @@ function onExport() {
   handleExport(buildParams())
 }
 
+async function onExportPdf() {
+  pdfExportLoading.value = true
+  try {
+    await exportMonthlyLeaveReportPdf(buildParams())
+    notify.success('PDF exported.')
+  } catch (err) {
+    notify.error(getApiErrorMessage(err))
+  } finally {
+    pdfExportLoading.value = false
+  }
+}
+
 watch(
   () => props.report.id,
   () => {
@@ -136,7 +170,10 @@ watch(
       :can-export="canExport"
       :export-loading="exportLoading"
       :loading="loading"
+      :can-export-pdf="canExportPdf"
+      :pdf-export-loading="pdfExportLoading"
       @export="onExport"
+      @export-pdf="onExportPdf"
     />
 
     <ReportFilterBar
@@ -171,6 +208,11 @@ watch(
         v-else-if="report.group === 'attendance'"
         :report-type="report.apiType"
         :items="items"
+      />
+      <MonthlyLeaveReportTable
+        v-else-if="isMonthlyLeave"
+        :items="items"
+        :leave-column-label="leaveColumnLabel"
       />
       <LeaveReportTables v-else :report-type="report.apiType" :items="items" />
     </ReportResultsCard>

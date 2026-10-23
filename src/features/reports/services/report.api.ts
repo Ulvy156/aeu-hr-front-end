@@ -4,6 +4,7 @@ import type {
   PayrollReportParams,
   AttendanceReportParams,
   LeaveReportParams,
+  MonthlyLeaveReportParams,
 } from '../types/report'
 
 function buildParams(params: object): Record<string, unknown> {
@@ -64,4 +65,40 @@ export async function exportLeaveReport(params: LeaveReportParams): Promise<void
     responseType: 'blob',
   })
   triggerDownload(response.data, `leave-${params.report_type}-report.xlsx`, response.headers as Record<string, string>)
+}
+
+// ── Monthly leave ────────────────────────────────────────
+export async function getMonthlyLeaveReport(
+  params: MonthlyLeaveReportParams,
+): Promise<ReportResponse<unknown>> {
+  const { data } = await api.get('/reports/monthly-leave', { params: buildParams(params) })
+  return data
+}
+
+export async function exportMonthlyLeaveReport(params: MonthlyLeaveReportParams): Promise<void> {
+  const response = await api.get('/reports/monthly-leave/export', {
+    params: buildParams(params),
+    responseType: 'blob',
+  })
+  const month = String(params.month ?? '').padStart(2, '0')
+  const year = params.year ?? ''
+  triggerDownload(
+    response.data,
+    `monthly-leave-${year}-${month}.xlsx`,
+    response.headers as Record<string, string>,
+  )
+}
+
+export async function exportMonthlyLeaveReportPdf(params: MonthlyLeaveReportParams): Promise<void> {
+  const response = await api.get('/reports/monthly-leave/export-pdf', {
+    params: buildParams(params),
+    responseType: 'blob',
+  })
+  const month = String(params.month ?? '').padStart(2, '0')
+  const year = params.year ?? ''
+  triggerDownload(
+    response.data,
+    `monthly-leave-${year}-${month}.pdf`,
+    response.headers as Record<string, string>,
+  )
 }

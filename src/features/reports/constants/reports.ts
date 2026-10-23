@@ -19,6 +19,7 @@ export interface ReportDefinition {
   filters: ReportFilterKey[]
   viewPermission: string
   exportPermission: string
+  supportsPdf?: boolean
 }
 
 export const REPORT_GROUPS: { id: ReportGroup; label: string; viewPermission: string }[] = [
@@ -79,26 +80,6 @@ export const REPORTS: ReportDefinition[] = [
     exportPermission: 'reports.attendance_export',
   },
   {
-    id: 'attendance_late_employees',
-    group: 'attendance',
-    title: 'Late employees',
-    description: 'Late clock-in records only.',
-    apiType: 'late_employees',
-    filters: ['month', 'year', 'date_from', 'date_to', 'employee_id'],
-    viewPermission: 'reports.attendance_view',
-    exportPermission: 'reports.attendance_export',
-  },
-  {
-    id: 'attendance_absent_employees',
-    group: 'attendance',
-    title: 'Absent employees',
-    description: 'Absence records for the selected period.',
-    apiType: 'absent_employees',
-    filters: ['month', 'year', 'date_from', 'date_to', 'employee_id'],
-    viewPermission: 'reports.attendance_view',
-    exportPermission: 'reports.attendance_export',
-  },
-  {
     id: 'attendance_correction_list',
     group: 'attendance',
     title: 'Attendance corrections',
@@ -119,36 +100,6 @@ export const REPORTS: ReportDefinition[] = [
     exportPermission: 'reports.leave_export',
   },
   {
-    id: 'leave_pending_approval',
-    group: 'leave',
-    title: 'Pending approval',
-    description: 'Requests still waiting on HR or CEO.',
-    apiType: 'pending_approval',
-    filters: ['employee_id', 'leave_type', 'date_from', 'date_to'],
-    viewPermission: 'reports.leave_view',
-    exportPermission: 'reports.leave_export',
-  },
-  {
-    id: 'leave_approved',
-    group: 'leave',
-    title: 'Approved leave',
-    description: 'Approved requests in the selected period.',
-    apiType: 'approved',
-    filters: ['employee_id', 'leave_type', 'date_from', 'date_to'],
-    viewPermission: 'reports.leave_view',
-    exportPermission: 'reports.leave_export',
-  },
-  {
-    id: 'leave_rejected',
-    group: 'leave',
-    title: 'Rejected leave',
-    description: 'Rejected requests with the recorded reason.',
-    apiType: 'rejected',
-    filters: ['employee_id', 'leave_type', 'date_from', 'date_to'],
-    viewPermission: 'reports.leave_view',
-    exportPermission: 'reports.leave_export',
-  },
-  {
     id: 'leave_balance',
     group: 'leave',
     title: 'Leave balances',
@@ -157,6 +108,17 @@ export const REPORTS: ReportDefinition[] = [
     filters: ['year', 'employee_id'],
     viewPermission: 'reports.leave_view',
     exportPermission: 'reports.leave_export',
+  },
+  {
+    id: 'leave_monthly',
+    group: 'leave',
+    title: 'Monthly leave report',
+    description: 'Absence, leave days, reasons, and dates for all employees in the selected month.',
+    apiType: 'monthly_leave',
+    filters: ['month', 'year'],
+    viewPermission: 'reports.leave_view',
+    exportPermission: 'reports.leave_export',
+    supportsPdf: true,
   },
 ]
 

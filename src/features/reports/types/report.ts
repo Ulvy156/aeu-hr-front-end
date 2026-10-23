@@ -129,6 +129,17 @@ export interface LeaveBalanceReportItem {
   unpaid?: LeaveBalanceBucket
 }
 
+export interface MonthlyLeaveReportItem {
+  no: number
+  name: string
+  position: string
+  gender: string
+  absence_days: string
+  leave_days: string
+  reason: string
+  employee?: ReportEmployee
+}
+
 // ── Filter param shapes ────────────────────────────────
 export interface PayrollReportParams {
   report_type: string
@@ -160,6 +171,13 @@ export interface LeaveReportParams {
   leave_type?: string
   date_from?: string
   date_to?: string
+  year?: string
+  page?: number
+  per_page?: number
+}
+
+export interface MonthlyLeaveReportParams {
+  month?: string
   year?: string
   page?: number
   per_page?: number

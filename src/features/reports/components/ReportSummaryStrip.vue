@@ -62,18 +62,6 @@ const stats = computed<SummaryStat[]>(() => {
         { label: 'Absent', value: count(summary.absent_count), tone: 'red' },
       ]
     }
-    if (props.reportType === 'late_employees') {
-      return [
-        { label: 'Records', value: count(summary.total_records) },
-        { label: 'Late', value: count(summary.late_count), tone: 'amber' },
-      ]
-    }
-    if (props.reportType === 'absent_employees') {
-      return [
-        { label: 'Records', value: count(summary.total_records) },
-        { label: 'Absent', value: count(summary.absent_count), tone: 'red' },
-      ]
-    }
     if (props.reportType === 'correction_list') {
       return [
         { label: 'Records', value: count(summary.total_records) },
@@ -93,6 +81,14 @@ const stats = computed<SummaryStat[]>(() => {
     return [
       { label: 'Employees', value: count(summary.employee_count) },
       { label: 'Year', value: count(summary.year) },
+    ]
+  }
+
+  if (props.reportType === 'monthly_leave') {
+    return [
+      { label: 'Employees', value: count(summary.employee_count) },
+      { label: 'Absence', value: count(summary.absence_days), tone: 'red' },
+      { label: 'Leave days', value: count(summary.leave_days), tone: 'amber' },
     ]
   }
 
