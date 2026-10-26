@@ -21,6 +21,7 @@ const {
   meta,
   loading,
   actionLoading,
+  filters,
   loadLeaves,
   applyFilters,
   onPageChange,
@@ -128,7 +129,15 @@ function onLeaveCreated() {
     </div>
 
     <MyLeaveBalanceCards v-if="props.ownOnly" :refresh-key="balanceRefreshKey" />
-    <MonthlyLeaveSummaryCards v-else :refresh-key="balanceRefreshKey" @filter="filterSummaryRequests" />
+    <MonthlyLeaveSummaryCards
+      v-else
+      :refresh-key="balanceRefreshKey"
+      :date-from="filters.date_from"
+      :date-to="filters.date_to"
+      :leave-type="filters.leave_type"
+      :employee-id="filters.employee_id"
+      @filter="filterSummaryRequests"
+    />
 
     <!-- Filters -->
     <LeaveFilters ref="filterControls" :own-only="props.ownOnly" @apply="applyFilters" />

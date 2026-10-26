@@ -21,8 +21,15 @@ interface PaginatedResponse<T> {
   meta: PaginationMeta
 }
 
-export async function fetchMonthlyLeaveSummary(): Promise<ApiResponse<MonthlyLeaveSummary>> {
-  const { data } = await api.get('/leaves/summary')
+export async function fetchMonthlyLeaveSummary(
+  params: {
+    date_from?: string
+    date_to?: string
+    leave_type?: string
+    employee_id?: string
+  } = {},
+): Promise<ApiResponse<MonthlyLeaveSummary>> {
+  const { data } = await api.get('/leaves/summary', { params })
   return data
 }
 

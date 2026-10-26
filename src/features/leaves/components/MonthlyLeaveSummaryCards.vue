@@ -5,7 +5,13 @@ import { BaseButton } from '@/components/common'
 import { fetchMonthlyLeaveSummary } from '../services/leave.api'
 import type { MonthlyLeaveSummary } from '../types/leave'
 
-const props = defineProps<{ refreshKey: number }>()
+const props = defineProps<{
+  refreshKey: number
+  dateFrom: string
+  dateTo: string
+  leaveType: string
+  employeeId: string
+}>()
 const emit = defineEmits<{
   filter: [status: string, dateFrom: string, dateTo: string]
 }>()
@@ -14,10 +20,14 @@ const loading = ref(false)
 const failed = ref(false)
 let requestId = 0
 
-const monthLabel = computed(() => {
-  const date = summary.value ? new Date(`${summary.value.month}-01T00:00:00`) : new Date()
-  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+const periodLabel = computed(() => {
+  if (!summary.value) return 'Leave summary'
+  const from = summary.value.date_from
+  const to = summary.value.date_to
+  if (from === to) return `Leave for ${from}`
+  return `Leave from ${from} to ${to}`
 })
+
 const cards = computed(() => [
   {
     key: 'on_leave_today' as const,
@@ -31,7 +41,7 @@ const cards = computed(() => [
   {
     key: 'employees_taking_leave' as const,
     label: 'Employees taking leave',
-    description: 'Employees with approved leave this month, counted once each.',
+    description: 'Employees with approved leave in this period, counted once each.',
     icon: Users,
     tone: 'bg-blue-50 border-blue-100 text-blue-600',
     status: 'approved',
@@ -40,7 +50,7 @@ const cards = computed(() => [
   {
     key: 'total_leave_days' as const,
     label: 'Total leave days',
-    description: 'Approved working days off this month, including half-days.',
+    description: 'Approved working days off in this period, including half-days.',
     icon: CalendarCheck,
     tone: 'bg-purple-50 border-purple-100 text-purple-600',
     status: 'approved',
@@ -49,7 +59,7 @@ const cards = computed(() => [
   {
     key: 'awaiting_approval' as const,
     label: 'Awaiting approval',
-    description: 'Requests for leave this month that still need approval.',
+    description: 'Requests in this period that still need approval.',
     icon: Clock3,
     tone: 'bg-amber-50 border-amber-100 text-amber-600',
     status: 'pending',
@@ -62,7 +72,18 @@ async function load() {
   loading.value = true
   failed.value = false
   try {
-    const response = await fetchMonthlyLeaveSummary()
+    const params: {
+      date_from?: string
+      date_to?: string
+      leave_type?: string
+      employee_id?: string
+    } = {}
+    if (props.dateFrom) params.date_from = props.dateFrom
+    if (props.dateTo) params.date_to = props.dateTo
+    if (props.leaveType) params.leave_type = props.leaveType
+    if (props.employeeId) params.employee_id = props.employeeId
+
+    const response = await fetchMonthlyLeaveSummary(params)
     if (currentRequest === requestId) summary.value = response.data
   } catch {
     if (currentRequest === requestId) failed.value = true
@@ -81,23 +102,30 @@ function viewRequests(card: (typeof cards.value)[number]) {
   )
 }
 
-watch(() => props.refreshKey, load, { immediate: true })
+watch(
+  () =>
+    [props.refreshKey, props.dateFrom, props.dateTo, props.leaveType, props.employeeId] as const,
+  () => {
+    void load()
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
   <section aria-labelledby="monthly-leave-summary" :aria-busy="loading">
     <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
       <h2 id="monthly-leave-summary" class="text-sm font-semibold text-slate-800">
-        Leave this month · {{ monthLabel }}
+        {{ periodLabel }}
       </h2>
-      <span class="text-xs text-slate-500">Across all requests you can view</span>
+      <span class="text-xs text-slate-500">Across requests matching current filters</span>
     </div>
     <div
       v-if="failed"
       class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white p-5"
       role="status"
     >
-      <p class="text-sm text-slate-500">Monthly leave summary is unavailable.</p>
+      <p class="text-sm text-slate-500">Leave summary is unavailable.</p>
       <BaseButton @click="load">Retry</BaseButton>
     </div>
     <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
