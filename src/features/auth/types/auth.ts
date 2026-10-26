@@ -2,6 +2,7 @@ export interface AuthEmployee {
   id: number
   employee_id: string
   full_name: string
+  position: { id: number; name: string } | null
 }
 
 export interface AuthUser {

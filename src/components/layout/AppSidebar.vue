@@ -55,6 +55,31 @@ function canAccess(permission?: string | string[]): boolean {
 }
 const isClickLogout = ref(false);
 const isLogginOut = ref(false);
+const logoBroken = ref(false);
+
+const COMPANY_LOGO_SRC = "/PDM Logo.png";
+const COMPANY_NAME = "PPDM CARE";
+
+const displayName = computed(() => {
+  return authStore.user?.employee?.full_name || authStore.user?.name || "";
+});
+
+const displaySubtitle = computed(() => {
+  const positionName = authStore.user?.employee?.position?.name;
+  if (positionName) return positionName;
+
+  const role = authStore.user?.roles?.[0];
+  if (!role) return "";
+
+  return role.charAt(0).toUpperCase() + role.slice(1);
+});
+
+const identityTooltip = computed(() => {
+  const name = displayName.value;
+  const subtitle = displaySubtitle.value;
+  if (name && subtitle) return `${name} — ${subtitle}`;
+  return name || subtitle || COMPANY_NAME;
+});
 
 async function handleLogout() {
   isLogginOut.value = true;
@@ -222,29 +247,64 @@ const visibleMenuGroups = computed<MenuGroup[]>(() =>
     class="flex flex-col h-screen bg-white border-r border-gray-200 transition-all duration-300 shrink-0"
     :class="collapsed ? 'w-16' : 'w-60'"
   >
-    <!-- Logo + toggle -->
+    <!-- Brand + identity -->
     <div
-      class="flex items-center border-b border-gray-100 px-3 shrink-0"
-      :class="collapsed ? 'justify-center py-4' : 'justify-between py-4 px-4'"
+      class="shrink-0 border-b border-gray-100 py-3"
+      :class="collapsed ? 'px-2' : 'px-4'"
     >
-      <div v-if="!collapsed" class="flex items-center gap-2.5">
-        <div class="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center shrink-0">
-          <Users class="w-4 h-4 text-white" />
-        </div>
-        <span class="text-sm font-semibold text-slate-900 truncate">PPDM CARE</span>
-      </div>
-      <!-- <div v-else class="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center">
-        <Users class="w-4 h-4 text-white" />
-      </div> -->
-
-      <button
-        class="p-1 cursor-pointer rounded-md text-slate-400 hover:text-slate-600 bg-gray-100"
-        :class="collapsed ? 'mt-2' : ''"
-        @click="$emit('toggle')"
+      <div
+        class="flex"
+        :class="collapsed ? 'flex-col items-center gap-2' : 'items-center justify-between gap-2'"
       >
-        <ChevronLeft v-if="!collapsed" class="w-4 h-4" />
-        <ChevronRight v-else class="w-4 h-4" />
-      </button>
+        <el-tooltip
+          :content="identityTooltip"
+          :disabled="!collapsed"
+          placement="right"
+        >
+          <div
+            class="flex items-center min-w-0"
+            :class="collapsed ? 'justify-center' : 'gap-2.5'"
+          >
+            <img
+              v-if="!logoBroken"
+              :src="COMPANY_LOGO_SRC"
+              :alt="COMPANY_NAME"
+              class="h-7 w-7 rounded-lg object-contain shrink-0 bg-white"
+              @error="logoBroken = true"
+            />
+            <div
+              v-else
+              class="w-7 h-7 bg-emerald-600 rounded-lg shrink-0"
+              aria-hidden="true"
+            />
+            <span
+              v-if="!collapsed"
+              class="text-sm font-semibold text-slate-900 truncate"
+            >
+              {{ COMPANY_NAME }}
+            </span>
+          </div>
+        </el-tooltip>
+
+        <button
+          class="p-1 cursor-pointer rounded-md text-slate-400 hover:text-slate-600 bg-gray-100 shrink-0"
+          @click="$emit('toggle')"
+        >
+          <ChevronLeft v-if="!collapsed" class="w-4 h-4" />
+          <ChevronRight v-else class="w-4 h-4" />
+        </button>
+      </div>
+
+      <RouterLink
+        v-if="!collapsed && displayName"
+        :to="{ name: 'profile' }"
+        class="mt-2.5 block rounded-lg px-0.5 py-1 min-w-0 hover:bg-gray-50 transition-colors"
+      >
+        <p class="text-sm font-medium text-slate-800 truncate">{{ displayName }}</p>
+        <p v-if="displaySubtitle" class="text-xs text-slate-500 truncate">
+          {{ displaySubtitle }}
+        </p>
+      </RouterLink>
     </div>
 
     <!-- Menu (scrollable middle section) -->
@@ -261,28 +321,34 @@ const visibleMenuGroups = computed<MenuGroup[]>(() =>
 
         <!-- Group items -->
         <template v-for="item in group.items" :key="item.path">
-          <RouterLink
+          <el-tooltip
             v-if="canAccess(item.permission)"
-            :to="item.path"
-            class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-medium transition-colors group"
-            :class="
-              isActive(item.path)
-                ? 'bg-emerald-50 text-emerald-700'
-                : 'text-slate-600 hover:bg-gray-100 hover:text-slate-900'
-            "
-            :title="collapsed ? item.label : undefined"
+            :content="item.label"
+            :disabled="!collapsed"
+            placement="right"
           >
-            <component
-              :is="item.icon"
-              class="w-4 h-4 shrink-0"
-              :class="
+            <RouterLink
+              :to="item.path"
+              class="flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-medium transition-colors group"
+              :class="[
+                collapsed ? 'justify-center' : '',
                 isActive(item.path)
-                  ? 'text-emerald-600'
-                  : 'text-slate-400 group-hover:text-slate-600'
-              "
-            />
-            <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
-          </RouterLink>
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'text-slate-600 hover:bg-gray-100 hover:text-slate-900',
+              ]"
+            >
+              <component
+                :is="item.icon"
+                class="w-4 h-4 shrink-0"
+                :class="
+                  isActive(item.path)
+                    ? 'text-emerald-600'
+                    : 'text-slate-400 group-hover:text-slate-600'
+                "
+              />
+              <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
+            </RouterLink>
+          </el-tooltip>
         </template>
       </div>
     </nav>
