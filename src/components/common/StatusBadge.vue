@@ -42,6 +42,7 @@ const statusMap: Record<string, StatusConfig> = {
   normal: { type: 'info', label: 'Normal' },
   important: { type: 'warning', label: 'Important' },
   urgent: { type: 'danger', label: 'Urgent' },
+  scheduled: { type: 'warning', label: 'Scheduled' },
   open: { type: 'success', label: 'Open' },
   closed: { type: 'info', label: 'Closed' },
   new: { type: 'info', label: 'New' },

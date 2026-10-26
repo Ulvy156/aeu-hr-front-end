@@ -57,10 +57,13 @@ const { can } = usePermission()
           </template>
         </el-table-column>
 
-        <el-table-column label="Listing / Close date" min-width="170">
+        <el-table-column label="Application window" min-width="190">
           <template #default="{ row }">
-            <p class="text-sm text-slate-600">{{ formatVacancyDate(row.target_hiring_date) }}</p>
-            <p v-if="row.close_date" class="text-xs text-slate-500">Closes {{ formatVacancyDate(row.close_date) }}</p>
+            <p class="text-sm text-slate-600">Opens {{ formatVacancyDate(row.open_date) }}</p>
+            <p v-if="row.close_date" class="text-xs text-slate-500">
+              Closes {{ formatVacancyDate(row.close_date) }}
+            </p>
+            <p class="text-xs text-slate-500">Target {{ formatVacancyDate(row.target_hiring_date) }}</p>
             <span
               v-if="isVacancyOverdue(row)"
               class="mt-0.5 inline-flex rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700"
@@ -96,7 +99,7 @@ const { can } = usePermission()
               </el-tooltip>
 
               <el-tooltip
-                v-if="row.status === 'open' && can('recruitment.vacancies.close')"
+                v-if="row.status !== 'closed' && can('recruitment.vacancies.close')"
                 content="Close Vacancy"
                 placement="top"
               >

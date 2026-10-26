@@ -1,4 +1,4 @@
-export type VacancyStatus = 'open' | 'closed'
+export type VacancyStatus = 'scheduled' | 'open' | 'closed'
 
 export interface VacancyDepartmentRef {
   id: number
@@ -17,15 +17,18 @@ export interface Vacancy {
   description: string
   required_headcount: number
   filled_headcount: number
+  open_date: string
   target_hiring_date: string
   close_date: string | null
   status: VacancyStatus
+  accepts_applications: boolean
   creator: VacancyUserRef
   created_at: string
   updated_at: string
 }
 
 export interface VacancySummary {
+  scheduled_count: number
   open_count: number
   closed_count: number
   open_required_headcount: number
@@ -34,6 +37,7 @@ export interface VacancySummary {
 }
 
 export const EMPTY_VACANCY_SUMMARY: VacancySummary = {
+  scheduled_count: 0,
   open_count: 0,
   closed_count: 0,
   open_required_headcount: 0,
@@ -55,6 +59,7 @@ export interface VacancyPayload {
   department_id: number | null
   description: string
   required_headcount: number
+  open_date: string
   target_hiring_date: string
   close_date: string | null
 }

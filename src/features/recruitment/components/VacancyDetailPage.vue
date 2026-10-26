@@ -8,6 +8,7 @@ import { useCandidates } from '../composables/useCandidates'
 import { useCandidateStatus } from '../composables/useCandidateStatus'
 import { AppCard, BaseButton, StatusBadge, ConfirmDialog } from '@/components/common'
 import { sanitizeHtml } from '@/utils/sanitizeHtml'
+import { vacancyAcceptsApplications } from '../utils/vacancyDisplay'
 import CandidateTable from './CandidateTable.vue'
 import CandidateStatusDialog from './CandidateStatusDialog.vue'
 import type { Candidate } from '../types/candidate'
@@ -34,9 +35,14 @@ const closeConfirmOpen = ref(false)
 const statusDialogOpen = ref(false)
 const selectedCandidate = ref<Candidate | null>(null)
 
-const canClose = computed(() => vacancy.value?.status === 'open' && can('recruitment.vacancies.close'))
+const canClose = computed(
+  () => vacancy.value != null && vacancy.value.status !== 'closed' && can('recruitment.vacancies.close'),
+)
 const canCreateCandidate = computed(
-  () => vacancy.value?.status === 'open' && can('recruitment.candidates.create'),
+  () =>
+    vacancy.value != null &&
+    vacancyAcceptsApplications(vacancy.value) &&
+    can('recruitment.candidates.create'),
 )
 
 function formatDate(value: string): string {
@@ -127,7 +133,7 @@ async function submitStatusChange(status: Candidate['status'], outcomeReason: st
     </div>
 
     <template v-else-if="vacancy">
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         <AppCard>
           <p class="text-xs text-slate-400 mb-1">Headcount</p>
           <p class="text-lg font-semibold text-slate-800">
@@ -135,12 +141,18 @@ async function submitStatusChange(status: Candidate['status'], outcomeReason: st
           </p>
         </AppCard>
         <AppCard>
-          <p class="text-xs text-slate-400 mb-1">Listing Opens</p>
-          <p class="text-lg font-semibold text-slate-800">{{ formatDate(vacancy.target_hiring_date) }}</p>
+          <p class="text-xs text-slate-400 mb-1">Open for applications</p>
+          <p class="text-lg font-semibold text-slate-800">{{ formatDate(vacancy.open_date) }}</p>
         </AppCard>
         <AppCard>
-          <p class="text-xs text-slate-400 mb-1">Close Date</p>
-          <p class="text-lg font-semibold text-slate-800">{{ vacancy.close_date ? formatDate(vacancy.close_date) : 'Not scheduled' }}</p>
+          <p class="text-xs text-slate-400 mb-1">Close applications</p>
+          <p class="text-lg font-semibold text-slate-800">
+            {{ vacancy.close_date ? formatDate(vacancy.close_date) : 'Manual only' }}
+          </p>
+        </AppCard>
+        <AppCard>
+          <p class="text-xs text-slate-400 mb-1">Target hire date</p>
+          <p class="text-lg font-semibold text-slate-800">{{ formatDate(vacancy.target_hiring_date) }}</p>
         </AppCard>
         <AppCard>
           <p class="text-xs text-slate-400 mb-1">Created By</p>

@@ -6,7 +6,7 @@ import SearchButton from '@/components/resuable/SearchButton.vue'
 import ResetButton from '@/components/resuable/ResetButton.vue'
 import { fetchDepartments } from '@/features/departments/services/department.api'
 import type { VacancyStatus, VacancySummary } from '../types/vacancy'
-import { formatVacancyDate } from '../utils/vacancyDisplay'
+import { formatVacancyDate, vacancyStatusLabel } from '../utils/vacancyDisplay'
 
 type ChipKey = 'search' | 'department' | 'status' | 'targetHiringDate'
 
@@ -38,7 +38,9 @@ const departmentSelectOptions = computed(() =>
   departmentOptions.value.map((opt) => ({ label: opt.name, value: opt.id })),
 )
 
-const allCount = computed(() => props.summary.open_count + props.summary.closed_count)
+const allCount = computed(
+  () => props.summary.scheduled_count + props.summary.open_count + props.summary.closed_count,
+)
 
 const chips = computed(() => {
   const items: { key: ChipKey; label: string }[] = []
@@ -50,7 +52,7 @@ const chips = computed(() => {
     items.push({ key: 'department', label: name ?? 'Department' })
   }
   if (props.status) {
-    items.push({ key: 'status', label: props.status === 'open' ? 'Open' : 'Closed' })
+    items.push({ key: 'status', label: vacancyStatusLabel(props.status) })
   }
   if (props.targetHiringDate) {
     items.push({ key: 'targetHiringDate', label: formatVacancyDate(props.targetHiringDate) })
@@ -141,6 +143,14 @@ function pillClass(active: boolean): string {
       <button
         type="button"
         class="inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors"
+        :class="pillClass(localStatus === 'scheduled')"
+        @click="handleStatus('scheduled')"
+      >
+        Scheduled · {{ summary.scheduled_count }}
+      </button>
+      <button
+        type="button"
+        class="inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors"
         :class="pillClass(localStatus === 'open')"
         @click="handleStatus('open')"
       >
@@ -181,7 +191,7 @@ function pillClass(active: boolean): string {
         />
       </div>
       <div>
-        <label class="mb-1.5 block text-xs font-medium text-slate-500">Target hiring date</label>
+        <label class="mb-1.5 block text-xs font-medium text-slate-500">Target hire date</label>
         <el-date-picker
           v-model="localTargetHiringDate"
           type="date"

@@ -88,7 +88,9 @@ onMounted(async () => {
   loading.value = true
   try {
     const vacanciesRes = await fetchVacancies({ status: 'open', per_page: 100 })
-    vacancyOptions.value = vacanciesRes.data.map((v) => ({ id: v.id, title: v.title }))
+    vacancyOptions.value = vacanciesRes.data
+      .filter((v) => v.accepts_applications)
+      .map((v) => ({ id: v.id, title: v.title }))
 
     if (isEdit.value && candidateId.value) {
       const res = await fetchCandidate(candidateId.value)

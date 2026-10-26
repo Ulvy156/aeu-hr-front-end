@@ -32,6 +32,7 @@ const form = reactive<VacancyPayload>({
   department_id: null,
   description: '',
   required_headcount: 1,
+  open_date: '',
   target_hiring_date: '',
   close_date: null,
 })
@@ -56,12 +57,25 @@ const rules: FormRules = {
     { required: true, message: 'Required headcount is required', trigger: 'blur' },
     { type: 'number', min: 1, message: 'Required headcount must be at least 1', trigger: 'blur' },
   ],
-  target_hiring_date: [{ required: true, message: 'Target hiring date is required', trigger: 'change' }],
+  open_date: [{ required: true, message: 'Open for applications date is required', trigger: 'change' }],
+  target_hiring_date: [
+    { required: true, message: 'Target hire date is required', trigger: 'change' },
+    {
+      validator: (_rule, value: string, callback) => {
+        if (value && form.open_date && value < form.open_date) {
+          callback(new Error('Target hire date must be on or after the open date'))
+          return
+        }
+        callback()
+      },
+      trigger: 'change',
+    },
+  ],
   close_date: [
     {
       validator: (_rule, value: string | null, callback) => {
-        if (value && value <= form.target_hiring_date) {
-          callback(new Error('Close date must be after the listing opens'))
+        if (value && form.open_date && value <= form.open_date) {
+          callback(new Error('Close date must be after the open date'))
           return
         }
         callback()
@@ -81,9 +95,14 @@ function toLocalDateString(date: Date): string {
 
 function disableInvalidCloseDate(date: Date): boolean {
   const dateString = toLocalDateString(date)
-  const today = toLocalDateString(new Date())
+  if (!form.open_date) return false
+  return dateString <= form.open_date
+}
 
-  return dateString <= today || dateString <= form.target_hiring_date
+function disableInvalidTargetDate(date: Date): boolean {
+  const dateString = toLocalDateString(date)
+  if (!form.open_date) return false
+  return dateString < form.open_date
 }
 
 onMounted(async () => {
@@ -105,6 +124,7 @@ watch(
       form.department_id = vacancy.department?.id ?? null
       form.description = vacancy.description
       form.required_headcount = vacancy.required_headcount
+      form.open_date = vacancy.open_date
       form.target_hiring_date = vacancy.target_hiring_date
       form.close_date = vacancy.close_date
     } else {
@@ -112,6 +132,7 @@ watch(
       form.department_id = null
       form.description = ''
       form.required_headcount = 1
+      form.open_date = ''
       form.target_hiring_date = ''
       form.close_date = null
     }
@@ -195,24 +216,25 @@ async function handleSubmit() {
         </p>
       </el-form-item>
 
-      <el-form-item label="Listing Opens" prop="target_hiring_date">
+      <el-form-item label="Open for applications" prop="open_date">
         <el-date-picker
-          v-model="form.target_hiring_date"
+          v-model="form.open_date"
           type="date"
-          placeholder="Select listing opening date"
+          placeholder="Select open date"
           value-format="YYYY-MM-DD"
           class="w-full!"
         />
-        <p v-if="getFieldError(fieldErrors, 'target_hiring_date')" class="mt-1 text-xs text-red-500">
-          {{ getFieldError(fieldErrors, 'target_hiring_date') }}
+        <p v-if="getFieldError(fieldErrors, 'open_date')" class="mt-1 text-xs text-red-500">
+          {{ getFieldError(fieldErrors, 'open_date') }}
         </p>
+        <p class="mt-1 text-xs text-slate-400">Candidates can be added from this day.</p>
       </el-form-item>
 
-      <el-form-item label="Close Date (Optional)" prop="close_date">
+      <el-form-item label="Close applications (optional)" prop="close_date">
         <el-date-picker
           v-model="form.close_date"
           type="date"
-          placeholder="Select automatic close date"
+          placeholder="Select close date"
           value-format="YYYY-MM-DD"
           clearable
           :disabled-date="disableInvalidCloseDate"
@@ -221,7 +243,24 @@ async function handleSubmit() {
         <p v-if="getFieldError(fieldErrors, 'close_date')" class="mt-1 text-xs text-red-500">
           {{ getFieldError(fieldErrors, 'close_date') }}
         </p>
-        <p class="mt-1 text-xs text-slate-400">Must be after the listing opening date. The vacancy closes automatically on this date.</p>
+        <p class="mt-1 text-xs text-slate-400">
+          Stops applications; vacancy closes overnight after this date. Empty = manual close only.
+        </p>
+      </el-form-item>
+
+      <el-form-item label="Target hire date" prop="target_hiring_date">
+        <el-date-picker
+          v-model="form.target_hiring_date"
+          type="date"
+          placeholder="Select target hire date"
+          value-format="YYYY-MM-DD"
+          :disabled-date="disableInvalidTargetDate"
+          class="w-full!"
+        />
+        <p v-if="getFieldError(fieldErrors, 'target_hiring_date')" class="mt-1 text-xs text-red-500">
+          {{ getFieldError(fieldErrors, 'target_hiring_date') }}
+        </p>
+        <p class="mt-1 text-xs text-slate-400">Overdue goal only; does not auto-close the vacancy.</p>
       </el-form-item>
 
       <div v-if="isEdit && vacancy" class="grid grid-cols-2 gap-3 pt-3 mt-1 border-t border-gray-100">

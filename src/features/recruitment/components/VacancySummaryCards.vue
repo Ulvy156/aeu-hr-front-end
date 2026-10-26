@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BriefcaseBusiness, CircleCheck, Users, CalendarClock } from '@lucide/vue'
+import { BriefcaseBusiness, CircleCheck, Users, CalendarClock, CalendarRange } from '@lucide/vue'
 import type { VacancySummary } from '../types/vacancy'
 
 defineProps<{
@@ -9,15 +9,29 @@ defineProps<{
 </script>
 
 <template>
-  <div v-if="loading" class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  <div v-if="loading" class="grid grid-cols-2 gap-4 lg:grid-cols-5">
     <div
-      v-for="n in 4"
+      v-for="n in 5"
       :key="n"
       class="h-24 animate-pulse rounded-xl border border-gray-200 bg-white"
     />
   </div>
 
-  <div v-else class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  <div v-else class="grid grid-cols-2 gap-4 lg:grid-cols-5">
+    <div class="rounded-xl border border-gray-200 bg-white p-5">
+      <div class="flex items-start gap-3">
+        <div
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600"
+        >
+          <CalendarRange class="h-5 w-5" />
+        </div>
+        <div>
+          <p class="text-2xl font-semibold text-slate-900">{{ summary.scheduled_count }}</p>
+          <p class="text-sm text-slate-500">Scheduled</p>
+        </div>
+      </div>
+    </div>
+
     <div class="rounded-xl border border-gray-200 bg-white p-5">
       <div class="flex items-start gap-3">
         <div
@@ -81,7 +95,7 @@ defineProps<{
           >
             {{ summary.overdue_open_count }}
           </p>
-          <p class="text-sm text-slate-500">Past target date</p>
+          <p class="text-sm text-slate-500">Past target hire date</p>
         </div>
       </div>
     </div>
