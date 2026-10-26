@@ -1,28 +1,46 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { fetchTeamAttendanceSummary } from '../services/attendance.api'
 import type { TeamAttendanceSummary } from '../types/attendance'
 
-const now = new Date()
-const month = ref(now.getMonth() + 1)
-const year = ref(now.getFullYear())
+const props = defineProps<{
+  dateFrom: string
+  dateTo: string
+  employeeName: string
+  departmentId: number | null
+}>()
+
 const summary = ref<TeamAttendanceSummary | null>(null)
 const loading = ref(false)
 const error = ref(false)
 
-const monthNames = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-]
-const monthOptions = monthNames.map((label, index) => ({ label, value: index + 1 }))
-const currentYear = new Date().getFullYear()
-const yearOptions = Array.from({ length: 5 }, (_, index) => currentYear - 2 + index)
+const periodLabel = computed(() => {
+  if (props.dateFrom && props.dateTo) {
+    return props.dateFrom === props.dateTo
+      ? `Attendance for ${props.dateFrom}.`
+      : `Attendance from ${props.dateFrom} to ${props.dateTo}.`
+  }
+  if (props.dateFrom) return `Attendance from ${props.dateFrom}.`
+  if (props.dateTo) return `Attendance until ${props.dateTo}.`
+  return 'Attendance matching current filters.'
+})
 
 async function load() {
   loading.value = true
   error.value = false
   try {
-    const response = await fetchTeamAttendanceSummary({ month: month.value, year: year.value })
+    const params: {
+      date_from?: string
+      date_to?: string
+      employee_name?: string
+      department_id?: number
+    } = {}
+    if (props.dateFrom) params.date_from = props.dateFrom
+    if (props.dateTo) params.date_to = props.dateTo
+    if (props.employeeName) params.employee_name = props.employeeName
+    if (props.departmentId !== null) params.department_id = props.departmentId
+
+    const response = await fetchTeamAttendanceSummary(params)
     summary.value = response.data
   } catch {
     error.value = true
@@ -32,26 +50,22 @@ async function load() {
   }
 }
 
-onMounted(load)
-watch([month, year], load)
+watch(
+  () => [props.dateFrom, props.dateTo, props.employeeName, props.departmentId] as const,
+  () => {
+    void load()
+  },
+  { immediate: true },
+)
+
 defineExpose({ load })
 </script>
 
 <template>
   <section class="space-y-3">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <h2 class="text-sm font-semibold text-slate-800">Team attendance</h2>
-        <p class="text-xs text-slate-500">Attendance days across employees this month.</p>
-      </div>
-      <div class="flex gap-2">
-        <el-select v-model="month" class="w-36!" size="small">
-          <el-option v-for="option in monthOptions" :key="option.value" :label="option.label" :value="option.value" />
-        </el-select>
-        <el-select v-model="year" class="w-24!" size="small">
-          <el-option v-for="option in yearOptions" :key="option" :label="String(option)" :value="option" />
-        </el-select>
-      </div>
+    <div>
+      <h2 class="text-sm font-semibold text-slate-800">Team attendance</h2>
+      <p class="text-xs text-slate-500">{{ periodLabel }}</p>
     </div>
 
     <div v-if="error" class="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">

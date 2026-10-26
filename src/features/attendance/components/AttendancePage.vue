@@ -13,8 +13,16 @@ import AttendanceCorrectionDialog from './AttendanceCorrectionDialog.vue'
 import MarkAbsentDialog from './MarkAbsentDialog.vue'
 
 const { can } = usePermission()
-const { attendances, meta, loading, loadAttendance, applyFilters, onPageChange, onPageSizeChange } =
-  useAttendance('team')
+const {
+  attendances,
+  meta,
+  loading,
+  filters,
+  loadAttendance,
+  applyFilters,
+  onPageChange,
+  onPageSizeChange,
+} = useAttendance('team')
 const summaryCards = ref<{ load: () => Promise<void> } | null>(null)
 const departments = ref<{ id: number; name: string }[]>([])
 
@@ -64,8 +72,14 @@ function handleCorrect(attendance: Attendance) {
       </BaseButton>
     </div>
 
-    <!-- Monthly summary cards -->
-    <TeamAttendanceSummaryCards ref="summaryCards" />
+    <!-- Summary cards use the same filters as the table (except status) -->
+    <TeamAttendanceSummaryCards
+      ref="summaryCards"
+      :date-from="filters.date_from"
+      :date-to="filters.date_to"
+      :employee-name="filters.employee_name"
+      :department-id="filters.department_id"
+    />
 
     <!-- Filters -->
     <AttendanceFilters :can-view-any="true" :departments="departments" @apply="applyFilters" />

@@ -65,14 +65,26 @@ export async function markAbsent(
 }
 
 export async function fetchAttendanceSummary(
-  params: { month?: number; year?: number } = {},
+  params: {
+    month?: number
+    year?: number
+    date_from?: string
+    date_to?: string
+  } = {},
 ): Promise<ApiResponse<AttendanceSummary>> {
   const { data } = await api.get('/attendance/summary', { params })
   return data
 }
 
 export async function fetchTeamAttendanceSummary(
-  params: { month?: number; year?: number } = {},
+  params: {
+    month?: number
+    year?: number
+    date_from?: string
+    date_to?: string
+    employee_name?: string
+    department_id?: number
+  } = {},
 ): Promise<ApiResponse<TeamAttendanceSummary>> {
   const { data } = await api.get('/attendance/team-summary', { params })
   return data

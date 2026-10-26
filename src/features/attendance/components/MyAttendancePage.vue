@@ -10,8 +10,16 @@ import AttendanceFilters from './AttendanceFilters.vue'
 import AttendanceTable from './AttendanceTable.vue'
 
 const { can } = usePermission()
-const { attendances, meta, loading, loadAttendance, applyFilters, onPageChange, onPageSizeChange } =
-  useAttendance('own')
+const {
+  attendances,
+  meta,
+  loading,
+  filters,
+  loadAttendance,
+  applyFilters,
+  onPageChange,
+  onPageSizeChange,
+} = useAttendance('own')
 const summaryCards = ref<{ load: () => Promise<void> } | null>(null)
 
 onMounted(() => { void loadAttendance() })
@@ -40,7 +48,11 @@ function handleAttendanceChanged() {
       @clocked="handleAttendanceChanged"
     />
 
-    <AttendanceSummaryCards ref="summaryCards" />
+    <AttendanceSummaryCards
+      ref="summaryCards"
+      :date-from="filters.date_from"
+      :date-to="filters.date_to"
+    />
 
     <AttendanceFilters :can-view-any="false" :departments="[]" @apply="applyFilters" />
 
