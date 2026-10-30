@@ -1,81 +1,76 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import LoginForm from './LoginForm.vue'
+
+const COMPANY_LOGO_SRC = '/PDM Logo.png'
+const COMPANY_NAME = 'PPDM CARE'
+
+const logoBroken = ref(false)
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col lg:flex-row">
+  <div
+    class="login-page relative flex min-h-screen items-center justify-center px-6 py-12"
+  >
+    <div
+      class="login-panel relative z-10 w-full max-w-[480px] rounded-xl border border-gray-200 bg-white p-6 sm:p-8"
+      aria-label="Sign in"
+    >
+      <div class="login-brand mb-8 flex flex-col items-center text-center">
+        <img
+          v-if="!logoBroken"
+          :src="COMPANY_LOGO_SRC"
+          :alt="COMPANY_NAME"
+          class="mb-4 h-14 w-14 rounded-xl object-contain p-1 ring-1 ring-emerald-900/5"
+          @error="logoBroken = true"
+        />
+        <div
+          v-else
+          class="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-600"
+          aria-hidden="true"
+        />
 
-    <!-- Left: branding panel (45%) -->
-    <div class="hidden lg:flex lg:w-[45%] bg-emerald-600 flex-col justify-center p-10 text-white">
-      <div class="w-full max-w-sm mx-auto">
-
-        <div class="flex items-center gap-2.5 mb-10">
-          <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-white">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            </svg>
-          </div>
-          <span class="text-lg font-semibold tracking-tight">PPDM CARE</span>
-        </div>
-
-        <h1 class="text-3xl font-bold leading-snug mb-3">
-          Manage your workforce<br />with ease.
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+          {{ COMPANY_NAME }}
         </h1>
-        <p class="text-emerald-100 text-sm leading-relaxed mb-10">
-          A complete HR platform for attendance, leave, payroll, and employee management — all in one place.
-        </p>
+        <p class="mt-1.5 text-sm text-slate-500">Sign in to continue</p>
+      </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div class="bg-white/10 rounded-lg p-3">
-            <p class="text-sm font-semibold">Attendance</p>
-            <p class="text-xs text-emerald-100 mt-0.5">GPS clock-in &amp; out</p>
-          </div>
-          <div class="bg-white/10 rounded-lg p-3">
-            <p class="text-sm font-semibold">Payroll</p>
-            <p class="text-xs text-emerald-100 mt-0.5">Auto calculation</p>
-          </div>
-          <div class="bg-white/10 rounded-lg p-3">
-            <p class="text-sm font-semibold">Leave</p>
-            <p class="text-xs text-emerald-100 mt-0.5">Approval workflow</p>
-          </div>
-          <div class="bg-white/10 rounded-lg p-3">
-            <p class="text-sm font-semibold">Reports</p>
-            <p class="text-xs text-emerald-100 mt-0.5">Excel &amp; PDF export</p>
-          </div>
-        </div>
-
+      <div class="login-form-wrap">
+        <LoginForm />
       </div>
     </div>
-
-    <!-- Right: login form (55%) -->
-    <div class="w-full lg:w-[55%] flex items-center justify-center bg-gray-50 px-6 py-12">
-      <div class="w-full max-w-105">
-
-        <!-- Mobile logo -->
-        <div class="flex items-center gap-2 mb-8 lg:hidden">
-          <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-white">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" />
-            </svg>
-          </div>
-          <span class="text-lg font-semibold text-slate-900">PPDM CARE</span>
-        </div>
-
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-7">
-          <h2 class="text-xl font-semibold text-slate-900 mb-1">Welcome back</h2>
-          <p class="text-sm text-slate-500 mb-6">Sign in to your account to continue.</p>
-          <LoginForm />
-        </div>
-
-        <p class="mt-5 text-center text-xs text-slate-400">
-          PPDM CARE &mdash; Internal use only.
-        </p>
-
-      </div>
-    </div>
-
   </div>
 </template>
+
+<style scoped>
+.login-page {
+  background: #fff;
+}
+
+.login-brand {
+  animation: login-fade-up 420ms ease-out both;
+}
+
+.login-form-wrap {
+  animation: login-fade-up 420ms ease-out 90ms both;
+}
+
+@keyframes login-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-brand,
+  .login-form-wrap {
+    animation: none;
+  }
+}
+</style>

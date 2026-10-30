@@ -50,7 +50,7 @@ const { formRef, loading, form, apiErrors, rules, handleSubmit } = useLogin()
       size="large"
       :loading="loading"
       native-type="submit"
-      class="w-full mt-2"
+      class="mt-3 w-full !border-emerald-600 !bg-emerald-600 hover:!bg-emerald-700"
     >
       {{ loading ? 'Signing in...' : 'Sign in' }}
     </BaseButton>

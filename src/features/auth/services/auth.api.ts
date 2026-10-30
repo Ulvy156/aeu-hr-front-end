@@ -5,12 +5,13 @@ import type {
   LoginData,
   LoginRequest,
 } from '@/features/auth/types/auth'
+import { getDeviceName } from '@/utils/device'
 
 export async function login(credentials: LoginRequest): Promise<LoginData> {
   const res = await api.post<ApiResponse<LoginData>>('/login', {
     email: credentials.email,
     password: credentials.password,
-    device_name: credentials.device_name ?? 'web-client',
+    device_name: credentials.device_name ?? getDeviceName(),
   })
   return res.data.data
 }
