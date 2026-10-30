@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Pencil, UserCheck } from '@lucide/vue'
 import { usePermission } from '@/composables/usePermissions'
-import { useAuthStore } from '@/features/auth/stores/auth.store'
 import { StatusBadge, EmptyState, BasePagination } from '@/components/common'
 import type { Attendance } from '../types/attendance'
 
@@ -23,7 +22,6 @@ const emit = defineEmits<{
 }>()
 
 const { can } = usePermission()
-const auth = useAuthStore()
 
 const headerCellStyle = {
   background: '#f9fafb',
@@ -133,7 +131,7 @@ const statusLabelMap: Record<string, string> = {
 
         <el-table-column v-if="allowCorrections && can('attendance.correct')" label="Actions"  fixed="right" align="center">
           <template #default="{ row }">
-            <el-tooltip v-if="auth.user?.employee?.id !== row.employee.id" content="Correct" placement="top">
+            <el-tooltip content="Correct" placement="top">
               <button
                 class="p-1.5 rounded-md hover:bg-blue-50 transition-colors text-slate-400 hover:text-blue-600"
                 @click="emit('correct', row)"
